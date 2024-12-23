@@ -1,0 +1,11 @@
+# Compiler artifacts
+*.o
+*.d
+*.exe
+*.out
+metang
+
+# LSP / IDE artifacts
+.cache/*
+.vscode/*
+compile_commands.json
