@@ -1,6 +1,7 @@
 ---
 BasedOnStyle: LLVM
 Language: Cpp
+AlignOperands: false
 BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
@@ -14,7 +15,7 @@ BraceWrapping:
   IndentBraces: false
   SplitEmptyFunction: true
   SplitEmptyRecord: false
-BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBinaryOperators: All
 BreakBeforeBraces: Custom
 ColumnLimit: 0
 ContinuationIndentWidth: 4
