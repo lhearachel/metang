@@ -116,3 +116,12 @@ char *rtrim(const char *s)
     strncpy(p, s, i);
     return p;
 }
+
+char *trim(const char *s)
+{
+    char *t = ltrim(s);
+    char *p = rtrim(t);
+
+    free(t);
+    return p;
+}
