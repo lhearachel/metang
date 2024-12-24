@@ -120,7 +120,7 @@ struct deque_node *deque_pop_f(struct deque *deque)
     return deque_pop(deque, ITER_DIR_TO_HEAD);
 }
 
-void deque_foreach(struct deque *deque, void (*func)(void *data), enum deque_iter_dir dir)
+void deque_foreach(struct deque *deque, void (*func)(void *data, void *user), void *user, enum deque_iter_dir dir)
 {
     if (deque->size == 0) {
         return;
@@ -128,17 +128,17 @@ void deque_foreach(struct deque *deque, void (*func)(void *data), enum deque_ite
 
     struct deque_node *cursor = deque->ptrs[!dir];
     do {
-        func(cursor->data);
+        func(cursor->data, user);
         cursor = cursor->neighbors[dir];
     } while (cursor != NULL);
 }
 
-void deque_foreach_ftob(struct deque *deque, void (*func)(void *data))
+void deque_foreach_ftob(struct deque *deque, void (*func)(void *data, void *user), void *user)
 {
-    deque_foreach(deque, func, ITER_DIR_TO_TAIL);
+    deque_foreach(deque, func, user, ITER_DIR_TO_TAIL);
 }
 
-void deque_foreach_btof(struct deque *deque, void (*func)(void *data))
+void deque_foreach_btof(struct deque *deque, void (*func)(void *data, void *user), void *user)
 {
-    deque_foreach(deque, func, ITER_DIR_TO_HEAD);
+    deque_foreach(deque, func, user, ITER_DIR_TO_HEAD);
 }
