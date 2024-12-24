@@ -25,6 +25,7 @@
 
 #include "deque.h"
 #include "generate.h"
+#include "strlib.h"
 
 // clang-format off
 static const char *version = "0.1.0";
@@ -261,8 +262,12 @@ static bool read_from_stream(FILE *stream, struct deque *input_lines, const bool
     while ((read_size = read_line(&buf, &buf_size, stream)) != -1) {
         char *line = calloc(read_size, sizeof(char));
         strncpy(line, buf, read_size - 1); // trim the newline character
-        exit_if(strchr(line, '=') && !allow_overrides, exit_fail, "metang: input contains unpermitted override; did you forget “-D”?\n");
-        deque_push_b(input_lines, line);
+
+        char *line_trim = trim(line);
+        free(line);
+
+        exit_if(strchr(line_trim, '=') && !allow_overrides, exit_fail, "metang: input contains unpermitted override; did you forget “-D”?\n");
+        deque_push_b(input_lines, line_trim);
     }
 
     return true;

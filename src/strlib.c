@@ -112,8 +112,8 @@ char *rtrim(const char *s)
         return calloc(1, sizeof(char));
     }
 
-    char *p = calloc(i + 1, sizeof(char));
-    strncpy(p, s, i);
+    char *p = calloc(i + 2, sizeof(char));
+    strncpy(p, s, i + 1);
     return p;
 }
 
