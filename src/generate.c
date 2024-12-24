@@ -28,144 +28,18 @@
 static char *write_header(char **output, const char *incg, struct options *opts);
 static char *write_enum(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts);
 static char *write_defs(char **output, struct deque *input, const char *lead, struct options *opts);
-static char *write_lookup(char **output, struct deque *input, const char *lead, const char *enum_t);
+static char *write_lookup(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts);
 static char *write_footer(char **output, const char *incg);
 
-static void write_enum_entry(void *data, void *user_v);
-static void write_defs_entry(void *data, void *user_v);
-static void write_lookup_entry(void *data, void *user_v);
-
-static const char *header_fmt;
-static const char *footer_fmt;
-static const char *enum_header_fmt;
-static const char *enum_footer_fmt;
-static const char *defs_header_fmt;
-static const char *defs_footer_fmt;
-static const char *lookup_header_fmt;
-static const char *lookup_footer_fmt;
-
-const char *generate(struct deque *input, struct options *opts)
-{
-    // Start with a giant buffer, just to avoid costly reallocations
-    char *output = calloc(65536, sizeof(char));
-    char *base = basename(opts->output_file);
-    char *incg = usnake(base);
-    char *lead = stem(incg, '_');
-    char *enum_t = lsnake(opts->input_file);
-    char *bufp = output;
-
-    bufp = write_header(&bufp, incg, opts);
-    bufp = write_enum(&bufp, input, lead, enum_t, opts);
-    bufp = write_defs(&bufp, input, lead, opts);
-    bufp = write_lookup(&bufp, input, lead, enum_t);
-    bufp = write_footer(&bufp, incg);
-
-    free(incg);
-    free(lead);
-    return output;
-}
-
-static char *write_header(char **output, const char *incg, struct options *opts)
-{
-    char *bufp = *output;
-    bufp += sprintf(bufp, header_fmt, opts->input_file, incg, incg);
-    return bufp;
-}
-
-static char *write_footer(char **output, const char *incg)
-{
-    char *bufp = *output;
-    bufp += sprintf(bufp, footer_fmt, incg);
-    return bufp;
-}
-
-struct enum_entry_user {
+struct entry_user {
     char **bufp;
     const char *lead;
-};
-
-static char *write_enum(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts)
-{
-    char *bufp = *output;
-    bufp += sprintf(bufp, enum_header_fmt, enum_t);
-
-    char *first = usnake(deque_peek_f(input));
-    bufp += sprintf(bufp, "    %s_%s = %zd,\n", lead, first, opts->start_from);
-
-    struct enum_entry_user user = {
-        .bufp = &bufp,
-        .lead = lead,
-    };
-    deque_foreach_itob(input, 1, write_enum_entry, &user);
-
-    bufp += sprintf(bufp, "%s\n", enum_footer_fmt);
-
-    free(first);
-    return bufp;
-}
-
-static void write_enum_entry(void *data, void *user_v)
-{
-    char *entry = usnake(data);
-    struct enum_entry_user *user = user_v;
-    (*user->bufp) += sprintf(*user->bufp, "    %s_%s,\n", user->lead, entry);
-    free(entry);
-}
-
-struct defs_entry_user {
-    char **bufp;
-    const char *lead;
+    const char *fmt;
     ssize_t it;
+    bool is_lookup;
 };
 
-static char *write_defs(char **output, struct deque *input, const char *lead, struct options *opts)
-{
-    char *bufp = *output;
-    bufp += sprintf(bufp, "%s\n", defs_header_fmt);
-
-    struct defs_entry_user user = {
-        .bufp = &bufp,
-        .lead = lead,
-        .it = opts->start_from,
-    };
-    deque_foreach_ftob(input, write_defs_entry, &user);
-
-    bufp += sprintf(bufp, "\n%s\n", defs_footer_fmt);
-
-    return bufp;
-}
-
-static void write_defs_entry(void *data, void *user_v)
-{
-    char *entry = usnake(data);
-    struct defs_entry_user *user = user_v;
-    (*user->bufp) += sprintf(*user->bufp, "#define %s_%s %zd\n", user->lead, entry, user->it++);
-    free(entry);
-}
-
-static char *write_lookup(char **output, struct deque *input, const char *lead, const char *enum_t)
-{
-    char *bufp = *output;
-    bufp += sprintf(bufp, lookup_header_fmt, enum_t, enum_t, enum_t);
-
-    struct enum_entry_user user = {
-        .bufp = &bufp,
-        .lead = lead,
-    };
-    deque_foreach_ftob(input, write_lookup_entry, &user);
-
-    bufp += sprintf(bufp, "%s\n", lookup_footer_fmt);
-
-    return bufp;
-}
-
-static void write_lookup_entry(void *data, void *user_v)
-{
-    char *entry = usnake(data);
-    struct enum_entry_user *user = user_v;
-    (*user->bufp) += sprintf(*user->bufp, "    { \"%s\", %s_%s },\n", entry, user->lead, entry);
-    free(entry);
-}
+static void write_entry(void *data, void *user_v);
 
 // clang-format off
 static const char *header_fmt = ""
@@ -219,4 +93,117 @@ static const char *lookup_footer_fmt = ""
     "\n"
     "#endif // METANG_LOOKUP\n"
     "";
+
+static const char *enum_entry_fmt = "    %s_%s = %zd,\n";
+static const char *defs_entry_fmt = "#define %s_%s %zd\n";
+static const char *lookup_entry_fmt = "    { %s_%s, \"%s\" },\n";
 // clang-format on
+
+const char *generate(struct deque *input, struct options *opts)
+{
+    // Start with a giant buffer, just to avoid costly reallocations
+    char *output = calloc(65536, sizeof(char));
+    char *base = basename(opts->output_file);
+    char *incg = usnake(base);
+    char *lead = stem(incg, '_');
+    char *enum_t = lsnake(opts->input_file);
+    char *bufp = output;
+
+    bufp = write_header(&bufp, incg, opts);
+    bufp = write_enum(&bufp, input, lead, enum_t, opts);
+    bufp = write_defs(&bufp, input, lead, opts);
+    bufp = write_lookup(&bufp, input, lead, enum_t, opts);
+    bufp = write_footer(&bufp, incg);
+
+    free(incg);
+    free(lead);
+    free(base);
+    free(enum_t);
+    return output;
+}
+
+static char *write_header(char **output, const char *incg, struct options *opts)
+{
+    char *bufp = *output;
+    bufp += sprintf(bufp, header_fmt, opts->input_file, incg, incg);
+    return bufp;
+}
+
+static char *write_footer(char **output, const char *incg)
+{
+    char *bufp = *output;
+    bufp += sprintf(bufp, footer_fmt, incg);
+    return bufp;
+}
+
+static char *write_enum(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts)
+{
+    char *bufp = *output;
+    bufp += sprintf(bufp, enum_header_fmt, enum_t);
+
+    struct entry_user user = {
+        .bufp = &bufp,
+        .lead = lead,
+        .fmt = enum_entry_fmt,
+        .it = opts->start_from,
+        .is_lookup = false,
+    };
+    deque_foreach_ftob(input, write_entry, &user);
+
+    bufp += sprintf(bufp, "%s\n", enum_footer_fmt);
+
+    return bufp;
+}
+
+static char *write_defs(char **output, struct deque *input, const char *lead, struct options *opts)
+{
+    char *bufp = *output;
+    bufp += sprintf(bufp, "%s\n", defs_header_fmt);
+
+    struct entry_user user = {
+        .bufp = &bufp,
+        .lead = lead,
+        .fmt = defs_entry_fmt,
+        .it = opts->start_from,
+        .is_lookup = false,
+    };
+    deque_foreach_ftob(input, write_entry, &user);
+
+    bufp += sprintf(bufp, "\n%s\n", defs_footer_fmt);
+
+    return bufp;
+}
+
+static char *write_lookup(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts)
+{
+    char *bufp = *output;
+    bufp += sprintf(bufp, lookup_header_fmt, enum_t, enum_t, enum_t);
+
+    struct entry_user user = {
+        .bufp = &bufp,
+        .lead = lead,
+        .fmt = lookup_entry_fmt,
+        .it = opts->start_from,
+        .is_lookup = true,
+    };
+    deque_foreach_ftob(input, write_entry, &user);
+
+    bufp += sprintf(bufp, "%s\n", lookup_footer_fmt);
+
+    return bufp;
+}
+
+static void write_entry(void *data, void *user_v)
+{
+    char *entry = usnake(data);
+    struct entry_user *user = user_v;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconditional-type-mismatch"
+    // This only works because I have absolute control over the formatting strings
+    (*user->bufp) += sprintf(*user->bufp, user->fmt, user->lead, entry, user->is_lookup ? entry : user->it);
+#pragma GCC diagnostic pop
+
+    user->it++;
+    free(entry);
+}
