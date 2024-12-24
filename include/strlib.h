@@ -17,10 +17,15 @@
 #ifndef METANG_STRLIB_H
 #define METANG_STRLIB_H
 
+#include <stddef.h>
+
 char *strdup(const char *s);
+char *strndup(const char *s, const size_t n);
 char *basename(const char *path);
 char *stem(const char *s, const char delim);
 char *lsnake(const char *s);
 char *usnake(const char *s);
+char *ltrim(const char *s);
+char *rtrim(const char *s);
 
 #endif // METANG_STRLIB_H
