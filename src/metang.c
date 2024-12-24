@@ -61,6 +61,7 @@ static int exit_fail(const char *fmt, va_list args);
 static bool match_opt(const char *opt, const char *shortopt, const char *longopt);
 static void parse_options(int *argc, const char ***argv, struct options *opts);
 
+static ssize_t read_line(char **lineptr, size_t *n, FILE *stream);
 static bool read_from_stream(FILE *stream, struct deque *deque);
 static bool read_from_file(const char *fname, struct deque *deque);
 
@@ -184,13 +185,61 @@ static void parse_options(int *argc, const char ***argv, struct options *opts)
     } while (*argc > 0);
 }
 
+static ssize_t read_line(char **lineptr, size_t *n, FILE *stream)
+{
+    if (lineptr == NULL || n == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    int c = fgetc(stream);
+    if (c == EOF) {
+        return -1;
+    }
+
+    if (*lineptr == NULL) {
+        *lineptr = malloc(128);
+        if (*lineptr == NULL) {
+            return -1;
+        }
+
+        *n = 128;
+    }
+
+    size_t pos = 0;
+    do {
+        if (pos + 1 >= *n) {
+            size_t new_size = *n + (*n >> 2);
+            if (new_size < 128) {
+                new_size = 128;
+            }
+
+            char *new_ptr = realloc(*lineptr, new_size);
+            if (new_ptr == NULL) {
+                return -1;
+            }
+
+            *n = new_size;
+            *lineptr = new_ptr;
+        }
+
+        ((unsigned char *)(*lineptr))[pos++] = c;
+        if (c == '\n') {
+            break;
+        }
+    } while ((c = fgetc(stream)) != EOF);
+
+    (*lineptr)[pos] = '\0';
+    return pos;
+}
+
 static bool read_from_stream(FILE *stream, struct deque *input_lines)
 {
     char *buf = NULL;
     size_t buf_size = 0;
     ssize_t read_size;
 
-    while ((read_size = getline(&buf, &buf_size, stream)) != -1) {
+    while ((read_size = read_line(&buf, &buf_size, stream)) != -1) {
         char *line = calloc(read_size, sizeof(char));
         strncpy(line, buf, read_size - 1); // trim the newline character
         deque_push_b(input_lines, line);
