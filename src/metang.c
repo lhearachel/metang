@@ -68,7 +68,7 @@ static bool read_from_file(const char *fname, struct deque *deque);
 static void noop(void *data);
 
 #ifndef NDEBUG
-static void printf_deque_node(void *data);
+static void printf_deque_node(void *data, void *user);
 #endif // NDEBUG
 
 int main(int argc, const char **argv)
@@ -95,9 +95,9 @@ int main(int argc, const char **argv)
 #ifndef NDEBUG
     printf("--- METANG OPTIONS ---\n");
     printf("append:\n");
-    deque_foreach_ftob(options.append, printf_deque_node);
+    deque_foreach_ftob(options.append, printf_deque_node, NULL);
     printf("prepend:\n");
-    deque_foreach_ftob(options.prepend, printf_deque_node);
+    deque_foreach_ftob(options.prepend, printf_deque_node, NULL);
     printf("start from:     “%ld”\n", options.start_from);
     printf("allow override? “%s”\n", options.allow_override ? "yes" : "no");
     printf("output file:    “%s”\n", options.output_file == NULL ? "stdout" : options.output_file);
@@ -113,7 +113,7 @@ int main(int argc, const char **argv)
 #ifndef NDEBUG
     printf("--- METANG INPUT ---\n");
     printf("lines:\n");
-    deque_foreach_ftob(input_lines, printf_deque_node);
+    deque_foreach_ftob(input_lines, printf_deque_node, NULL);
 #endif
 
     deque_free(input_lines, free);
@@ -273,8 +273,9 @@ static void noop(void *data)
 }
 
 #ifndef NDEBUG
-static void printf_deque_node(void *data)
+static void printf_deque_node(void *data, void *user)
 {
+    (void)user;
     char *s = data;
     printf("  - “%s”\n", s);
 }
