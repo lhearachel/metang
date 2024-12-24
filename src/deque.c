@@ -120,6 +120,16 @@ struct deque_node *deque_pop_f(struct deque *deque)
     return deque_pop(deque, ITER_DIR_TO_HEAD);
 }
 
+void *deque_peek_b(struct deque *deque)
+{
+    return deque->tail->data;
+}
+
+void *deque_peek_f(struct deque *deque)
+{
+    return deque->head->data;
+}
+
 void deque_foreach(struct deque *deque, void (*func)(void *data, void *user), void *user, enum deque_iter_dir dir)
 {
     if (deque->size == 0) {
@@ -141,4 +151,47 @@ void deque_foreach_ftob(struct deque *deque, void (*func)(void *data, void *user
 void deque_foreach_btof(struct deque *deque, void (*func)(void *data, void *user), void *user)
 {
     deque_foreach(deque, func, user, ITER_DIR_TO_HEAD);
+}
+
+void deque_foreach_itob(struct deque *deque, size_t i, void (*func)(void *data, void *user), void *user)
+{
+    if (deque->size == 0) {
+        return;
+    }
+
+    if (i == 0) {
+        deque_foreach_ftob(deque, func, user);
+        return;
+    }
+
+    size_t j = 0;
+    struct deque_node *cursor = deque->head;
+    do {
+        cursor = cursor->next;
+        j++;
+    } while (cursor != NULL && j < i);
+
+    while (cursor != NULL) {
+        func(cursor->data, user);
+        cursor = cursor->next;
+    }
+}
+
+void deque_foreach_itof(struct deque *deque, size_t i, void (*func)(void *data, void *user), void *user)
+{
+    if (deque->size == 0 || i == 0) {
+        return;
+    }
+
+    size_t j = 0;
+    struct deque_node *cursor = deque->head;
+    do {
+        cursor = cursor->next;
+        j++;
+    } while (cursor != NULL && j < i);
+
+    while (cursor != NULL) {
+        func(cursor->data, user);
+        cursor = cursor->prev;
+    }
 }

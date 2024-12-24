@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "deque.h"
+#include "generate.h"
 
 // clang-format off
 static const char *version = "0.1.0";
@@ -74,13 +75,19 @@ int main(int argc, const char **argv)
         .start_from = 0,
         .allow_override = false,
         .output_file = NULL,
+        .input_file = NULL,
+        .to_stdout = false,
+        .from_stdin = false,
     };
 
     exit_if(options.append == NULL || options.prepend == NULL, exit_fail, "metang: failure ahead of option parsing: “%s”\n", strerror(errno));
     parse_options(&argc, &argv, &options);
     exit_if(argc > 1, exit_fail, "metang: unexpected positional arguments\n%s\n", short_usage);
 
-    bool from_stdin = (argc == 0);
+    options.to_stdout = options.output_file == NULL;
+    options.output_file = options.to_stdout ? "stdout" : options.output_file;
+    options.from_stdin = (argc == 0);
+    options.input_file = options.from_stdin ? "stdin" : *argv;
 
 #ifndef NDEBUG
     printf("--- METANG OPTIONS ---\n");
@@ -90,21 +97,38 @@ int main(int argc, const char **argv)
     deque_foreach_ftob(options.prepend, printf_deque_node, NULL);
     printf("start from:     “%ld”\n", options.start_from);
     printf("allow override? “%s”\n", options.allow_override ? "yes" : "no");
-    printf("output file:    “%s”\n", options.output_file == NULL ? "stdout" : options.output_file);
-    printf("input file:     “%s”\n", from_stdin ? "stdin" : *argv);
+    printf("output file:    “%s”\n", options.output_file);
+    printf("input file:     “%s”\n", options.input_file);
 #endif
 
     struct deque *input_lines = deque_new();
     exit_if(input_lines == NULL, exit_fail, "metang: failure ahead of reading input: “%s”\n", strerror(errno));
 
-    bool input_good = from_stdin ? read_from_stream(stdin, input_lines) : read_from_file(*argv, input_lines);
+    bool input_good = options.from_stdin ? read_from_stream(stdin, input_lines) : read_from_file(*argv, input_lines);
     exit_if(!input_good, exit_fail, "metang: failure while reading input: “%s”\n", strerror(errno));
 
 #ifndef NDEBUG
-    printf("--- METANG INPUT ---\n");
+    printf("\n--- METANG INPUT ---\n");
     printf("lines:\n");
     deque_foreach_ftob(input_lines, printf_deque_node, NULL);
 #endif
+
+#ifndef NDEBUG
+    printf("\n--- METANG OUTPUT ---\n");
+#endif
+
+    const char *output = generate(input_lines, &options);
+    FILE *fout = stdout;
+    if (!options.to_stdout) {
+        fout = fopen(options.output_file, "w");
+        exit_if(fout == NULL, exit_fail, "metang: failure while writing output: “%s”\n", strerror(errno));
+    }
+
+    fputs(output, fout);
+    fflush(fout);
+    if (!options.to_stdout) {
+        fclose(fout);
+    }
 
     deque_free(input_lines, free);
     deque_free(options.append, noop);
