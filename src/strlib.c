@@ -23,8 +23,13 @@
 char *strdup(const char *s)
 {
     size_t len = strlen(s);
-    char *dup = calloc(len + 1, sizeof(char));
-    strcpy(dup, s);
+    return strndup(s, len);
+}
+
+char *strndup(const char *s, const size_t n)
+{
+    char *dup = calloc(n + 1, sizeof(char));
+    strncpy(dup, s, n);
     return dup;
 }
 
@@ -80,4 +85,34 @@ char *usnake(const char *s)
     }
 
     return new;
+}
+
+char *ltrim(const char *s)
+{
+    size_t i = 0;
+    while (isspace(s[i])) {
+        i++;
+    }
+
+    if (s[i] == '\0') {
+        return calloc(1, sizeof(char));
+    }
+
+    return strdup(s + i);
+}
+
+char *rtrim(const char *s)
+{
+    size_t i = strlen(s) - 1;
+    while (i >= 0 && isspace(s[i])) {
+        i--;
+    }
+
+    if (i == 0) {
+        return calloc(1, sizeof(char));
+    }
+
+    char *p = calloc(i + 1, sizeof(char));
+    strncpy(p, s, i);
+    return p;
 }
