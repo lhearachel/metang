@@ -45,11 +45,11 @@ struct deque *deque_new(void)
     return calloc(1, sizeof(struct deque));
 }
 
-void deque_clear(struct deque *deque)
+void deque_clear(struct deque *deque, void (*data_free_func)(void *data))
 {
     while (deque->head != NULL) {
         struct deque_node *node = deque->head->next;
-        free(deque->head->data);
+        data_free_func(deque->head->data);
         free(deque->head);
         deque->head = node;
         deque->size--;
@@ -58,9 +58,9 @@ void deque_clear(struct deque *deque)
     deque->tail = NULL;
 }
 
-void deque_free(struct deque *deque)
+void deque_free(struct deque *deque, void (*data_free_func)(void *data))
 {
-    deque_clear(deque);
+    deque_clear(deque, data_free_func);
     free(deque);
 }
 

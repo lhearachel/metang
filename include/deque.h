@@ -23,8 +23,8 @@ struct deque;
 struct deque_node;
 
 struct deque *deque_new(void);
-void deque_clear(struct deque *deque);
-void deque_free(struct deque *deque);
+void deque_clear(struct deque *deque, void (*free_func)(void *data));
+void deque_free(struct deque *deque, void (*free_func)(void *data));
 
 struct deque_node *deque_push_b(struct deque *deque, void *data);
 struct deque_node *deque_push_f(struct deque *deque, void *data);
