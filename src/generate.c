@@ -36,10 +36,10 @@ struct entry_user {
     ssize_t it;
     const char *lead;
     const char *fmt;
-    const bool is_lookup;
 };
 
-static void write_entry(void *data, void *user_v);
+static void write_member_entry(void *data, void *user_v);
+static void write_lookup_entry(void *data, void *user_v);
 
 // clang-format off
 static const char *header_p1_fmt = ""
@@ -162,11 +162,10 @@ static char *write_enum(char **output, struct deque *input, const char *lead, co
         .it = opts->start_from,
         .lead = lead,
         .fmt = enum_entry_fmt,
-        .is_lookup = false,
     };
-    deque_foreach_ftob(opts->prepend, write_entry, &user);
-    deque_foreach_ftob(input, write_entry, &user);
-    deque_foreach_ftob(opts->append, write_entry, &user);
+    deque_foreach_ftob(opts->prepend, write_member_entry, &user);
+    deque_foreach_ftob(input, write_member_entry, &user);
+    deque_foreach_ftob(opts->append, write_member_entry, &user);
 
     bufp += sprintf(bufp, enum_footer_fmt, opts->preproc_guard);
 
@@ -183,11 +182,10 @@ static char *write_defs(char **output, struct deque *input, const char *lead, st
         .it = opts->start_from,
         .lead = lead,
         .fmt = defs_entry_fmt,
-        .is_lookup = false,
     };
-    deque_foreach_ftob(opts->prepend, write_entry, &user);
-    deque_foreach_ftob(input, write_entry, &user);
-    deque_foreach_ftob(opts->append, write_entry, &user);
+    deque_foreach_ftob(opts->prepend, write_member_entry, &user);
+    deque_foreach_ftob(input, write_member_entry, &user);
+    deque_foreach_ftob(opts->append, write_member_entry, &user);
 
     bufp += sprintf(bufp, defs_footer_fmt, opts->preproc_guard, opts->preproc_guard);
 
@@ -201,21 +199,21 @@ static char *write_lookup(char **output, struct deque *input, const char *lead, 
 
     struct entry_user user = {
         .bufp = &bufp,
-        .it = opts->start_from,
         .lead = lead,
         .fmt = lookup_entry_fmt,
-        .is_lookup = true,
     };
-    deque_foreach_ftob(opts->prepend, write_entry, &user);
-    deque_foreach_ftob(input, write_entry, &user);
-    deque_foreach_ftob(opts->append, write_entry, &user);
+
+    // TODO: Unify these into one deque and sort the entries
+    deque_foreach_ftob(opts->prepend, write_lookup_entry, &user);
+    deque_foreach_ftob(input, write_lookup_entry, &user);
+    deque_foreach_ftob(opts->append, write_lookup_entry, &user);
 
     bufp += sprintf(bufp, lookup_footer_fmt, opts->preproc_guard);
 
     return bufp;
 }
 
-static void write_entry(void *data, void *user_v)
+static void write_member_entry(void *data, void *user_v)
 {
     char *entry = strdup(data);
     struct entry_user *user = user_v;
@@ -235,14 +233,17 @@ static void write_entry(void *data, void *user_v)
     char *tmp = entry;
     entry = usnake(entry);
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconditional-type-mismatch"
-    // This only works because I have absolute control over the formatting strings
-    (*user->bufp) += sprintf(*user->bufp, user->fmt, user->lead, entry, user->is_lookup ? entry : user->it);
-#pragma GCC diagnostic pop
-
+    (*user->bufp) += sprintf(*user->bufp, user->fmt, user->lead, entry, user->it);
     user->it++;
 
     free(entry);
     free(tmp);
+}
+
+static void write_lookup_entry(void *data, void *user_v)
+{
+    char *entry = usnake(data);
+    struct entry_user *user = user_v;
+    (*user->bufp) += sprintf(*user->bufp, user->fmt, user->lead, entry, entry);
+    free(entry);
 }
