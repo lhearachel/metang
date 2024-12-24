@@ -27,5 +27,6 @@ char *lsnake(const char *s);
 char *usnake(const char *s);
 char *ltrim(const char *s);
 char *rtrim(const char *s);
+char *trim(const char *s);
 
 #endif // METANG_STRLIB_H
