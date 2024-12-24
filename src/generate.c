@@ -159,7 +159,9 @@ static char *write_enum(char **output, struct deque *input, const char *lead, co
         .it = opts->start_from,
         .is_lookup = false,
     };
+    deque_foreach_ftob(opts->prepend, write_entry, &user);
     deque_foreach_ftob(input, write_entry, &user);
+    deque_foreach_ftob(opts->append, write_entry, &user);
 
     bufp += sprintf(bufp, "%s\n", enum_footer_fmt);
 
@@ -178,7 +180,9 @@ static char *write_defs(char **output, struct deque *input, const char *lead, st
         .it = opts->start_from,
         .is_lookup = false,
     };
+    deque_foreach_ftob(opts->prepend, write_entry, &user);
     deque_foreach_ftob(input, write_entry, &user);
+    deque_foreach_ftob(opts->append, write_entry, &user);
 
     bufp += sprintf(bufp, "\n%s\n", defs_footer_fmt);
 
@@ -197,7 +201,9 @@ static char *write_lookup(char **output, struct deque *input, const char *lead, 
         .it = opts->start_from,
         .is_lookup = true,
     };
+    deque_foreach_ftob(opts->prepend, write_entry, &user);
     deque_foreach_ftob(input, write_entry, &user);
+    deque_foreach_ftob(opts->append, write_entry, &user);
 
     bufp += sprintf(bufp, "%s\n", lookup_footer_fmt);
 
