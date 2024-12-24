@@ -64,6 +64,9 @@ static void printf_deque_node(void *data, void *user);
 
 int main(int argc, const char **argv)
 {
+    int orig_argc = argc;
+    const char **orig_argv = argv;
+
     exit_if(argc < 2, exit_info, "%s\n\n%s\n\n%s\n", tag_line, short_usage, options);
 
     argv++;
@@ -117,7 +120,7 @@ int main(int argc, const char **argv)
     printf("\n--- METANG OUTPUT ---\n");
 #endif
 
-    const char *output = generate(input_lines, &options);
+    const char *output = generate(input_lines, &options, orig_argc, orig_argv);
     FILE *fout = stdout;
     if (!options.to_stdout) {
         fout = fopen(options.output_file, "w");
