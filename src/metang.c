@@ -61,6 +61,9 @@ static int exit_fail(const char *fmt, va_list args);
 static bool match_opt(const char *opt, const char *shortopt, const char *longopt);
 static void parse_options(int *argc, const char ***argv, struct options *opts);
 
+static bool read_from_stream(FILE *stream, struct deque *deque);
+static bool read_from_file(const char *fname, struct deque *deque);
+
 #ifndef NDEBUG
 static void printf_deque_node(void *data);
 #endif // NDEBUG
@@ -101,6 +104,18 @@ int main(int argc, const char **argv)
     struct deque *input_lines = deque_new();
     exit_if(input_lines == NULL, exit_fail, "metang: failure ahead of reading input: “%s”\n", strerror(errno));
 
+    bool input_good = from_stdin ? read_from_stream(stdin, input_lines) : read_from_file(*argv, input_lines);
+    exit_if(!input_good, exit_fail, "metang: failure while reading input: “%s”\n", strerror(errno));
+
+#ifndef NDEBUG
+    printf("--- METANG INPUT ---\n");
+    printf("lines:\n");
+    deque_foreach_ftob(input_lines, printf_deque_node);
+#endif
+
+    deque_free(input_lines);
+    deque_free(options.append);
+    deque_free(options.prepend);
     return EXIT_SUCCESS;
 }
 
@@ -165,6 +180,34 @@ static void parse_options(int *argc, const char ***argv, struct options *opts)
         (*argv)++;
         (*argc)--;
     } while (*argc > 0);
+}
+
+static bool read_from_stream(FILE *stream, struct deque *input_lines)
+{
+    char *buf = NULL;
+    size_t buf_size = 0;
+    ssize_t read_size;
+
+    while ((read_size = getline(&buf, &buf_size, stream)) != -1) {
+        char *line = calloc(read_size, sizeof(char));
+        strncpy(line, buf, read_size - 1); // trim the newline character
+        deque_push_b(input_lines, line);
+    }
+
+    return true;
+}
+
+static bool read_from_file(const char *fpath, struct deque *input_lines)
+{
+    FILE *f = fopen(fpath, "r");
+    if (f == NULL) {
+        return false;
+    }
+
+    bool result = read_from_stream(f, input_lines);
+
+    fclose(f);
+    return result;
 }
 
 static bool match_opt(const char *opt, const char *shortopt, const char *longopt)
