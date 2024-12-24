@@ -79,6 +79,7 @@ int main(int argc, const char **argv)
         .append = deque_new(),
         .prepend = deque_new(),
         .start_from = 0,
+        .preproc_guard = "METANG",
         .allow_overrides = false,
         .output_file = NULL,
         .input_file = NULL,
