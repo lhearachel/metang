@@ -40,6 +40,8 @@ static const char *options = ""
     "  -p, --prepend <entry>        Prepend <entry> to the input listing.\n"
     "  -n, --start-from <number>    Start enumeration from <number>.\n"
     "  -o, --output <file>          Write output to <file>.\n"
+    "  -G, --preproc-guard <guard>  Use <guard> as a prefix for conditional\n"
+    "                               preprocessor directives.\n"
     "  -D, --allow-overrides        If specified, allow direct value-assignment.\n"
     "  -h, --help                   Display this help text and exit.\n"
     "  -v, --version                Display the program version number and exit."
@@ -100,6 +102,7 @@ int main(int argc, const char **argv)
     printf("prepend:\n");
     deque_foreach_ftob(options.prepend, printf_deque_node, NULL);
     printf("start from:     “%ld”\n", options.start_from);
+    printf("preproc guard:  “%s”\n", options.preproc_guard);
     printf("allow override? “%s”\n", options.allow_overrides ? "yes" : "no");
     printf("output file:    “%s”\n", options.output_file);
     printf("input file:     “%s”\n", options.input_file);
@@ -198,6 +201,8 @@ static void parse_options(int *argc, const char ***argv, struct options *opts)
             exit_if(errno, exit_fail, "metang: could not convert start-from option: %s\n", strerror(errno));
         } else if (match_opt(opt, "-o", "--output")) {
             opts->output_file = arg;
+        } else if (match_opt(opt, "-G", "--preproc-guard")) {
+            opts->preproc_guard = arg;
         }
 
         (*argv)++;

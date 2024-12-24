@@ -61,9 +61,9 @@ static const char *footer_fmt = ""
     "";
 
 static const char *enum_header_fmt = ""
-    "#ifdef METANG_ENUM\n"
+    "#ifdef %s_ENUM\n"
     "\n"
-    "#undef METANG_DEFS /* Do not allow also including the defs section */\n"
+    "#undef %s_DEFS /* Do not allow also including the defs section */\n"
     "\n"
     "enum %s {\n"
     "";
@@ -71,19 +71,23 @@ static const char *enum_header_fmt = ""
 static const char *enum_footer_fmt = ""
     "};\n"
     "\n"
-    "#endif // METANG_ENUM\n"
+    "#endif // %s_ENUM\n"
+    "\n"
     "";
 
 static const char *defs_header_fmt = ""
-    "#if defined(METANG_DEFS) || !defined(METANG_ENUM)\n"
+    "#if defined(%s_DEFS) || !defined(%s_ENUM)\n"
+    "\n"
     "";
 
 static const char *defs_footer_fmt = ""
-    "#endif // defined(METANG_DEFS) || !defined(METANG_ENUM)\n"
+    "\n"
+    "#endif // defined(%s_DEFS) || !defined(%s_ENUM)\n"
+    "\n"
     "";
 
 static const char *lookup_header_fmt = ""
-    "#ifdef METANG_LOOKUP\n"
+    "#ifdef %s_LOOKUP\n"
     "\n"
     "struct %s_entry {\n"
     "    const char *def;\n"
@@ -96,7 +100,8 @@ static const char *lookup_header_fmt = ""
 static const char *lookup_footer_fmt = ""
     "};\n"
     "\n"
-    "#endif // METANG_LOOKUP\n"
+    "#endif // %s_LOOKUP\n"
+    "\n"
     "";
 
 static const char *enum_entry_fmt = "    %s_%s = %zd,\n";
@@ -150,7 +155,7 @@ static char *write_footer(char **output, const char *incg)
 static char *write_enum(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts)
 {
     char *bufp = *output;
-    bufp += sprintf(bufp, enum_header_fmt, enum_t);
+    bufp += sprintf(bufp, enum_header_fmt, opts->preproc_guard, opts->preproc_guard, enum_t);
 
     struct entry_user user = {
         .bufp = &bufp,
@@ -163,7 +168,7 @@ static char *write_enum(char **output, struct deque *input, const char *lead, co
     deque_foreach_ftob(input, write_entry, &user);
     deque_foreach_ftob(opts->append, write_entry, &user);
 
-    bufp += sprintf(bufp, "%s\n", enum_footer_fmt);
+    bufp += sprintf(bufp, enum_footer_fmt, opts->preproc_guard);
 
     return bufp;
 }
@@ -171,7 +176,7 @@ static char *write_enum(char **output, struct deque *input, const char *lead, co
 static char *write_defs(char **output, struct deque *input, const char *lead, struct options *opts)
 {
     char *bufp = *output;
-    bufp += sprintf(bufp, "%s\n", defs_header_fmt);
+    bufp += sprintf(bufp, defs_header_fmt, opts->preproc_guard, opts->preproc_guard);
 
     struct entry_user user = {
         .bufp = &bufp,
@@ -184,7 +189,7 @@ static char *write_defs(char **output, struct deque *input, const char *lead, st
     deque_foreach_ftob(input, write_entry, &user);
     deque_foreach_ftob(opts->append, write_entry, &user);
 
-    bufp += sprintf(bufp, "\n%s\n", defs_footer_fmt);
+    bufp += sprintf(bufp, defs_footer_fmt, opts->preproc_guard, opts->preproc_guard);
 
     return bufp;
 }
@@ -192,7 +197,7 @@ static char *write_defs(char **output, struct deque *input, const char *lead, st
 static char *write_lookup(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts)
 {
     char *bufp = *output;
-    bufp += sprintf(bufp, lookup_header_fmt, enum_t, enum_t, enum_t);
+    bufp += sprintf(bufp, lookup_header_fmt, opts->preproc_guard, enum_t, enum_t, enum_t);
 
     struct entry_user user = {
         .bufp = &bufp,
@@ -205,7 +210,7 @@ static char *write_lookup(char **output, struct deque *input, const char *lead, 
     deque_foreach_ftob(input, write_entry, &user);
     deque_foreach_ftob(opts->append, write_entry, &user);
 
-    bufp += sprintf(bufp, "%s\n", lookup_footer_fmt);
+    bufp += sprintf(bufp, lookup_footer_fmt, opts->preproc_guard);
 
     return bufp;
 }
