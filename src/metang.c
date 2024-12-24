@@ -54,17 +54,17 @@ struct options {
     const char *output_file;
 };
 
-static void exit_info(const char *fmt, ...);
-static void exit_fail(const char *fmt, ...);
+static void exit_if(bool cond, int (*exit_func)(const char *fmt, va_list args), const char *fmt, ...);
+static int exit_info(const char *fmt, va_list args);
+static int exit_fail(const char *fmt, va_list args);
+
 static bool match_opt(const char *opt, const char *shortopt, const char *longopt);
 static void parse_options(int *argc, const char ***argv, struct options *opts);
 static void printf_deque_node(void *data);
 
 int main(int argc, const char **argv)
 {
-    if (argc < 2) {
-        exit_info("%s\n\n%s\n\n%s\n", tag_line, short_usage, options);
-    }
+    exit_if(argc < 2, exit_info, "%s\n\n%s\n\n%s\n", tag_line, short_usage, options);
 
     argv++;
     argc--;
@@ -77,15 +77,9 @@ int main(int argc, const char **argv)
         .output_file = NULL,
     };
 
-    if (options.append == NULL || options.prepend == NULL) {
-        exit_fail("metang: failure ahead of option parsing: “%s”\n", strerror(errno));
-    }
-
+    exit_if(options.append == NULL || options.prepend == NULL, exit_fail, "metang: failure ahead of option parsing: “%s”\n", strerror(errno));
     parse_options(&argc, &argv, &options);
-
-    if (argc > 1) {
-        exit_fail("metang: unexpected positional arguments\n%s\n", short_usage);
-    }
+    exit_if(argc > 1, exit_fail, "metang: unexpected positional arguments\n%s\n", short_usage);
 
     bool from_stdin = (argc == 0);
 
@@ -101,25 +95,33 @@ int main(int argc, const char **argv)
     printf("input file:     “%s”\n", from_stdin ? "stdin" : *argv);
 #endif
 
+    struct deque *input_lines = deque_new();
+    exit_if(input_lines == NULL, exit_fail, "metang: failure ahead of reading input: “%s”\n", strerror(errno));
+
     return EXIT_SUCCESS;
 }
 
-static void exit_info(const char *fmt, ...)
+static void exit_if(bool cond, int (*exit_func)(const char *fmt, va_list args), const char *fmt, ...)
 {
-    va_list args;
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
-    exit(EXIT_SUCCESS);
+    if (cond) {
+        va_list args;
+        va_start(args, fmt);
+        int exit_code = exit_func(fmt, args);
+        va_end(args);
+        exit(exit_code);
+    }
 }
 
-static void exit_fail(const char *fmt, ...)
+static int exit_info(const char *fmt, va_list args)
 {
-    va_list args;
-    va_start(args, fmt);
+    vfprintf(stdout, fmt, args);
+    return EXIT_SUCCESS;
+}
+
+static int exit_fail(const char *fmt, va_list args)
+{
     vfprintf(stderr, fmt, args);
-    va_end(args);
-    exit(EXIT_FAILURE);
+    return EXIT_FAILURE;
 }
 
 static void parse_options(int *argc, const char ***argv, struct options *opts)
@@ -133,39 +135,26 @@ static void parse_options(int *argc, const char ***argv, struct options *opts)
         (*argv)++;
         (*argc)--;
 
+        exit_if(match_opt(opt, "-h", "--help"), exit_info, "%s\n\n%s\n\n%s\n", tag_line, short_usage, options);
+        exit_if(match_opt(opt, "-v", "--version"), exit_info, "%s\n", version);
+
         // Options with no argument
-        if (match_opt(opt, "-h", "--help")) {
-            exit_info("%s\n\n%s\n\n%s\n", tag_line, short_usage, options);
-        }
-
-        if (match_opt(opt, "-v", "--version")) {
-            exit_info("%s\n", version);
-        }
-
         if (match_opt(opt, "-D", "--allow-override")) {
             opts->allow_override = true;
             continue;
         }
 
         // Options with an argument
-        if (*argc < 1) {
-            exit_fail("metang: missing argument for option “%s”\n", opt);
-        }
+        exit_if(*argc < 1, exit_fail, "metang: missing argument for option “%s”\n", opt);
 
         const char *arg = (*argv)[0];
         if (match_opt(opt, "-a", "--append")) {
-            if (!deque_push_b(opts->append, (void *)arg)) {
-                exit_fail("metang: could not add to append options: %s\n", strerror(errno));
-            }
+            exit_if(!deque_push_b(opts->append, (void *)arg), exit_fail, "metang: could not add to append options: %s\n", strerror(errno));
         } else if (match_opt(opt, "-p", "--prepend")) {
-            if (!deque_push_f(opts->prepend, (void *)arg)) {
-                exit_fail("metang: could not add to prepend options: %s\n", strerror(errno));
-            }
+            exit_if(!deque_push_b(opts->prepend, (void *)arg), exit_fail, "metang: could not add to prepend options: %s\n", strerror(errno));
         } else if (match_opt(opt, "-n", "--start-from")) {
             opts->start_from = strtol(arg, NULL, 10);
-            if (errno) {
-                exit_fail("metang: could not convert start-from option: %s\n", strerror(errno));
-            }
+            exit_if(errno, exit_fail, "metang: could not convert start-from option: %s\n", strerror(errno));
         } else if (match_opt(opt, "-o", "--output")) {
             opts->output_file = arg;
         }
