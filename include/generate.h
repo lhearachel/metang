@@ -20,6 +20,6 @@
 #include "deque.h"
 #include "metang.h"
 
-const char *generate(struct deque *input, struct options *opts);
+const char *generate(struct deque *input, struct options *opts, const int argc, const char **argv);
 
 #endif // METANG_GENERATE_H
