@@ -64,6 +64,8 @@ static void parse_options(int *argc, const char ***argv, struct options *opts);
 static bool read_from_stream(FILE *stream, struct deque *deque);
 static bool read_from_file(const char *fname, struct deque *deque);
 
+static void noop(void *data);
+
 #ifndef NDEBUG
 static void printf_deque_node(void *data);
 #endif // NDEBUG
@@ -113,9 +115,9 @@ int main(int argc, const char **argv)
     deque_foreach_ftob(input_lines, printf_deque_node);
 #endif
 
-    deque_free(input_lines);
-    deque_free(options.append);
-    deque_free(options.prepend);
+    deque_free(input_lines, free);
+    deque_free(options.append, noop);
+    deque_free(options.prepend, noop);
     return EXIT_SUCCESS;
 }
 
@@ -214,6 +216,11 @@ static bool match_opt(const char *opt, const char *shortopt, const char *longopt
 {
     return (shortopt != NULL && strcmp(opt, shortopt) == 0)
         || (longopt != NULL && strcmp(opt, longopt) == 0);
+}
+
+static void noop(void *data)
+{
+    (void)data;
 }
 
 #ifndef NDEBUG
