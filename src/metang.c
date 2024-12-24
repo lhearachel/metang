@@ -60,7 +60,10 @@ static int exit_fail(const char *fmt, va_list args);
 
 static bool match_opt(const char *opt, const char *shortopt, const char *longopt);
 static void parse_options(int *argc, const char ***argv, struct options *opts);
+
+#ifndef NDEBUG
 static void printf_deque_node(void *data);
+#endif // NDEBUG
 
 int main(int argc, const char **argv)
 {
@@ -170,8 +173,10 @@ static bool match_opt(const char *opt, const char *shortopt, const char *longopt
         || (longopt != NULL && strcmp(opt, longopt) == 0);
 }
 
+#ifndef NDEBUG
 static void printf_deque_node(void *data)
 {
     char *s = data;
     printf("  - “%s”\n", s);
 }
+#endif // NDEBUG
