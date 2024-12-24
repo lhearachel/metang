@@ -1,3 +1,5 @@
+<img src="img/metang.png" align="right" width="120" alt="In-game sprite of Metang from Pokémon Black and White"/>
+
 # `metang`
 
 A metaprogramming utility to generate multi-purpose C headers of enumerated
