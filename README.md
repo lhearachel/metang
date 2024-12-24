@@ -1,7 +1,7 @@
 # `metang`
 
-A meta-programming utility to generate C headers of constants from a simple
-schema file.
+A metaprogramming utility to generate multi-purpose C headers of enumerated
+constants.
 
 ## Table of Contents
 
