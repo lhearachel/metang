@@ -30,17 +30,25 @@ char *strdup(const char *s)
 
 char *basename(const char *path)
 {
-    return stem(path, '/');
+    char *s = strrchr(path, '/');
+
+    if (s == NULL) {
+        return strdup(path);
+    } else {
+        return strdup(s + 1);
+    }
 }
 
 char *stem(const char *s, const char delim)
 {
-    char *p = strrchr(s, delim);
+    char *p = strchr(s, delim);
 
     if (p == NULL) {
         return strdup(s);
     } else {
-        return strdup(p + 1);
+        char *t = calloc(p - s + 1, sizeof(char));
+        strncpy(t, s, p - s);
+        return t;
     }
 }
 
