@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "metang.h"
 
 #include <errno.h>
 #include <stdarg.h>
@@ -23,8 +24,6 @@
 #include <string.h>
 
 #include "deque.h"
-
-typedef intptr_t ssize_t;
 
 // clang-format off
 static const char *version = "0.1.0";
@@ -44,15 +43,6 @@ static const char *options = ""
     "  -v, --version                Display the program version number and exit."
     "";
 // clang-format on
-
-struct options {
-    struct deque *append;
-    struct deque *prepend;
-    ssize_t start_from;
-    bool allow_override;
-    const char *preproc_guard;
-    const char *output_file;
-};
 
 static void exit_if(bool cond, int (*exit_func)(const char *fmt, va_list args), const char *fmt, ...);
 static int exit_info(const char *fmt, va_list args);
