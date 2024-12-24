@@ -33,10 +33,10 @@ static char *write_footer(char **output, const char *incg);
 
 struct entry_user {
     char **bufp;
+    ssize_t it;
     const char *lead;
     const char *fmt;
-    ssize_t it;
-    bool is_lookup;
+    const bool is_lookup;
 };
 
 static void write_entry(void *data, void *user_v);
@@ -154,9 +154,9 @@ static char *write_enum(char **output, struct deque *input, const char *lead, co
 
     struct entry_user user = {
         .bufp = &bufp,
+        .it = opts->start_from,
         .lead = lead,
         .fmt = enum_entry_fmt,
-        .it = opts->start_from,
         .is_lookup = false,
     };
     deque_foreach_ftob(opts->prepend, write_entry, &user);
@@ -175,9 +175,9 @@ static char *write_defs(char **output, struct deque *input, const char *lead, st
 
     struct entry_user user = {
         .bufp = &bufp,
+        .it = opts->start_from,
         .lead = lead,
         .fmt = defs_entry_fmt,
-        .it = opts->start_from,
         .is_lookup = false,
     };
     deque_foreach_ftob(opts->prepend, write_entry, &user);
@@ -196,9 +196,9 @@ static char *write_lookup(char **output, struct deque *input, const char *lead, 
 
     struct entry_user user = {
         .bufp = &bufp,
+        .it = opts->start_from,
         .lead = lead,
         .fmt = lookup_entry_fmt,
-        .it = opts->start_from,
         .is_lookup = true,
     };
     deque_foreach_ftob(opts->prepend, write_entry, &user);
@@ -212,8 +212,23 @@ static char *write_lookup(char **output, struct deque *input, const char *lead, 
 
 static void write_entry(void *data, void *user_v)
 {
-    char *entry = usnake(data);
+    char *entry = strdup(data);
     struct entry_user *user = user_v;
+
+    char *p;
+    if ((p = strchr(entry, '='))) {
+        char *lvalue = strndup(entry, p - entry - 1);
+        char *rvalue = ltrim(p + 1);
+        user->it = strtol(rvalue, NULL, 10);
+
+        free(entry);
+        free(rvalue);
+
+        entry = lvalue;
+    }
+
+    char *tmp = entry;
+    entry = usnake(entry);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconditional-type-mismatch"
@@ -222,5 +237,7 @@ static void write_entry(void *data, void *user_v)
 #pragma GCC diagnostic pop
 
     user->it++;
+
     free(entry);
+    free(tmp);
 }

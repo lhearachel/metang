@@ -39,7 +39,7 @@ static const char *options = ""
     "  -p, --prepend <entry>        Prepend <entry> to the input listing.\n"
     "  -n, --start-from <number>    Start enumeration from <number>.\n"
     "  -o, --output <file>          Write output to <file>.\n"
-    "  -D, --allow-override         If specified, allow direct value-assignment.\n"
+    "  -D, --allow-overrides        If specified, allow direct value-assignment.\n"
     "  -h, --help                   Display this help text and exit.\n"
     "  -v, --version                Display the program version number and exit."
     "";
@@ -53,8 +53,8 @@ static bool match_opt(const char *opt, const char *shortopt, const char *longopt
 static void parse_options(int *argc, const char ***argv, struct options *opts);
 
 static ssize_t read_line(char **lineptr, size_t *n, FILE *stream);
-static bool read_from_stream(FILE *stream, struct deque *deque);
-static bool read_from_file(const char *fname, struct deque *deque);
+static bool read_from_stream(FILE *stream, struct deque *deque, const bool allow_overrides);
+static bool read_from_file(const char *fname, struct deque *deque, const bool allow_overrides);
 
 static void noop(void *data);
 
@@ -76,7 +76,7 @@ int main(int argc, const char **argv)
         .append = deque_new(),
         .prepend = deque_new(),
         .start_from = 0,
-        .allow_override = false,
+        .allow_overrides = false,
         .output_file = NULL,
         .input_file = NULL,
         .to_stdout = false,
@@ -99,7 +99,7 @@ int main(int argc, const char **argv)
     printf("prepend:\n");
     deque_foreach_ftob(options.prepend, printf_deque_node, NULL);
     printf("start from:     “%ld”\n", options.start_from);
-    printf("allow override? “%s”\n", options.allow_override ? "yes" : "no");
+    printf("allow override? “%s”\n", options.allow_overrides ? "yes" : "no");
     printf("output file:    “%s”\n", options.output_file);
     printf("input file:     “%s”\n", options.input_file);
 #endif
@@ -107,7 +107,9 @@ int main(int argc, const char **argv)
     struct deque *input_lines = deque_new();
     exit_if(input_lines == NULL, exit_fail, "metang: failure ahead of reading input: “%s”\n", strerror(errno));
 
-    bool input_good = options.from_stdin ? read_from_stream(stdin, input_lines) : read_from_file(*argv, input_lines);
+    bool input_good = options.from_stdin
+        ? read_from_stream(stdin, input_lines, options.allow_overrides)
+        : read_from_file(*argv, input_lines, options.allow_overrides);
     exit_if(!input_good, exit_fail, "metang: failure while reading input: “%s”\n", strerror(errno));
 
 #ifndef NDEBUG
@@ -177,8 +179,8 @@ static void parse_options(int *argc, const char ***argv, struct options *opts)
         exit_if(match_opt(opt, "-v", "--version"), exit_info, "%s\n", version);
 
         // Options with no argument
-        if (match_opt(opt, "-D", "--allow-override")) {
-            opts->allow_override = true;
+        if (match_opt(opt, "-D", "--allow-overrides")) {
+            opts->allow_overrides = true;
             continue;
         }
 
@@ -250,7 +252,7 @@ static ssize_t read_line(char **lineptr, size_t *n, FILE *stream)
     return pos;
 }
 
-static bool read_from_stream(FILE *stream, struct deque *input_lines)
+static bool read_from_stream(FILE *stream, struct deque *input_lines, const bool allow_overrides)
 {
     char *buf = NULL;
     size_t buf_size = 0;
@@ -259,20 +261,21 @@ static bool read_from_stream(FILE *stream, struct deque *input_lines)
     while ((read_size = read_line(&buf, &buf_size, stream)) != -1) {
         char *line = calloc(read_size, sizeof(char));
         strncpy(line, buf, read_size - 1); // trim the newline character
+        exit_if(strchr(line, '=') && !allow_overrides, exit_fail, "metang: input contains unpermitted override; did you forget “-D”?\n");
         deque_push_b(input_lines, line);
     }
 
     return true;
 }
 
-static bool read_from_file(const char *fpath, struct deque *input_lines)
+static bool read_from_file(const char *fpath, struct deque *input_lines, const bool allow_overrides)
 {
     FILE *f = fopen(fpath, "r");
     if (f == NULL) {
         return false;
     }
 
-    bool result = read_from_stream(f, input_lines);
+    bool result = read_from_stream(f, input_lines, allow_overrides);
 
     fclose(f);
     return result;
