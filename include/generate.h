@@ -14,26 +14,12 @@
  * limitations under the License.
  */
 
-#ifndef METANG_H
-#define METANG_H
-
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef METANG_GENERATE_H
+#define METANG_GENERATE_H
 
 #include "deque.h"
+#include "metang.h"
 
-typedef intptr_t ssize_t;
+const char *generate(struct deque *input, struct options *opts);
 
-struct options {
-    struct deque *append;
-    struct deque *prepend;
-    ssize_t start_from;
-    const char *preproc_guard;
-    const char *output_file;
-    const char *input_file;
-    bool allow_override;
-    bool to_stdout;
-    bool from_stdin;
-};
-
-#endif // METANG_H
+#endif // METANG_GENERATE_H
