@@ -23,27 +23,13 @@
 
 #include "deque.h"
 #include "metang.h"
+#include "strlib.h"
 
-static char *strdup(const char *s);
-static char *basename(const char *path);
-static char *stem(const char *s, const char delim);
-static char *snake(const char *s);
-static char *upper_snake(const char *s);
-
-// Write the "this file is generated" warning and the top-level include guard
 static char *write_header(char **output, const char *incg, struct options *opts);
-
-// Write the closer of the top-level include guard
-static char *write_footer(char **output, const char *incg);
-
-// Write the enum content section
 static char *write_enum(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts);
-
-// Write the defs content section
 static char *write_defs(char **output, struct deque *input, const char *lead, struct options *opts);
-
-// Write the lookup content section
 static char *write_lookup(char **output, struct deque *input, const char *lead, const char *enum_t);
+static char *write_footer(char **output, const char *incg);
 
 static void write_enum_entry(void *data, void *user_v);
 static void write_defs_entry(void *data, void *user_v);
@@ -63,9 +49,9 @@ const char *generate(struct deque *input, struct options *opts)
     // Start with a giant buffer, just to avoid costly reallocations
     char *output = calloc(65536, sizeof(char));
     char *base = basename(opts->output_file);
-    char *incg = upper_snake(base);
+    char *incg = usnake(base);
     char *lead = stem(incg, '_');
-    char *enum_t = snake(opts->input_file);
+    char *enum_t = lsnake(opts->input_file);
     char *bufp = output;
 
     bufp = write_header(&bufp, incg, opts);
@@ -103,7 +89,7 @@ static char *write_enum(char **output, struct deque *input, const char *lead, co
     char *bufp = *output;
     bufp += sprintf(bufp, enum_header_fmt, enum_t);
 
-    char *first = upper_snake(deque_peek_f(input));
+    char *first = usnake(deque_peek_f(input));
     bufp += sprintf(bufp, "    %s_%s = %zd,\n", lead, first, opts->start_from);
 
     struct enum_entry_user user = {
@@ -120,7 +106,7 @@ static char *write_enum(char **output, struct deque *input, const char *lead, co
 
 static void write_enum_entry(void *data, void *user_v)
 {
-    char *entry = upper_snake(data);
+    char *entry = usnake(data);
     struct enum_entry_user *user = user_v;
     (*user->bufp) += sprintf(*user->bufp, "    %s_%s,\n", user->lead, entry);
     free(entry);
@@ -151,7 +137,7 @@ static char *write_defs(char **output, struct deque *input, const char *lead, st
 
 static void write_defs_entry(void *data, void *user_v)
 {
-    char *entry = upper_snake(data);
+    char *entry = usnake(data);
     struct defs_entry_user *user = user_v;
     (*user->bufp) += sprintf(*user->bufp, "#define %s_%s %zd\n", user->lead, entry, user->it++);
     free(entry);
@@ -175,64 +161,10 @@ static char *write_lookup(char **output, struct deque *input, const char *lead, 
 
 static void write_lookup_entry(void *data, void *user_v)
 {
-    char *entry = upper_snake(data);
+    char *entry = usnake(data);
     struct enum_entry_user *user = user_v;
     (*user->bufp) += sprintf(*user->bufp, "    { \"%s\", %s_%s },\n", entry, user->lead, entry);
     free(entry);
-}
-
-static char *strdup(const char *s)
-{
-    size_t len = strlen(s);
-    char *dup = calloc(len + 1, sizeof(char));
-    strcpy(dup, s);
-    return dup;
-}
-
-static char *basename(const char *path)
-{
-    return stem(path, '/');
-}
-
-static char *stem(const char *s, const char delim)
-{
-    char *p = strrchr(s, delim);
-
-    if (p == NULL) {
-        return strdup(s);
-    } else {
-        return strdup(p + 1);
-    }
-}
-
-static char *snake(const char *s)
-{
-    char c;
-    char *new = strdup(s);
-    for (size_t i = 0; (c = new[i]) != '\0'; i++) {
-        if (isupper(c)) {
-            new[i] = tolower(c);
-        } else if (ispunct(c)) {
-            new[i] = '_';
-        }
-    }
-
-    return new;
-}
-
-static char *upper_snake(const char *s)
-{
-    char c;
-    char *new = strdup(s);
-    for (size_t i = 0; (c = new[i]) != '\0'; i++) {
-        if (islower(c)) {
-            new[i] = toupper(c);
-        } else if (ispunct(c)) {
-            new[i] = '_';
-        }
-    }
-
-    return new;
 }
 
 // clang-format off
