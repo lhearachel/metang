@@ -30,7 +30,7 @@
 // clang-format off
 static const char *version = "0.1.0";
 
-static const char *tag_line = "metang - meta-program for C constants generation";
+static const char *tag_line = "metang - Generate multi-purpose C headers for enumerators";
 
 static const char *short_usage = "Usage: metang [options] [<input_file>]";
 
