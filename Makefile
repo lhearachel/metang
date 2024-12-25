@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 TARGET = $(shell basename $(CURDIR))
-DESTDIR = /usr/local/bin
+DESTDIR ?= /usr/local/bin
 
-CFLAGS += -MMD -Wall -Wextra -Wpedantic -std=c99 -O2
+CFLAGS += -MMD -Wall -Wextra -Wpedantic -std=c99
 CFLAGS += -Iinclude
 
 INC = $(wildcard include/*.h)
@@ -31,7 +31,7 @@ all: $(TARGET)
 debug: CFLAGS += -g -O0
 debug: clean all
 
-release: CFLAGS += -DNDEBUG
+release: CFLAGS += -DNDEBUG -O3
 release: clean all
 
 install: release
