@@ -17,6 +17,13 @@ repos:
       - id: clang-format
         args:
           - --style=file
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args:
+          - --fix
+      - id: ruff-format
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.0.0
     hooks:
