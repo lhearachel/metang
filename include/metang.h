@@ -36,4 +36,10 @@ struct options {
     bool from_stdin;
 };
 
+struct enumerator {
+    const char *lvalue;
+    long rvalue;
+    bool direct;
+};
+
 #endif // METANG_H

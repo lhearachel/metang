@@ -18,7 +18,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "deque.h"
 #include "metang.h"
@@ -222,35 +221,20 @@ static char *write_lookup(char **output, struct deque *input, const char *lead, 
 
 static void write_member_entry(void *data, void *user_v)
 {
-    char *entry = strdup(data);
+    struct enumerator *entry = data;
     struct entry_user *user = user_v;
 
-    char *p;
-    if ((p = strchr(entry, '='))) {
-        char *lvalue = strndup(entry, p - entry - 1);
-        char *rvalue = ltrim(p + 1);
-        user->it = strtol(rvalue, NULL, 10);
-
-        free(entry);
-        free(rvalue);
-
-        entry = lvalue;
+    if (entry->direct) {
+        user->it = entry->rvalue;
     }
 
-    char *tmp = entry;
-    entry = usnake(entry);
-
-    (*user->bufp) += sprintf(*user->bufp, user->fmt, user->lead, entry, user->it);
+    (*user->bufp) += sprintf(*user->bufp, user->fmt, user->lead, entry->lvalue, user->it);
     user->it++;
-
-    free(entry);
-    free(tmp);
 }
 
 static void write_lookup_entry(void *data, void *user_v)
 {
-    char *entry = usnake(data);
+    struct enumerator *entry = data;
     struct entry_user *user = user_v;
-    (*user->bufp) += sprintf(*user->bufp, user->fmt, user->lead, entry, entry);
-    free(entry);
+    (*user->bufp) += sprintf(*user->bufp, user->fmt, user->lead, entry->lvalue, entry->lvalue);
 }
