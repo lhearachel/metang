@@ -28,9 +28,9 @@ static char *make_include_guard(const char *base, const struct options *opts);
 static char *make_leader(const char *base, const struct options *opts);
 
 static char *write_header(char **output, const char *incg, struct options *opts, const int argc, const char **argv);
-static char *write_enum(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts);
+static char *write_enum(char **output, struct deque *input, const char *lead, const char *tag, struct options *opts);
 static char *write_defs(char **output, struct deque *input, const char *lead, struct options *opts);
-static char *write_lookup(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts);
+static char *write_lookup(char **output, struct deque *input, const char *lead, const char *tag, struct options *opts);
 static char *write_footer(char **output, const char *incg);
 
 struct entry_user {
@@ -140,19 +140,22 @@ const char *generate(struct deque *input, struct options *opts, const int argc, 
     char *base = basename(opts->output_file);
     char *incg = make_include_guard(base, opts);
     char *lead = make_leader(base, opts);
-    char *enum_t = opts->tag_case == TAG_SNAKE_CASE ? lsnake(opts->input_file) : pascal(opts->input_file);
+
+    const char *btag = opts->tag ? opts->tag : opts->input_file;
+    char *tag = opts->tag_case == TAG_SNAKE_CASE ? lsnake(btag) : pascal(btag);
+
     char *bufp = output;
 
     bufp = write_header(&bufp, incg, opts, argc, argv);
-    bufp = write_enum(&bufp, input, lead, enum_t, opts);
+    bufp = write_enum(&bufp, input, lead, tag, opts);
     bufp = write_defs(&bufp, input, lead, opts);
-    bufp = write_lookup(&bufp, input, lead, enum_t, opts);
+    bufp = write_lookup(&bufp, input, lead, tag, opts);
     bufp = write_footer(&bufp, incg);
 
     free(incg);
     free(lead);
     free(base);
-    free(enum_t);
+    free(tag);
     return output;
 }
 
@@ -210,10 +213,10 @@ static char *write_footer(char **output, const char *incg)
     return bufp;
 }
 
-static char *write_enum(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts)
+static char *write_enum(char **output, struct deque *input, const char *lead, const char *tag, struct options *opts)
 {
     char *bufp = *output;
-    bufp += sprintf(bufp, enum_header_fmt, opts->preproc_guard, opts->preproc_guard, enum_t);
+    bufp += sprintf(bufp, enum_header_fmt, opts->preproc_guard, opts->preproc_guard, tag);
 
     struct entry_user user = {
         .bufp = &bufp,
@@ -264,16 +267,16 @@ static char *write_defs(char **output, struct deque *input, const char *lead, st
     return bufp;
 }
 
-static char *write_lookup(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts)
+static char *write_lookup(char **output, struct deque *input, const char *lead, const char *tag, struct options *opts)
 {
     char *bufp = *output;
-    bufp += sprintf(bufp, lookup_header_fmt, opts->preproc_guard, enum_t);
+    bufp += sprintf(bufp, lookup_header_fmt, opts->preproc_guard, tag);
     if (opts->tag_case == TAG_SNAKE_CASE) {
-        bufp += sprintf(bufp, lookup_struct_snake_fmt, enum_t);
-        bufp += sprintf(bufp, lookup_table_snake_fmt, enum_t, enum_t);
+        bufp += sprintf(bufp, lookup_struct_snake_fmt, tag);
+        bufp += sprintf(bufp, lookup_table_snake_fmt, tag, tag);
     } else {
-        bufp += sprintf(bufp, lookup_struct_pascal_fmt, enum_t);
-        bufp += sprintf(bufp, lookup_table_pascal_fmt, enum_t, enum_t);
+        bufp += sprintf(bufp, lookup_struct_pascal_fmt, tag);
+        bufp += sprintf(bufp, lookup_table_pascal_fmt, tag, tag);
     }
 
     struct entry_user user = {

@@ -43,6 +43,8 @@ static const char *options = ""
     "  -n, --start-from <number>    Start enumeration from <number>.\n"
     "  -o, --output <file>          Write output to <file>.\n"
     "  -l, --leader <leader>        Use <leader> as a prefix for generated symbols.\n"
+    "  -t, --tag-name <name>        Use <name> as the base tag for enums and lookup\n"
+    "                               tables.\n"
     "  -c, --tag-case <case>        Customize the casing of generated tags for enums\n"
     "                               and lookup tables. Options: snake, pascal\n"
     "  -G, --preproc-guard <guard>  Use <guard> as a prefix for conditional\n"
@@ -94,6 +96,7 @@ int main(int argc, const char **argv)
         .preproc_guard = "METANG",
         .output_file = NULL,
         .input_file = NULL,
+        .tag = NULL,
         .tag_case = TAG_SNAKE_CASE,
         .bitmask = false,
         .allow_overrides = false,
@@ -118,6 +121,8 @@ int main(int argc, const char **argv)
     deque_foreach_ftob(options.prepend, printf_deque_node, NULL);
     printf("start from:     “%ld”\n", options.start_from);
     printf("leader:         “%s”\n", options.leader ? options.leader : "default");
+    printf("tag:            “%s”\n", options.tag ? options.tag : "default");
+    printf("tag case:       “%s”\n", options.tag_case == TAG_SNAKE_CASE ? "snake" : "pascal");
     printf("preproc guard:  “%s”\n", options.preproc_guard);
     printf("allow override? “%s”\n", options.allow_overrides ? "yes" : "no");
     printf("output file:    “%s”\n", options.output_file);
@@ -247,6 +252,8 @@ static void parse_options(int *argc, const char ***argv, struct options *opts)
             } else {
                 exit_if(true, exit_fail, "metang: unrecognized argument “%s” for option “%s”\n", arg, opt);
             }
+        } else if (match_opt(opt, "-t", "--tag-name")) {
+            opts->tag = arg;
         } else if (match_opt(opt, "-G", "--preproc-guard")) {
             opts->preproc_guard = arg;
         }
