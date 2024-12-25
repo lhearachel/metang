@@ -125,7 +125,7 @@ def run_test(name: str, fix_output: bool = False) -> str | None:
 
 argv = sys.argv[1:]
 rewrite = False
-if argv[0] == "--rewrite":
+if len(argv) > 0 and argv[0] == "--rewrite":
     rewrite = True
     argv = argv[1:]
 
