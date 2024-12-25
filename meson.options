@@ -1,0 +1,2 @@
+option('native', type: 'boolean', value: false)
+option('install_dir', type: 'string', value: '/usr/local/bin')
