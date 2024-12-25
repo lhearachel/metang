@@ -16,8 +16,8 @@ Blastoise
  * Program options:
  *   --preproc-guard GUARD
  */
-#ifndef STDOUT
-#define STDOUT
+#ifndef GUARD_STDOUT
+#define GUARD_STDOUT
 
 #ifdef GUARD_ENUM
 
@@ -72,4 +72,4 @@ const struct stdin_entry stdin_lookup[] = {
 
 #endif // GUARD_LOOKUP
 
-#endif // STDOUT
+#endif // GUARD_STDOUT

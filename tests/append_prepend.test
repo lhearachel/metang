@@ -22,8 +22,8 @@ Blastoise
  *   --prepend PREPENDED_PLUS_1
  *   --prepend PREPENDED_PLUS_2
  */
-#ifndef STDOUT
-#define STDOUT
+#ifndef METANG_STDOUT
+#define METANG_STDOUT
 
 #ifdef METANG_ENUM
 
@@ -96,4 +96,4 @@ const struct stdin_entry stdin_lookup[] = {
 
 #endif // METANG_LOOKUP
 
-#endif // STDOUT
+#endif // METANG_STDOUT
