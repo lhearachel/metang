@@ -18,10 +18,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "deque.h"
 #include "metang.h"
 #include "strlib.h"
+
+static char *make_include_guard(const char *base, const struct options *opts);
+static char *make_leader(const char *base);
 
 static char *write_header(char **output, const char *incg, struct options *opts, const int argc, const char **argv);
 static char *write_enum(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts);
@@ -111,8 +115,8 @@ const char *generate(struct deque *input, struct options *opts, const int argc, 
     // Start with a giant buffer, just to avoid costly reallocations
     char *output = calloc(65536, sizeof(char));
     char *base = basename(opts->output_file);
-    char *incg = usnake(base);
-    char *lead = stem(incg, '_');
+    char *incg = make_include_guard(base, opts);
+    char *lead = make_leader(base);
     char *enum_t = lsnake(opts->input_file);
     char *bufp = output;
 
@@ -127,6 +131,27 @@ const char *generate(struct deque *input, struct options *opts, const int argc, 
     free(base);
     free(enum_t);
     return output;
+}
+
+static char *make_include_guard(const char *base, const struct options *opts)
+{
+    char *tmp = calloc(strlen(opts->preproc_guard) + strlen(base) + 2, sizeof(char));
+    char *tmpp = stpcpy(tmp, opts->preproc_guard);
+    *tmpp = '_';
+    strcpy(tmpp + 1, base);
+    char *result = usnake(tmp);
+
+    free(tmp);
+    return result;
+}
+
+static char *make_leader(const char *base)
+{
+    char *tmp = usnake(base);
+    char *result = stem(tmp, '_');
+
+    free(tmp);
+    return result;
 }
 
 static char *write_header(char **output, const char *incg, struct options *opts, const int argc, const char **argv)

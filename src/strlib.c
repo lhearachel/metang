@@ -35,6 +35,18 @@ char *strndup(const char *s, const size_t n)
     return dup;
 }
 
+char *stpcpy(char *dst, const char *src)
+{
+    char *p = dst;
+    while (*src) {
+        *p = *src;
+        p++;
+        src++;
+    }
+
+    return p;
+}
+
 char *basename(const char *path)
 {
     char *s = strrchr(path, '/');
