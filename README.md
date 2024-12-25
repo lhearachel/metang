@@ -57,6 +57,23 @@ Once installed, verify that you can run the executable:
 0.1.0
 ```
 
+### Integrate with a Meson Project
+
+`metang` also ships with a `meson.build` file to support integration as a Meson
+subproject. To add `metang`'s tooling support to your project, create the
+following `metang.wrap` file in your `subprojects` directory:
+
+```ini
+[wrap-git]
+url = https://github.com/lhearachel/metang.git
+; Replace <main> here with a release tag or commit hash, if desired.
+revision = main
+depth = 1
+
+[provide]
+program_names = metang
+```
+
 ## Usage
 
 For a summary of available options, `metang`'s built-in help-text should be
@@ -73,8 +90,14 @@ Options:
   -p, --prepend <entry>        Prepend <entry> to the input listing.
   -n, --start-from <number>    Start enumeration from <number>.
   -o, --output <file>          Write output to <file>.
+  -l, --leader <leader>        Use <leader> as a prefix for generated symbols.
+  -c, --tag-case <case>        Customize the casing of generated tags for enums
+                               and lookup tables. Options: snake, pascal
   -G, --preproc-guard <guard>  Use <guard> as a prefix for conditional
                                preprocessor directives.
+  -B, --bitmask                If specified, generate symbols for a bitmask.
+                               This option is incompatible with the “-D” and
+                               “-n” options.
   -D, --allow-overrides        If specified, allow direct value-assignment.
   -h, --help                   Display this help text and exit.
   -v, --version                Display the program version number and exit.
