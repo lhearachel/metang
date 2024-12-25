@@ -4,6 +4,7 @@
 *.exe
 *.out
 metang
+build/*
 
 # LSP / IDE artifacts
 .cache/*
