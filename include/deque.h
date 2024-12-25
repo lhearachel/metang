@@ -38,4 +38,7 @@ void deque_foreach_btof(struct deque *deque, void (*func)(void *data, void *user
 void deque_foreach_itob(struct deque *deque, size_t i, void (*func)(void *data, void *user), void *user);
 void deque_foreach_itof(struct deque *deque, size_t i, void (*func)(void *data, void *user), void *user);
 
+void deque_extend_b(struct deque *dst, struct deque *src);
+void deque_extend_f(struct deque *dst, struct deque *src);
+
 #endif // METANG_STRDEQUE_H

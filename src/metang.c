@@ -65,8 +65,6 @@ static bool read_from_file(const char *fname, struct deque *deque, const bool al
 static struct enumerator *enumerator_new(const char *lvalue, long rvalue, bool direct);
 static void enumerator_free(void *data);
 
-static void noop(void *data);
-
 #ifndef NDEBUG
 static void printf_deque_node(void *data, void *user);
 static void printf_deque_enum_node(void *data, void *user);
@@ -133,11 +131,15 @@ int main(int argc, const char **argv)
     deque_foreach_ftob(input_lines, printf_deque_enum_node, NULL);
 #endif
 
+    struct deque *all_input = input_lines;
+    deque_extend_f(all_input, options.prepend);
+    deque_extend_b(all_input, options.append);
+
 #ifndef NDEBUG
     printf("\n--- METANG OUTPUT ---\n");
 #endif
 
-    const char *output = generate(input_lines, &options, orig_argc, orig_argv);
+    const char *output = generate(all_input, &options, orig_argc, orig_argv);
     FILE *fout = stdout;
     if (!options.to_stdout) {
         fout = fopen(options.output_file, "w");
@@ -151,9 +153,11 @@ int main(int argc, const char **argv)
     }
 
     free((char *)output);
-    deque_free(input_lines, enumerator_free);
-    deque_free(options.append, noop);
-    deque_free(options.prepend, noop);
+
+    deque_free(all_input, enumerator_free);
+    free(options.prepend);
+    free(options.append);
+
     return EXIT_SUCCESS;
 }
 
@@ -354,11 +358,6 @@ static bool match_opt(const char *opt, const char *shortopt, const char *longopt
 {
     return (shortopt != NULL && strcmp(opt, shortopt) == 0)
         || (longopt != NULL && strcmp(opt, longopt) == 0);
-}
-
-static void noop(void *data)
-{
-    (void)data;
 }
 
 #ifndef NDEBUG

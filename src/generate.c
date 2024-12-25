@@ -198,9 +198,7 @@ static char *write_enum(char **output, struct deque *input, const char *lead, co
         .lead = lead,
         .fmt = enum_entry_fmt,
     };
-    deque_foreach_ftob(opts->prepend, write_member_entry, &user);
     deque_foreach_ftob(input, write_member_entry, &user);
-    deque_foreach_ftob(opts->append, write_member_entry, &user);
 
     bufp += sprintf(bufp, enum_footer_fmt, opts->preproc_guard);
 
@@ -218,9 +216,7 @@ static char *write_defs(char **output, struct deque *input, const char *lead, st
         .lead = lead,
         .fmt = defs_entry_fmt,
     };
-    deque_foreach_ftob(opts->prepend, write_member_entry, &user);
     deque_foreach_ftob(input, write_member_entry, &user);
-    deque_foreach_ftob(opts->append, write_member_entry, &user);
 
     bufp += sprintf(bufp, defs_footer_fmt, opts->preproc_guard, opts->preproc_guard);
 
@@ -239,9 +235,7 @@ static char *write_lookup(char **output, struct deque *input, const char *lead, 
     };
 
     // TODO: Unify these into one deque and sort the entries
-    deque_foreach_ftob(opts->prepend, write_lookup_entry, &user);
     deque_foreach_ftob(input, write_lookup_entry, &user);
-    deque_foreach_ftob(opts->append, write_lookup_entry, &user);
 
     bufp += sprintf(bufp, lookup_footer_fmt, opts->preproc_guard);
 
