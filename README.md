@@ -12,6 +12,7 @@ constants.
   - [Etymology](#etymology)
 - [Install](#install)
   - [Build from Source](#build-from-source)
+  - [Integrate with a Meson Project](#integrate-with-a-meson-project)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
@@ -20,11 +21,11 @@ constants.
 ## Background
 
 C's support for enumerated constants is less than stellar. Member values of
-`enum` don't contain any identifying information at runtime, which makes them
-employing them as waymarks awkward when parsing string-based data. An easy way
-to ameliorate this is by ingesting some simple input schema containing
-enumeration members and generating a header file which exposes both the
-enumeration and a lookup table mapping string values to members.
+`enum` don't contain any identifying information at runtime, which makes
+employing them as waymarks awkward when parsing textual data. An easy way to
+ameliorate this is by ingesting some simple input schema containing enumeration
+members and generating a header file which exposes both the enumeration and a
+lookup table mapping string values to members.
 
 `metang` is a simple implementation of such a program. Its feature-set is basic,
 yet allows a user to customize the content of their generated header as they see
