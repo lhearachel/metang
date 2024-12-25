@@ -20,6 +20,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Included for LSP convenience. Turn this flag ON to optimize structures
+// into a format that allows generalizing push, pop, and iteration.
+// #define DEQUE_NDEBUG
+
 enum deque_iter_dir {
     ITER_DIR_TO_HEAD = 0,
     ITER_DIR_TO_TAIL,
@@ -28,18 +32,32 @@ enum deque_iter_dir {
 
 struct deque_node {
     void *data;
+
+#ifdef DEQUE_NDEBUG
     struct deque_node *neighbors[ITER_DIR_MAX];
+#else
+    struct deque_node *prev;
+    struct deque_node *next;
+#endif
 };
 
 struct deque {
-    struct deque_node *ptrs[ITER_DIR_MAX];
     size_t size;
+
+#ifdef DEQUE_NDEBUG
+    struct deque_node *ptrs[ITER_DIR_MAX];
+#else
+    struct deque_node *head;
+    struct deque_node *tail;
+#endif
 };
 
+#ifdef DEQUE_NDEBUG
 #define prev neighbors[ITER_DIR_TO_HEAD]
 #define next neighbors[ITER_DIR_TO_TAIL]
 #define head ptrs[ITER_DIR_TO_HEAD]
 #define tail ptrs[ITER_DIR_TO_TAIL]
+#endif // DEQUE_NDEBUG
 
 struct deque *deque_new(void)
 {
@@ -65,6 +83,7 @@ void deque_free(struct deque *deque, void (*data_free_func)(void *data))
     free(deque);
 }
 
+#ifdef DEQUE_NDEBUG
 static struct deque_node *deque_push(struct deque *deque, void *data, enum deque_iter_dir dir)
 {
     struct deque_node *node = calloc(1, sizeof(struct deque_node));
@@ -88,17 +107,65 @@ static struct deque_node *deque_push(struct deque *deque, void *data, enum deque
     deque->size++;
     return node;
 }
+#endif // DEQUE_NDEBUG
 
 struct deque_node *deque_push_b(struct deque *deque, void *data)
 {
+#ifdef DEQUE_NDEBUG
     return deque_push(deque, data, ITER_DIR_TO_TAIL);
+#else
+    struct deque_node *node = calloc(1, sizeof(struct deque_node));
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data = data;
+
+    // deque is empty -> node is both head and tail
+    if (deque->size == 0) {
+        deque->head = node;
+        deque->tail = node;
+        deque->size = 1;
+        return node;
+    }
+
+    node->prev = deque->tail; // set new node's prev/next to tail/head, respectively
+    deque->tail->next = node; // set the neighbor of the head/tail to the new node
+    deque->tail = node;       // set the head/tail of the deque to the new node
+    deque->size++;
+    return node;
+#endif // DEQUE_NDEBUG
 }
 
 struct deque_node *deque_push_f(struct deque *deque, void *data)
 {
+#ifdef DEQUE_NDEBUG
     return deque_push(deque, data, ITER_DIR_TO_HEAD);
+#else
+    struct deque_node *node = calloc(1, sizeof(struct deque_node));
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data = data;
+
+    // deque is empty -> node is both head and tail
+    if (deque->size == 0) {
+        deque->head = node;
+        deque->tail = node;
+        deque->size = 1;
+        return node;
+    }
+
+    node->next = deque->head; // set new node's prev/next to tail/head, respectively
+    deque->head->prev = node; // set the neighbor of the head/tail to the new node
+    deque->head = node;       // set the head/tail of the deque to the new node
+    deque->size++;
+    return node;
+#endif // DEQUE_NDEBUG
 }
 
+#ifdef DEQUE_NDEBUG
 static struct deque_node *deque_pop(struct deque *deque, enum deque_iter_dir dir)
 {
     if (deque->size == 0) {
@@ -110,15 +177,38 @@ static struct deque_node *deque_pop(struct deque *deque, enum deque_iter_dir dir
     pop->neighbors[!dir] = NULL;               // zero out the popped node's next/prev
     return pop;
 }
+#endif // DEQUE_NDEBUG
 
 struct deque_node *deque_pop_b(struct deque *deque)
 {
+#ifdef DEQUE_NDEBUG
     return deque_pop(deque, ITER_DIR_TO_TAIL);
+#else
+    if (deque->size == 0) {
+        return NULL;
+    }
+
+    struct deque_node *pop = deque->tail; // grab the head/tail
+    deque->tail = pop->prev;              // set the head/tail to popped node's next/prev, respectively
+    pop->prev = NULL;                     // zero out the popped node's next/prev
+    return pop;
+#endif // DEQUE_NDEBUG
 }
 
 struct deque_node *deque_pop_f(struct deque *deque)
 {
+#ifdef DEQUE_NDEBUG
     return deque_pop(deque, ITER_DIR_TO_HEAD);
+#else
+    if (deque->size == 0) {
+        return NULL;
+    }
+
+    struct deque_node *pop = deque->head; // grab the head/tail
+    deque->head = pop->next;              // set the head/tail to popped node's next/prev, respectively
+    pop->next = NULL;                     // zero out the popped node's next/prev
+    return pop;
+#endif // DEQUE_NDEBUG
 }
 
 void *deque_peek_b(struct deque *deque)
@@ -131,6 +221,7 @@ void *deque_peek_f(struct deque *deque)
     return deque->head->data;
 }
 
+#ifdef DEQUE_NDEBUG
 void deque_foreach(struct deque *deque, void (*func)(void *data, void *user), void *user, enum deque_iter_dir dir)
 {
     if (deque->size == 0) {
@@ -143,15 +234,40 @@ void deque_foreach(struct deque *deque, void (*func)(void *data, void *user), vo
         cursor = cursor->neighbors[dir];
     } while (cursor != NULL);
 }
+#endif // DEQUE_NDEBUG
 
 void deque_foreach_ftob(struct deque *deque, void (*func)(void *data, void *user), void *user)
 {
+#ifdef DEQUE_NDEBUG
     deque_foreach(deque, func, user, ITER_DIR_TO_TAIL);
+#else
+    if (deque->size == 0) {
+        return;
+    }
+
+    struct deque_node *cursor = deque->head;
+    do {
+        func(cursor->data, user);
+        cursor = cursor->next;
+    } while (cursor != NULL);
+#endif // DEQUE_NDEBUG
 }
 
 void deque_foreach_btof(struct deque *deque, void (*func)(void *data, void *user), void *user)
 {
+#ifdef DEQUE_NDEBUG
     deque_foreach(deque, func, user, ITER_DIR_TO_HEAD);
+#else
+    if (deque->size == 0) {
+        return;
+    }
+
+    struct deque_node *cursor = deque->tail;
+    do {
+        func(cursor->data, user);
+        cursor = cursor->prev;
+    } while (cursor != NULL);
+#endif // DEQUE_NDEBUG
 }
 
 void deque_foreach_itob(struct deque *deque, size_t i, void (*func)(void *data, void *user), void *user)

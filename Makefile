@@ -32,6 +32,7 @@ debug: CFLAGS += -g -O0
 debug: clean all
 
 release: CFLAGS += -DNDEBUG -O3
+release: CFLAGS += -DDEQUE_NDEBUG
 release: clean all
 
 install: release
