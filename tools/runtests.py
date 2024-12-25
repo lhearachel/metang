@@ -50,7 +50,7 @@ ANSI_Y = "\x1b[33m"
 ANSI_C = "\x1b[0m"
 
 
-def run_test(name: str) -> str | None:
+def run_test(name: str, fix_output: bool = False) -> str | None:
     """
     Load and run a single test.
     """
@@ -89,6 +89,21 @@ def run_test(name: str) -> str | None:
         STRIP_ANSI.sub("", line)
         for line in result.stdout.splitlines() + result.stderr.splitlines()
     ]
+
+    if fix_output:
+        new_output = "".join(
+            [
+                *test_args,
+                "# input\n",
+                *test_stdin,
+                "# output\n",
+                "\n".join(output_lines),
+            ]
+        )
+        with open(target, "w", encoding="utf-8") as f:
+            f.write(new_output)
+        return None
+
     report = []
     diff = difflib.unified_diff(
         a=output_lines,
@@ -108,14 +123,20 @@ def run_test(name: str) -> str | None:
     return "\n".join(report) if report else None
 
 
-if len(sys.argv) > 1:
-    tests = sys.argv[1:]
+argv = sys.argv[1:]
+rewrite = False
+if argv[0] == "--rewrite":
+    rewrite = True
+    argv = argv[1:]
+
+if len(argv) > 1:
+    tests = argv[1:]
 else:
     tests = list(map(lambda p: p.stem, TESTS_DIR.glob("*.test")))
 
 exit_code = 0
 for test in tests:
-    if result := run_test(test):
+    if result := run_test(test, rewrite):
         print(f"{test}:\n{result}")
         exit_code = 1
     else:
