@@ -15,6 +15,7 @@
  */
 #include "metang.h"
 
+#include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -60,10 +61,14 @@ static ssize_t read_line(char **lineptr, size_t *n, FILE *stream);
 static bool read_from_stream(FILE *stream, struct deque *deque, const bool allow_overrides);
 static bool read_from_file(const char *fname, struct deque *deque, const bool allow_overrides);
 
+static struct enumerator *enumerator_new(const char *lvalue, long rvalue, bool direct);
+static void enumerator_free(void *data);
+
 static void noop(void *data);
 
 #ifndef NDEBUG
 static void printf_deque_node(void *data, void *user);
+static void printf_deque_enum_node(void *data, void *user);
 #endif // NDEBUG
 
 int main(int argc, const char **argv)
@@ -122,7 +127,7 @@ int main(int argc, const char **argv)
 #ifndef NDEBUG
     printf("\n--- METANG INPUT ---\n");
     printf("lines:\n");
-    deque_foreach_ftob(input_lines, printf_deque_node, NULL);
+    deque_foreach_ftob(input_lines, printf_deque_enum_node, NULL);
 #endif
 
 #ifndef NDEBUG
@@ -143,7 +148,7 @@ int main(int argc, const char **argv)
     }
 
     free((char *)output);
-    deque_free(input_lines, free);
+    deque_free(input_lines, enumerator_free);
     deque_free(options.append, noop);
     deque_free(options.prepend, noop);
     return EXIT_SUCCESS;
@@ -203,9 +208,11 @@ static void parse_options(int *argc, const char ***argv, struct options *opts)
 
         const char *arg = (*argv)[0];
         if (match_opt(opt, "-a", "--append")) {
-            exit_if(!deque_push_b(opts->append, (void *)arg), exit_fail, "metang: could not add to append options: %s\n", strerror(errno));
+            struct enumerator *app = enumerator_new(usnake(arg), 0, false);
+            exit_if(!deque_push_b(opts->append, app), exit_fail, "metang: could not add to append options: %s\n", strerror(errno));
         } else if (match_opt(opt, "-p", "--prepend")) {
-            exit_if(!deque_push_b(opts->prepend, (void *)arg), exit_fail, "metang: could not add to prepend options: %s\n", strerror(errno));
+            struct enumerator *pre = enumerator_new(usnake(arg), 0, false);
+            exit_if(!deque_push_b(opts->prepend, pre), exit_fail, "metang: could not add to prepend options: %s\n", strerror(errno));
         } else if (match_opt(opt, "-n", "--start-from")) {
             opts->start_from = strtol(arg, NULL, 10);
             exit_if(errno, exit_fail, "metang: could not convert start-from option: %s\n", strerror(errno));
@@ -278,8 +285,26 @@ static bool read_from_stream(FILE *stream, struct deque *input_lines, const bool
         char *line = calloc(read_size, sizeof(char));
         strncpy(line, buf, read_size - 1); // trim the newline character
 
-        exit_if(strchr(line, '=') && !allow_overrides, exit_fail, "metang: input contains unpermitted override; did you forget “-D”?\n");
-        deque_push_b(input_lines, line);
+        struct enumerator *mem;
+        if (!allow_overrides) {
+            exit_if(strchr(line, '='), exit_fail, "metang: input contains unpermitted override; did you forget “-D”?\n");
+            mem = enumerator_new(usnake(line), 0, false);
+        } else if (strchr(line, '=')) {
+            char *token = strtok(line, "=");
+            char *token_b = token + strlen(token) - 1;
+            if (isspace(*token_b)) {
+                *token_b = '\0';
+            }
+
+            char *rvalue = token_b + 2;
+            mem = enumerator_new(usnake(token), strtol(rvalue, NULL, 10), true);
+        } else {
+            mem = enumerator_new(usnake(line), 0, false);
+        }
+
+        free(line);
+        exit_if(mem == NULL, exit_fail, "metang: memory allocation failure while reading input: “%s”\n", strerror(errno));
+        deque_push_b(input_lines, mem);
     }
 
     free(buf);
@@ -299,6 +324,27 @@ static bool read_from_file(const char *fpath, struct deque *input_lines, const b
     return result;
 }
 
+static struct enumerator *enumerator_new(const char *lvalue, long rvalue, bool direct)
+{
+    struct enumerator *mem = calloc(1, sizeof(struct enumerator));
+    if (mem == NULL) {
+        return NULL;
+    }
+
+    mem->lvalue = lvalue;
+    mem->rvalue = rvalue;
+    mem->direct = direct;
+
+    return mem;
+}
+
+static void enumerator_free(void *data)
+{
+    struct enumerator *mem = data;
+    free((char *)mem->lvalue);
+    free(mem);
+}
+
 static bool match_opt(const char *opt, const char *shortopt, const char *longopt)
 {
     return (shortopt != NULL && strcmp(opt, shortopt) == 0)
@@ -316,5 +362,16 @@ static void printf_deque_node(void *data, void *user)
     (void)user;
     char *s = data;
     printf("  - “%s”\n", s);
+}
+
+static void printf_deque_enum_node(void *data, void *user)
+{
+    (void)user;
+    struct enumerator *mem = data;
+    if (mem->direct) {
+        printf("  - “%s” = %ld\n", mem->lvalue, mem->rvalue);
+    } else {
+        printf("  - “%s”\n", mem->lvalue);
+    }
 }
 #endif // NDEBUG
