@@ -278,11 +278,8 @@ static bool read_from_stream(FILE *stream, struct deque *input_lines, const bool
         char *line = calloc(read_size, sizeof(char));
         strncpy(line, buf, read_size - 1); // trim the newline character
 
-        char *line_trim = trim(line);
-        free(line);
-
-        exit_if(strchr(line_trim, '=') && !allow_overrides, exit_fail, "metang: input contains unpermitted override; did you forget “-D”?\n");
-        deque_push_b(input_lines, line_trim);
+        exit_if(strchr(line, '=') && !allow_overrides, exit_fail, "metang: input contains unpermitted override; did you forget “-D”?\n");
+        deque_push_b(input_lines, line);
     }
 
     free(buf);
