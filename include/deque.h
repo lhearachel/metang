@@ -17,6 +17,7 @@
 #ifndef METANG_STRDEQUE_H
 #define METANG_STRDEQUE_H
 
+#include <stdbool.h>
 #include <stddef.h>
 
 struct deque;
@@ -40,5 +41,7 @@ void deque_foreach_itof(struct deque *deque, size_t i, void (*func)(void *data, 
 
 void deque_extend_b(struct deque *dst, struct deque *src);
 void deque_extend_f(struct deque *dst, struct deque *src);
+
+void deque_sort(struct deque *deque, bool (*a_lt_b_func)(const void *a, const void *b));
 
 #endif // METANG_STRDEQUE_H

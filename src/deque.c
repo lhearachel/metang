@@ -31,7 +31,11 @@ enum deque_iter_dir {
 };
 
 struct deque_node {
+#ifdef DEQUE_NDEBUG
     void *data;
+#else
+    struct enumerator *data;
+#endif
 
 #ifdef DEQUE_NDEBUG
     struct deque_node *neighbors[ITER_DIR_MAX];
@@ -349,4 +353,77 @@ void deque_extend_f(struct deque *dst, struct deque *src)
     src->tail->next = dst->head;
     dst->size += src->size;
     dst->head = src->head;
+}
+
+static struct deque_node *split(struct deque_node *node)
+{
+    struct deque_node *fast = node;
+    struct deque_node *slow = node;
+
+    while (fast != NULL && fast->next != NULL && fast->next->next != NULL) {
+        fast = fast->next->next;
+        slow = slow->next;
+    }
+
+    struct deque_node *tmp = slow->next;
+    if (tmp != NULL) {
+        tmp->prev = NULL;
+    }
+
+    slow->next = NULL;
+
+    return tmp;
+}
+
+static struct deque_node *merge(struct deque_node *a, struct deque_node *b, bool (*a_lt_b_func)(const void *a, const void *b))
+{
+    if (a == NULL) {
+        return b;
+    }
+    if (b == NULL) {
+        return a;
+    }
+
+    if (a_lt_b_func(a->data, b->data)) {
+        a->next = merge(a->next, b, a_lt_b_func);
+        if (a->next != NULL) {
+            a->next->prev = a;
+        }
+
+        a->prev = NULL;
+        return a;
+    } else {
+        b->next = merge(a, b->next, a_lt_b_func);
+        if (b->next != NULL) {
+            b->next->prev = b;
+        }
+        b->prev = NULL;
+        return b;
+    }
+}
+
+static struct deque_node *merge_sort(struct deque_node *node, bool (*a_lt_b_func)(const void *a, const void *b))
+{
+    if (node == NULL || node->next == NULL) {
+        return node;
+    }
+
+    struct deque_node *half = split(node);
+
+    node = merge_sort(node, a_lt_b_func);
+    half = merge_sort(half, a_lt_b_func);
+
+    return merge(node, half, a_lt_b_func);
+}
+
+void deque_sort(struct deque *deque, bool (*a_lt_b_func)(const void *a, const void *b))
+{
+    struct deque_node *new_head = merge_sort(deque->head, a_lt_b_func);
+    struct deque_node *new_tail = new_head;
+    while (new_tail->next != NULL) {
+        new_tail = new_tail->next;
+    }
+
+    deque->head = new_head;
+    deque->tail = new_tail;
 }
