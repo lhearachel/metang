@@ -23,7 +23,9 @@
 char *strdup(const char *s)
 {
     size_t len = strlen(s);
-    return strndup(s, len);
+    char *dup = calloc(len + 1, sizeof(char));
+    strcpy(dup, s);
+    return dup;
 }
 
 char *strndup(const char *s, const size_t n)
@@ -103,8 +105,8 @@ char *ltrim(const char *s)
 
 char *rtrim(const char *s)
 {
-    size_t i = strlen(s) - 1;
-    while (i >= 0 && isspace(s[i])) {
+    size_t i = strlen(s);
+    while (i > 0 && isspace(s[i - 1])) {
         i--;
     }
 
