@@ -137,7 +137,8 @@ static char *write_header(char **output, const char *incg, struct options *opts,
     char *bufp = *output;
     bufp += sprintf(bufp, header_p1_fmt, opts->input_file);
 
-    for (int i = 1; i < argc - 1; i++) {
+    int upper = opts->from_stdin ? argc : argc - 1;
+    for (int i = 1; i < upper; i++) {
         bufp += sprintf(bufp, " %s", argv[i]);
     }
 
