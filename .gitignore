@@ -13,3 +13,6 @@ compile_commands.json
 
 # Valgrind output
 valgrind.log
+
+# Simple test input for README demo
+my_input
