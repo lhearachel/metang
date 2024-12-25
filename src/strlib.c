@@ -71,6 +71,34 @@ char *stem(const char *s, const char delim)
     }
 }
 
+char *pascal(const char *s)
+{
+    char *p = calloc(strlen(s) + 1, sizeof(char));
+
+    if (!isalpha(*s)) {
+        strcpy(p, s);
+        return p;
+    }
+
+    char *i = p;
+    *i = toupper(*s);
+    s++;
+    i++;
+
+    while (*s) {
+        if (ispunct(*s) && isupper(*(s + 1))) {
+            s++;
+            *i = toupper(*s);
+        } else {
+            *i = *s;
+        }
+        s++;
+        i++;
+    }
+
+    return p;
+}
+
 char *lsnake(const char *s)
 {
     char c;
