@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 enum deque_iter_dir {
     ITER_DIR_TO_HEAD = 0,
@@ -194,4 +195,42 @@ void deque_foreach_itof(struct deque *deque, size_t i, void (*func)(void *data, 
         func(cursor->data, user);
         cursor = cursor->prev;
     }
+}
+
+void deque_extend_b(struct deque *dst, struct deque *src)
+{
+    if (src->head == NULL) {
+        return;
+    }
+
+    if (dst->tail == NULL) {
+        dst->head = src->head;
+        dst->tail = src->tail;
+        dst->size = src->size;
+        return;
+    }
+
+    dst->tail->next = src->head;
+    src->head->prev = dst->tail;
+    dst->size += src->size;
+    dst->tail = src->tail;
+}
+
+void deque_extend_f(struct deque *dst, struct deque *src)
+{
+    if (src->tail == NULL) {
+        return;
+    }
+
+    if (dst->head == NULL) {
+        dst->head = src->head;
+        dst->tail = src->tail;
+        dst->size = src->size;
+        return;
+    }
+
+    dst->head->prev = src->tail;
+    src->tail->next = dst->head;
+    dst->size += src->size;
+    dst->head = src->head;
 }
