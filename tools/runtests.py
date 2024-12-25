@@ -72,7 +72,9 @@ def run_test(name: str) -> str | None:
                 continue
             t.append(line)
 
-    args = "".join(test_args).replace("\n", " ").strip().split(" ")
+    args = list(
+        filter(lambda s: s, "".join(test_args).replace("\n", " ").strip().split(" "))
+    )
     result = subprocess.run(
         [
             "./metang",

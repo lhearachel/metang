@@ -1,6 +1,7 @@
 tests = [
     'append',
     'append_prepend',
+    'base',
     'bitmask',
     'leader',
     'override',
