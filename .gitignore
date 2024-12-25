@@ -9,3 +9,6 @@ metang
 .cache/*
 .vscode/*
 compile_commands.json
+
+# Valgrind output
+valgrind.log

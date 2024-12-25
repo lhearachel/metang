@@ -13,6 +13,8 @@
 # limitations under the License.
 .PHONY: check-dep-exists format pre-commit grammar
 
+check-all: format pre-commit
+
 check-dep-exists:
 	@if ! command -v $(DEP_TARGET) &> /dev/null; then \
 		echo "$(DEP_TARGET) not found"; \
@@ -27,4 +29,10 @@ pre-commit: DEP_TARGET=pre-commit
 pre-commit: .pre-commit-config.yaml check-dep-exists
 	pre-commit run
 
-check-all: format pre-commit
+valgrind: debug
+	valgrind --leak-check=full \
+		--show-leak-kinds=all \
+		--track-origins=yes \
+		--verbose \
+		--log-file=valgrind.log \
+		./$(TARGET) $(ARGS)
