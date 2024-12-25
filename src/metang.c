@@ -140,6 +140,7 @@ int main(int argc, const char **argv)
         fclose(fout);
     }
 
+    free((char *)output);
     deque_free(input_lines, free);
     deque_free(options.append, noop);
     deque_free(options.prepend, noop);
@@ -276,6 +277,7 @@ static bool read_from_stream(FILE *stream, struct deque *input_lines, const bool
         deque_push_b(input_lines, line_trim);
     }
 
+    free(buf);
     return true;
 }
 
