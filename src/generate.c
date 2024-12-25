@@ -25,7 +25,7 @@
 #include "strlib.h"
 
 static char *make_include_guard(const char *base, const struct options *opts);
-static char *make_leader(const char *base);
+static char *make_leader(const char *base, const struct options *opts);
 
 static char *write_header(char **output, const char *incg, struct options *opts, const int argc, const char **argv);
 static char *write_enum(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts);
@@ -116,7 +116,7 @@ const char *generate(struct deque *input, struct options *opts, const int argc, 
     char *output = calloc(65536, sizeof(char));
     char *base = basename(opts->output_file);
     char *incg = make_include_guard(base, opts);
-    char *lead = make_leader(base);
+    char *lead = make_leader(base, opts);
     char *enum_t = lsnake(opts->input_file);
     char *bufp = output;
 
@@ -145,8 +145,12 @@ static char *make_include_guard(const char *base, const struct options *opts)
     return result;
 }
 
-static char *make_leader(const char *base)
+static char *make_leader(const char *base, const struct options *opts)
 {
+    if (opts->leader) {
+        return usnake(opts->leader);
+    }
+
     char *tmp = usnake(base);
     char *result = stem(tmp, '_');
 

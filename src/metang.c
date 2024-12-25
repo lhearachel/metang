@@ -42,6 +42,7 @@ static const char *options = ""
     "  -p, --prepend <entry>        Prepend <entry> to the input listing.\n"
     "  -n, --start-from <number>    Start enumeration from <number>.\n"
     "  -o, --output <file>          Write output to <file>.\n"
+    "  -l, --leader <leader>        Use <leader> as a prefix for generated symbols.\n"
     "  -G, --preproc-guard <guard>  Use <guard> as a prefix for conditional\n"
     "                               preprocessor directives.\n"
     "  -D, --allow-overrides        If specified, allow direct value-assignment.\n"
@@ -86,6 +87,7 @@ int main(int argc, const char **argv)
         .append = deque_new(),
         .prepend = deque_new(),
         .start_from = 0,
+        .leader = NULL,
         .preproc_guard = "METANG",
         .allow_overrides = false,
         .output_file = NULL,
@@ -110,6 +112,7 @@ int main(int argc, const char **argv)
     printf("prepend:\n");
     deque_foreach_ftob(options.prepend, printf_deque_node, NULL);
     printf("start from:     “%ld”\n", options.start_from);
+    printf("leader:         “%s”\n", options.leader ? options.leader : "default");
     printf("preproc guard:  “%s”\n", options.preproc_guard);
     printf("allow override? “%s”\n", options.allow_overrides ? "yes" : "no");
     printf("output file:    “%s”\n", options.output_file);
@@ -218,6 +221,8 @@ static void parse_options(int *argc, const char ***argv, struct options *opts)
             exit_if(errno, exit_fail, "metang: could not convert start-from option: %s\n", strerror(errno));
         } else if (match_opt(opt, "-o", "--output")) {
             opts->output_file = arg;
+        } else if (match_opt(opt, "-l", "--leader")) {
+            opts->leader = arg;
         } else if (match_opt(opt, "-G", "--preproc-guard")) {
             opts->preproc_guard = arg;
         }
