@@ -43,6 +43,8 @@ struct entry_user {
 static void write_member_entry(void *data, void *user_v);
 static void write_lookup_entry(void *data, void *user_v);
 
+static bool cmp_entry_lvalues(const void *a_v, const void *b_v);
+
 // clang-format off
 static const char *header_p1_fmt = ""
     "/*\n"
@@ -285,7 +287,8 @@ static char *write_lookup(char **output, struct deque *input, const char *lead, 
         .fmt = lookup_entry_fmt,
     };
 
-    // TODO: Sort the entries
+    // WARNING: This destroys the original ordering, and thus should ALWAYS be emitted LAST.
+    deque_sort(input, cmp_entry_lvalues);
     deque_foreach_ftob(input, write_lookup_entry, &user);
 
     bufp += sprintf(bufp, lookup_footer_fmt, opts->preproc_guard);
@@ -311,4 +314,11 @@ static void write_lookup_entry(void *data, void *user_v)
     struct enumerator *entry = data;
     struct entry_user *user = user_v;
     (*user->bufp) += sprintf(*user->bufp, user->fmt, user->lead, entry->lvalue, entry->lvalue);
+}
+
+static bool cmp_entry_lvalues(const void *a_v, const void *b_v)
+{
+    const struct enumerator *a = a_v;
+    const struct enumerator *b = b_v;
+    return strcmp(a->lvalue, b->lvalue) < 0;
 }
