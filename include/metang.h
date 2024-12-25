@@ -34,6 +34,7 @@ struct options {
     struct deque *prepend;
     ssize_t start_from;
     const char *leader;
+    const char *tag;
     const char *preproc_guard;
     const char *output_file;
     const char *input_file;

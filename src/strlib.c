@@ -86,7 +86,7 @@ char *pascal(const char *s)
     i++;
 
     while (*s) {
-        if (ispunct(*s) && isupper(*(s + 1))) {
+        if (ispunct(*s) && islower(*(s + 1))) {
             s++;
             *i = toupper(*s);
         } else {
