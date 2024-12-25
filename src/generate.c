@@ -287,7 +287,7 @@ static char *write_lookup(char **output, struct deque *input, const char *lead, 
         .fmt = lookup_entry_fmt,
     };
 
-    // WARNING: This destroys the original ordering, and thus should ALWAYS be emitted LAST.
+    // This destroys the original ordering, and thus should ALWAYS be emitted LAST.
     deque_sort(input, cmp_entry_lvalues);
     deque_foreach_ftob(input, write_lookup_entry, &user);
 
