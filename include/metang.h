@@ -24,6 +24,11 @@
 
 typedef intptr_t ssize_t;
 
+enum tag_case {
+    TAG_SNAKE_CASE,
+    TAG_PASCAL_CASE,
+};
+
 struct options {
     struct deque *append;
     struct deque *prepend;
@@ -32,6 +37,7 @@ struct options {
     const char *preproc_guard;
     const char *output_file;
     const char *input_file;
+    enum tag_case tag_case;
     bool bitmask;
     bool allow_overrides;
     bool to_stdout;

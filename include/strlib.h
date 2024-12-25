@@ -24,6 +24,7 @@ char *strndup(const char *s, const size_t n);
 char *stpcpy(char *dst, const char *src);
 char *basename(const char *path);
 char *stem(const char *s, const char delim);
+char *pascal(const char *s);
 char *lsnake(const char *s);
 char *usnake(const char *s);
 char *ltrim(const char *s);

@@ -90,12 +90,30 @@ static const char *defs_footer_fmt = ""
 static const char *lookup_header_fmt = ""
     "#ifdef %s_LOOKUP\n"
     "\n"
+    "";
+
+static const char *lookup_struct_snake_fmt = ""
     "struct %s_entry {\n"
     "    const long value;\n"
     "    const char *def;\n"
     "};\n"
     "\n"
+    "";
+
+static const char *lookup_table_snake_fmt = ""
     "const struct %s_entry %s_lookup[] = {\n"
+    "";
+
+static const char *lookup_struct_pascal_fmt = ""
+    "struct %sEntry {\n"
+    "    const long value;\n"
+    "    const char *def;\n"
+    "};\n"
+    "\n"
+    "";
+
+static const char *lookup_table_pascal_fmt = ""
+    "const struct %sEntry %sLookup[] = {\n"
     "";
 
 static const char *lookup_footer_fmt = ""
@@ -122,7 +140,7 @@ const char *generate(struct deque *input, struct options *opts, const int argc, 
     char *base = basename(opts->output_file);
     char *incg = make_include_guard(base, opts);
     char *lead = make_leader(base, opts);
-    char *enum_t = lsnake(opts->input_file);
+    char *enum_t = opts->tag_case == TAG_SNAKE_CASE ? lsnake(opts->input_file) : pascal(opts->input_file);
     char *bufp = output;
 
     bufp = write_header(&bufp, incg, opts, argc, argv);
@@ -249,7 +267,14 @@ static char *write_defs(char **output, struct deque *input, const char *lead, st
 static char *write_lookup(char **output, struct deque *input, const char *lead, const char *enum_t, struct options *opts)
 {
     char *bufp = *output;
-    bufp += sprintf(bufp, lookup_header_fmt, opts->preproc_guard, enum_t, enum_t, enum_t);
+    bufp += sprintf(bufp, lookup_header_fmt, opts->preproc_guard, enum_t);
+    if (opts->tag_case == TAG_SNAKE_CASE) {
+        bufp += sprintf(bufp, lookup_struct_snake_fmt, enum_t);
+        bufp += sprintf(bufp, lookup_table_snake_fmt, enum_t, enum_t);
+    } else {
+        bufp += sprintf(bufp, lookup_struct_pascal_fmt, enum_t);
+        bufp += sprintf(bufp, lookup_table_pascal_fmt, enum_t, enum_t);
+    }
 
     struct entry_user user = {
         .bufp = &bufp,

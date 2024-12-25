@@ -43,6 +43,8 @@ static const char *options = ""
     "  -n, --start-from <number>    Start enumeration from <number>.\n"
     "  -o, --output <file>          Write output to <file>.\n"
     "  -l, --leader <leader>        Use <leader> as a prefix for generated symbols.\n"
+    "  -c, --tag-case <case>        Customize the casing of generated tags for enums\n"
+    "                               and lookup tables. Options: snake, pascal"
     "  -G, --preproc-guard <guard>  Use <guard> as a prefix for conditional\n"
     "                               preprocessor directives.\n"
     "  -B, --bitmask                If specified, generate symbols for a bitmask.\n"
@@ -90,9 +92,11 @@ int main(int argc, const char **argv)
         .start_from = 0,
         .leader = NULL,
         .preproc_guard = "METANG",
-        .allow_overrides = false,
         .output_file = NULL,
         .input_file = NULL,
+        .tag_case = TAG_SNAKE_CASE,
+        .bitmask = false,
+        .allow_overrides = false,
         .to_stdout = false,
         .from_stdin = false,
     };
@@ -235,6 +239,14 @@ static void parse_options(int *argc, const char ***argv, struct options *opts)
             opts->output_file = arg;
         } else if (match_opt(opt, "-l", "--leader")) {
             opts->leader = arg;
+        } else if (match_opt(opt, "-c", "--tag-case")) {
+            if (strcmp(arg, "pascal") == 0) {
+                opts->tag_case = TAG_PASCAL_CASE;
+            } else if (strcmp(arg, "snake") == 0) {
+                opts->tag_case = TAG_SNAKE_CASE;
+            } else {
+                exit_if(true, exit_fail, "metang: unrecognized argument “%s” for option “%s”\n", arg, opt);
+            }
         } else if (match_opt(opt, "-G", "--preproc-guard")) {
             opts->preproc_guard = arg;
         }
