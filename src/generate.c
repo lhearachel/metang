@@ -105,9 +105,14 @@ static const char *lookup_footer_fmt = ""
     "\n"
     "";
 
-static const char *enum_entry_fmt = "    %s_%s = %zd,\n";
-static const char *defs_entry_fmt = "#define %s_%s %zd\n";
+static const char *enum_entry_fmt   = "    %s_%s = %zd,\n";
+static const char *defs_entry_fmt   = "#define %s_%s %zd\n";
 static const char *lookup_entry_fmt = "    { %s_%s, \"%s\" },\n";
+
+static const char *mask_enum_entry_fmt_0 = "    %s_%s = 0,\n";
+static const char *mask_enum_entry_fmt   = "    %s_%s = (1 << %zd),\n";
+static const char *mask_defs_entry_fmt_0 = "#define %s_%s 0\n";
+static const char *mask_defs_entry_fmt   = "#define %s_%s (1 << %zd)\n";
 // clang-format on
 
 const char *generate(struct deque *input, struct options *opts, const int argc, const char **argv)
@@ -198,7 +203,16 @@ static char *write_enum(char **output, struct deque *input, const char *lead, co
         .lead = lead,
         .fmt = enum_entry_fmt,
     };
-    deque_foreach_ftob(input, write_member_entry, &user);
+
+    if (opts->bitmask) {
+        user.fmt = mask_enum_entry_fmt_0;
+        write_member_entry(deque_peek_f(input), &user);
+        user.fmt = mask_enum_entry_fmt;
+    } else {
+        write_member_entry(deque_peek_f(input), &user);
+    }
+
+    deque_foreach_itob(input, 1, write_member_entry, &user);
 
     bufp += sprintf(bufp, enum_footer_fmt, opts->preproc_guard);
 
@@ -216,7 +230,16 @@ static char *write_defs(char **output, struct deque *input, const char *lead, st
         .lead = lead,
         .fmt = defs_entry_fmt,
     };
-    deque_foreach_ftob(input, write_member_entry, &user);
+
+    if (opts->bitmask) {
+        user.fmt = mask_defs_entry_fmt_0;
+        write_member_entry(deque_peek_f(input), &user);
+        user.fmt = mask_defs_entry_fmt;
+    } else {
+        write_member_entry(deque_peek_f(input), &user);
+    }
+
+    deque_foreach_itob(input, 1, write_member_entry, &user);
 
     bufp += sprintf(bufp, defs_footer_fmt, opts->preproc_guard, opts->preproc_guard);
 
@@ -234,7 +257,7 @@ static char *write_lookup(char **output, struct deque *input, const char *lead, 
         .fmt = lookup_entry_fmt,
     };
 
-    // TODO: Unify these into one deque and sort the entries
+    // TODO: Sort the entries
     deque_foreach_ftob(input, write_lookup_entry, &user);
 
     bufp += sprintf(bufp, lookup_footer_fmt, opts->preproc_guard);

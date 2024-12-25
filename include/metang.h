@@ -32,6 +32,7 @@ struct options {
     const char *preproc_guard;
     const char *output_file;
     const char *input_file;
+    bool bitmask;
     bool allow_overrides;
     bool to_stdout;
     bool from_stdin;
