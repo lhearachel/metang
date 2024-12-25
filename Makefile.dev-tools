@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-.PHONY: check-dep-exists format pre-commit grammar
+.PHONY: check-dep-exists format pre-commit test
 
 check-all: format pre-commit
 
@@ -28,6 +28,9 @@ format: .clang-format check-dep-exists
 pre-commit: DEP_TARGET=pre-commit
 pre-commit: .pre-commit-config.yaml check-dep-exists
 	pre-commit run
+
+test: tools/runtests.py release
+	$< $(ARGS)
 
 valgrind: debug
 	valgrind --leak-check=full \
