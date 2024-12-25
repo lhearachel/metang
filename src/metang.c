@@ -45,6 +45,9 @@ static const char *options = ""
     "  -l, --leader <leader>        Use <leader> as a prefix for generated symbols.\n"
     "  -G, --preproc-guard <guard>  Use <guard> as a prefix for conditional\n"
     "                               preprocessor directives.\n"
+    "  -B, --bitmask                If specified, generate symbols for a bitmask.\n"
+    "                               This option is incompatible with the “-D” and\n"
+    "                               “-n” options.\n"
     "  -D, --allow-overrides        If specified, allow direct value-assignment.\n"
     "  -h, --help                   Display this help text and exit.\n"
     "  -v, --version                Display the program version number and exit."
@@ -205,6 +208,11 @@ static void parse_options(int *argc, const char ***argv, struct options *opts)
         exit_if(match_opt(opt, "-v", "--version"), exit_info, "%s\n", version);
 
         // Options with no argument
+        if (match_opt(opt, "-B", "--bitmask")) {
+            opts->bitmask = true;
+            continue;
+        }
+
         if (match_opt(opt, "-D", "--allow-overrides")) {
             opts->allow_overrides = true;
             continue;
@@ -234,6 +242,9 @@ static void parse_options(int *argc, const char ***argv, struct options *opts)
         (*argv)++;
         (*argc)--;
     } while (*argc > 0);
+
+    exit_if(opts->bitmask && (opts->allow_overrides || opts->start_from),
+            exit_fail, "metang: invalid option state; cannot override values for bitmasks\n%s\n\n%s", short_usage, options);
 }
 
 static ssize_t read_line(char **lineptr, size_t *n, FILE *stream)
