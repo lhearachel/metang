@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "deque.h"
 #include "generate.h"
@@ -70,7 +71,8 @@ int main(int argc, const char **argv)
     int orig_argc = argc;
     const char **orig_argv = argv;
 
-    exit_if(argc < 2, exit_info, "%s\n\n%s\n\n%s\n", tag_line, short_usage, options);
+    // If no args given and no file is piped to `stdin`, then act like `-h`.
+    exit_if(argc < 2 && isatty(STDIN_FILENO), exit_info, "%s\n\n%s\n\n%s\n", tag_line, short_usage, options);
 
     argv++;
     argc--;
@@ -172,6 +174,12 @@ static int exit_fail(const char *fmt, va_list args)
 
 static void parse_options(int *argc, const char ***argv, struct options *opts)
 {
+    // This can happen if the user pipes input through `stdin` and provides no
+    // program options.
+    if (*argc == 0) {
+        return;
+    }
+
     do {
         const char *opt = (*argv)[0];
         if (opt[0] != '-' || (opt[1] == '-' && opt[2] == '\0')) {
