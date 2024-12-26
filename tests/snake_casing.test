@@ -31,7 +31,7 @@ enum stdin {
     STDOUT_MIME_JR = 7,
 };
 
-#endif // METANG_ENUM
+#endif /* METANG_ENUM */
 
 #if defined(METANG_DEFS) || !defined(METANG_ENUM)
 
@@ -44,7 +44,7 @@ enum stdin {
 #define STDOUT_MR_MIME 6
 #define STDOUT_MIME_JR 7
 
-#endif // defined(METANG_DEFS) || !defined(METANG_ENUM)
+#endif /* defined(METANG_DEFS) || !defined(METANG_ENUM) */
 
 #ifdef METANG_LOOKUP
 
@@ -64,6 +64,6 @@ const struct stdin_entry stdin_lookup[] = {
     { STDOUT_PORYGON_Z, "PORYGON_Z" },
 };
 
-#endif // METANG_LOOKUP
+#endif /* METANG_LOOKUP */
 
 #endif // METANG_STDOUT
