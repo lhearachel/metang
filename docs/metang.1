@@ -1,0 +1,60 @@
+.\" Manpage for metang.
+.\" Contact lhearachel@proton.me to correct any errors or typos.
+.TH METANG 1
+.SH NAME
+metang \- generate multi-purpose C headers for enumerators
+.SH SYNOPSIS
+.B metang
+[options]
+[\fIfile\fR]
+.SH DESCRIPTION
+.B metang
+generates a customized C header of enumerated constants from a plain text file.
+Each line of the input file is treated as another member of the enumeration.
+.SH OPTIONS
+.TP
+.BR \-a ", " \-\-append =\fIENTRY\fR
+Append ENTRY after the input content.
+\fB\-\-append\fR can be invoked multiple times; successive invocations will create a list of entries to be appended in full in the order in which they were specified.
+For example, providing \fB\-a\fR \fIENTRY_0\fR \fB\-a\fR \fIENTRY_1\fR as options will result in the input content being generated, followed by \fIENTRY_0\fR as the next element of the enumeration thereafter, followed by \fIENTRY_1\fR.
+.TP
+.BR \-p ", " \-\-prepend =\fIENTRY\fR
+Prepend ENTRY before the input content.
+\fB\-\-prepend\fR can be invoked multiple times; successive invocations will create a list of entries to be prepended in full in the order in which they were specified.
+For example, providing \fB\-p\fR \fIENTRY_0\fR \fB\-p\fR \fIENTRY_1\fR as options will result in \fIENTRY_0\fR being the first element of the enumeration, followed by \fIENTRY_1\fR, followed by the input.
+.TP
+.BR \-n ", " \-\-start\-from =\fINUMBER\fR
+Set the initial enumerator value to \fINUMBER\fR.
+Successsive invocations choose the last-specified option's argument as the victor.
+.TP
+.BR \-o ", " \-\-output =\fIFILE\fR
+Write the generated content to \fIFILE\fR rather than standard output.
+.TP
+.BR \-l ", " \-\-leader =\fIPREFIX\fR
+Use \fIPREFIX\fR as a prefix for generated symbols and preprocessor definitions.
+.TP
+.BR \-t ", " \-\-tag\-name =\fITAG\fR
+Use \fITAG\fR as the base tag for the generated \fBenum\fR and lookup table.
+.TP
+.BR \-c ", " \-\-tag\-case =\fICASE\fR
+Output the tags for the generated \fBenum\fR and lookup table in the given case.
+Recognized options are \fBsnake\fR and \fBpascal\fR.
+If not specified, then the program will behave as if \fB\-c\fR \fBsnake\fR was specified.
+.TP
+.BR \-G ", " \-\-preproc-guard =\fIGUARD\fR
+Use \fIGUARD\fR as a prefix for conditional preprocessor directives.
+If not specified, then the program will behave as if \fB\-G\fB \fBMETANG\fR was specified.
+.TP
+.BR \-B ", " \-\-bitmask
+Generate symbols for a bitmask.
+This option is incopatible with the \fB\-D\fR and \fB\-n\fR options.
+.TP
+.BR \-D ", " \-\-allow\-overrides
+When specified, permit direct assignemnt of enumeration members to literal rvalues.
+Direct assignment for a given input line is denoted with an equals sign (“=”) after the member name, followed by an integer literal.
+.TP
+.BR \-h ", " \-\-help
+Display the program help text and exit.
+.TP
+.BR \-v ", " \-\-version
+Display the program version number and exit.

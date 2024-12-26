@@ -14,6 +14,7 @@
 TARGET = $(shell basename $(CURDIR))
 DESTDIR ?= $(HOME)/.local
 BINDEST = $(DESTDIR)/bin
+MANDEST = $(DESTDIR)/share/man/man1
 
 CFLAGS += -MMD -Wall -Wextra -Wpedantic -std=c99
 CFLAGS += -Iinclude
@@ -22,6 +23,8 @@ INC = $(wildcard include/*.h)
 SRC = $(wildcard src/*.c)
 OBJ = $(SRC:.c=.o)
 DEP = $(SRC:.c=.d)
+
+MANP = docs/metang.1
 
 .PHONY: default all debug release install clean
 
@@ -39,9 +42,11 @@ release: clean all
 install: release
 	mkdir -p $(BINDEST)
 	install -m 755 $(TARGET) $(BINDEST)
+	mkdir -p $(MANDEST)
+	install -m 644 $(MANP) $(MANDEST)
 
 uninstall:
-	rm -rf $(BINDEST)/$(TARGET)
+	rm -rf $(BINDEST)/$(TARGET) $(MANDEST)/$(MANP)
 
 $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJ)
