@@ -98,6 +98,7 @@ def run_test(name: str, fix_output: bool = False) -> str | None:
                 *test_stdin,
                 "# output\n",
                 "\n".join(output_lines),
+                "\n",
             ]
         )
         with open(target, "w", encoding="utf-8") as f:
