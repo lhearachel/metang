@@ -48,4 +48,6 @@ metang_exe = executable(
     native: native,
 )
 
+install_man('docs/metang.1')
+
 meson.override_find_program('metang', metang_exe)
