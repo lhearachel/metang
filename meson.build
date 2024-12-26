@@ -19,6 +19,11 @@ project(
     license_files: 'LICENSE',
     meson_version: '>=1.5.0',
     version: '0.1.0',
+    default_options: {
+        'buildtype': 'release', # O3
+        'warning_level': '3', # all, extra, pedantic
+        'c_std': 'c99',
+    },
 )
 
 native = get_option('native')
@@ -31,27 +36,15 @@ c_sources = files(
     'src/strlib.c',
 )
 
-includes = include_directories('include')
-
 metang_runtests = find_program('tools/runtests.py', native: true)
 subdir('tests')
 
 metang_exe = executable(
     'metang',
     c_sources,
-    c_args: [
-        '-MMD',
-        '-Wall',
-        '-Wextra',
-        '-Wpedantic',
-        '-DNDEBUG',
-        '-std=c99',
-        '-O2',
-    ],
-    include_directories: includes,
+    include_directories: 'include',
     install: install,
-    install_dir: get_option('install_dir'),
-    install_mode: 'rwxrw-rw-',
+    install_mode: 'rwxr-xr-x',
     native: native,
 )
 
