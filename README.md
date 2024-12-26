@@ -214,6 +214,10 @@ Options:
   -v, --version                Display the program version number and exit.
 ```
 
+For more detailed reading on the various options, `metang`'s installation
+procedure will install manual page in section 1. You can view this page by
+invoking `man metang`, as with any other shell-based utility.
+
 ## Contributing
 
 `metang`'s small size and problem-scope mean that contribution guidelines are
