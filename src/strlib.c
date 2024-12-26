@@ -17,6 +17,8 @@
 #include "strlib.h"
 
 #include <ctype.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -87,31 +89,60 @@ char *pascal(const char *s)
     return p;
 }
 
-char *lsnake(const char *s)
+static bool replace_uscore(const char c, const char *extra)
 {
-    char c;
-    char *new = strdup(s);
-    for (size_t i = 0; (c = new[i]) != '\0'; i++) {
-        if (isupper(c)) {
-            new[i] = tolower(c);
-        } else if (ispunct(c)) {
-            new[i] = '_';
+    return c && (isspace(c) || c == '-' || c == '_' || (extra && strchr(extra, c)));
+}
+
+char *lsnake(const char *s, const char *extra)
+{
+    if (!s) {
+        return calloc(1, sizeof(char));
+    }
+
+    char *new = calloc(strlen(s) + 1, sizeof(char));
+    char *p = new;
+    while (*s) {
+        if (replace_uscore(*s, extra)) {
+            *p = '_';
+        } else if (ispunct(*s)) {
+            s++;
+            continue;
+        } else if (isupper(*s)) {
+            *p = tolower(*s);
+        } else {
+            *p = *s;
         }
+
+        p++;
+        s++;
     }
 
     return new;
 }
 
-char *usnake(const char *s)
+char *usnake(const char *s, const char *extra)
 {
-    char c;
-    char *new = strdup(s);
-    for (size_t i = 0; (c = new[i]) != '\0'; i++) {
-        if (islower(c)) {
-            new[i] = toupper(c);
-        } else if (ispunct(c)) {
-            new[i] = '_';
+    if (!s) {
+        return calloc(1, sizeof(char));
+    }
+
+    char *new = calloc(strlen(s) + 1, sizeof(char));
+    char *p = new;
+    while (*s) {
+        if (replace_uscore(*s, extra)) {
+            *p = '_';
+        } else if (ispunct(*s)) {
+            s++;
+            continue;
+        } else if (islower(*s)) {
+            *p = toupper(*s);
+        } else {
+            *p = *s;
         }
+
+        p++;
+        s++;
     }
 
     return new;
