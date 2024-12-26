@@ -21,7 +21,6 @@
 
 char *strdup(const char *s);
 char *strndup(const char *s, const size_t n);
-char *stpcpy(char *dst, const char *src);
 char *basename(const char *path);
 char *stem(const char *s, const char delim);
 char *pascal(const char *s);

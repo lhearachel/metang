@@ -163,8 +163,10 @@ const char *generate(struct deque *input, struct options *opts, const int argc, 
 
 static char *make_include_guard(const char *base, const struct options *opts)
 {
+    size_t ppg_len = strlen(opts->preproc_guard);
     char *tmp = calloc(strlen(opts->preproc_guard) + strlen(base) + 2, sizeof(char));
-    char *tmpp = stpcpy(tmp, opts->preproc_guard);
+    strcpy(tmp, opts->preproc_guard);
+    char *tmpp = tmp + ppg_len;
     *tmpp = '_';
     strcpy(tmpp + 1, base);
     char *result = usnake(tmp);
