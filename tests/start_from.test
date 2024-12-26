@@ -35,7 +35,7 @@ enum stdin {
     STDOUT_BLASTOISE = 13,
 };
 
-#endif // METANG_ENUM
+#endif /* METANG_ENUM */
 
 #if defined(METANG_DEFS) || !defined(METANG_ENUM)
 
@@ -49,7 +49,7 @@ enum stdin {
 #define STDOUT_WARTORTLE 12
 #define STDOUT_BLASTOISE 13
 
-#endif // defined(METANG_DEFS) || !defined(METANG_ENUM)
+#endif /* defined(METANG_DEFS) || !defined(METANG_ENUM) */
 
 #ifdef METANG_LOOKUP
 
@@ -70,6 +70,6 @@ const struct stdin_entry stdin_lookup[] = {
     { STDOUT_WARTORTLE, "WARTORTLE" },
 };
 
-#endif // METANG_LOOKUP
+#endif /* METANG_LOOKUP */
 
 #endif // METANG_STDOUT

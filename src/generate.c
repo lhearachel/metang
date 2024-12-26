@@ -74,7 +74,7 @@ static const char *enum_header_fmt = ""
 static const char *enum_footer_fmt = ""
     "};\n"
     "\n"
-    "#endif // %s_ENUM\n"
+    "#endif /* %s_ENUM */\n"
     "\n"
     "";
 
@@ -85,7 +85,7 @@ static const char *defs_header_fmt = ""
 
 static const char *defs_footer_fmt = ""
     "\n"
-    "#endif // defined(%s_DEFS) || !defined(%s_ENUM)\n"
+    "#endif /* defined(%s_DEFS) || !defined(%s_ENUM) */\n"
     "\n"
     "";
 
@@ -121,7 +121,7 @@ static const char *lookup_table_pascal_fmt = ""
 static const char *lookup_footer_fmt = ""
     "};\n"
     "\n"
-    "#endif // %s_LOOKUP\n"
+    "#endif /* %s_LOOKUP */\n"
     "\n"
     "";
 

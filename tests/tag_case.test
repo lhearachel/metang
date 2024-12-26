@@ -37,7 +37,7 @@ enum MyTag {
     STDOUT_BLASTOISE = 8,
 };
 
-#endif // METANG_ENUM
+#endif /* METANG_ENUM */
 
 #if defined(METANG_DEFS) || !defined(METANG_ENUM)
 
@@ -51,7 +51,7 @@ enum MyTag {
 #define STDOUT_WARTORTLE 7
 #define STDOUT_BLASTOISE 8
 
-#endif // defined(METANG_DEFS) || !defined(METANG_ENUM)
+#endif /* defined(METANG_DEFS) || !defined(METANG_ENUM) */
 
 #ifdef METANG_LOOKUP
 
@@ -72,6 +72,6 @@ const struct MyTagEntry MyTagLookup[] = {
     { STDOUT_WARTORTLE, "WARTORTLE" },
 };
 
-#endif // METANG_LOOKUP
+#endif /* METANG_LOOKUP */
 
 #endif // METANG_STDOUT
