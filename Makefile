@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 TARGET = $(shell basename $(CURDIR))
-DESTDIR ?= /usr/local/bin
+DESTDIR ?= $(HOME)/.local
+BINDEST = $(DESTDIR)/bin
 
 CFLAGS += -MMD -Wall -Wextra -Wpedantic -std=c99
 CFLAGS += -Iinclude
@@ -36,7 +37,11 @@ release: CFLAGS += -DDEQUE_NDEBUG
 release: clean all
 
 install: release
-	install -m 755 $(TARGET) $(DESTDIR)
+	mkdir -p $(BINDEST)
+	install -m 755 $(TARGET) $(BINDEST)
+
+uninstall:
+	rm -rf $(BINDEST)/$(TARGET)
 
 $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJ)
