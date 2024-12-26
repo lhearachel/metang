@@ -41,14 +41,10 @@ itself is desired.
 
 ### Build from Source
 
-By default, `metang` will install to `/usr/local/bin`. If you wish to install it
-to a different directory, simply prefix the `sudo make install` command below
-with `DESTDIR=path/to/install/location`.
-
 ```shell
 > git clone https://github.com/lhearachel/metang.git
 > cd metang
-> sudo make install
+> make install
 ```
 
 Once installed, verify that you can run the executable:
@@ -57,6 +53,17 @@ Once installed, verify that you can run the executable:
 > metang -v
 0.1.0
 ```
+
+By default, `metang` will install to `~/.local/bin`. If you wish to install it
+to a different directory, run `make install` with your desired directory as an
+argument:
+
+```shell
+> DESTDIR=path/to/target make install
+```
+
+`metang` will install itself into the `bin` subdirectory of the given value for
+`DESTDIR`.
 
 ### Integrate with a Meson Project
 
