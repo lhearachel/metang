@@ -232,10 +232,10 @@ static void parse_options(int *argc, const char ***argv, struct options *opts)
 
         const char *arg = (*argv)[0];
         if (match_opt(opt, "-a", "--append")) {
-            struct enumerator *app = enumerator_new(usnake(arg), 0, false);
+            struct enumerator *app = enumerator_new(usnake(arg, NULL), 0, false);
             exit_if(!deque_push_b(opts->append, app), exit_fail, "metang: could not add to append options: %s\n", strerror(errno));
         } else if (match_opt(opt, "-p", "--prepend")) {
-            struct enumerator *pre = enumerator_new(usnake(arg), 0, false);
+            struct enumerator *pre = enumerator_new(usnake(arg, NULL), 0, false);
             exit_if(!deque_push_b(opts->prepend, pre), exit_fail, "metang: could not add to prepend options: %s\n", strerror(errno));
         } else if (match_opt(opt, "-n", "--start-from")) {
             opts->start_from = strtol(arg, NULL, 10);
@@ -327,7 +327,7 @@ static bool read_from_stream(FILE *stream, struct deque *input_lines, const bool
         struct enumerator *mem;
         if (!allow_overrides) {
             exit_if(strchr(line, '='), exit_fail, "metang: input contains unpermitted override; did you forget “-D”?\n");
-            mem = enumerator_new(usnake(line), 0, false);
+            mem = enumerator_new(usnake(line, NULL), 0, false);
         } else if (strchr(line, '=')) {
             char *token = strtok(line, "=");
             char *token_b = token + strlen(token) - 1;
@@ -336,9 +336,9 @@ static bool read_from_stream(FILE *stream, struct deque *input_lines, const bool
             }
 
             char *rvalue = token_b + 2;
-            mem = enumerator_new(usnake(token), strtol(rvalue, NULL, 10), true);
+            mem = enumerator_new(usnake(token, NULL), strtol(rvalue, NULL, 10), true);
         } else {
-            mem = enumerator_new(usnake(line), 0, false);
+            mem = enumerator_new(usnake(line, NULL), 0, false);
         }
 
         free(line);

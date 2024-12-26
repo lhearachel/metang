@@ -144,7 +144,7 @@ const char *generate(struct deque *input, struct options *opts, const int argc, 
     char *lead = make_leader(base, opts);
 
     const char *btag = opts->tag ? opts->tag : opts->input_file;
-    char *tag = opts->tag_case == TAG_SNAKE_CASE ? lsnake(btag) : pascal(btag);
+    char *tag = opts->tag_case == TAG_SNAKE_CASE ? lsnake(btag, NULL) : pascal(btag);
 
     char *bufp = output;
 
@@ -169,7 +169,7 @@ static char *make_include_guard(const char *base, const struct options *opts)
     char *tmpp = tmp + ppg_len;
     *tmpp = '_';
     strcpy(tmpp + 1, base);
-    char *result = usnake(tmp);
+    char *result = usnake(tmp, "./"); // replace `.` and `/` with `_`
 
     free(tmp);
     return result;
@@ -178,10 +178,10 @@ static char *make_include_guard(const char *base, const struct options *opts)
 static char *make_leader(const char *base, const struct options *opts)
 {
     if (opts->leader) {
-        return usnake(opts->leader);
+        return usnake(opts->leader, NULL);
     }
 
-    char *tmp = usnake(base);
+    char *tmp = usnake(base, NULL);
     char *result = stem(tmp, '_');
 
     free(tmp);
