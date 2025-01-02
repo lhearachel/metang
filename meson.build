@@ -29,20 +29,17 @@ project(
 native = get_option('native')
 install = native and meson.is_cross_build() ? false : true
 
-c_sources = files(
-    'src/deque.c',
-    'src/generate.c',
-    'src/metang.c',
-    'src/strlib.c',
-)
+# This must come before `tests`!
+subdir('tools')
 
-metang_runtests = find_program('tools/runtests.py', native: true)
+subdir('include')
+subdir('src')
 subdir('tests')
 
 metang_exe = executable(
     'metang',
     c_sources,
-    include_directories: 'include',
+    include_directories: public_includes,
     install: install,
     install_mode: 'rwxr-xr-x',
     native: native,
