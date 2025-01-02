@@ -28,9 +28,10 @@
 #include "deque.h"
 #include "generate.h"
 #include "strlib.h"
+#include "version.h"
 
 // clang-format off
-static const char *version = "0.1.0";
+static const char *version = METANG_VERSION;
 
 static const char *tag_line = "metang - Generate multi-purpose C headers for enumerators";
 

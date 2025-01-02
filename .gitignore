@@ -16,3 +16,6 @@ valgrind.log
 
 # Simple test input for README demo
 my_input
+
+# Generated sources and headers
+include/version.h
