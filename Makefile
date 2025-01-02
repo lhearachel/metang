@@ -26,7 +26,9 @@ DEP = $(SRC:.c=.d)
 
 MANP = docs/metang.1
 
-.PHONY: default all debug release install clean
+VERSION_H = include/version.h
+
+.PHONY: default all debug release install clean version
 
 default: all
 
@@ -48,11 +50,16 @@ install: release
 uninstall:
 	rm -rf $(BINDEST)/$(TARGET) $(MANDEST)/$(MANP)
 
-$(TARGET): $(OBJ)
+version: $(VERSION_H)
+
+$(VERSION_H): VERSION
+	./tools/version.sh $< $@
+
+$(TARGET): $(VERSION_H) $(OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJ)
 
 clean:
-	$(RM) $(TARGET) $(OBJ) $(DEP)
+	$(RM) $(TARGET) $(OBJ) $(DEP) $(VERSION_H)
 
 include Makefile.dev-tools
 
