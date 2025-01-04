@@ -21,6 +21,7 @@
 #include <stdint.h>
 
 #define alignof(a)  _Alignof(a)
+#define sizeof(x)   (ptrdiff_t)sizeof(x)
 #define countof(a)  (sizeof(a) / sizeof(*(a)))
 #define lengthof(s) (countof(s) - 1)
 

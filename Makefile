@@ -20,6 +20,10 @@ CFLAGS += -MMD -Wall -Wextra -Wpedantic -std=c17
 CFLAGS += -Wno-keyword-macro
 CFLAGS += -Wno-unused-parameter
 CFLAGS += -Iinclude
+CFLAGS += -fsanitize=address
+
+LDFLAGS += -fsanitize=address
+LDFLAGS += -fsanitize-trap
 
 INC = $(wildcard include/*.h)
 SRC = $(wildcard src/*.c)
@@ -58,7 +62,7 @@ $(VERSION_H): VERSION
 	./tools/version.sh $< $@
 
 $(TARGET): $(VERSION_H) $(OBJ)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJ)
+	$(CC) $(LDFLAGS) -o $@ $(OBJ)
 
 clean:
 	$(RM) $(TARGET) $(OBJ) $(DEP) $(VERSION_H)

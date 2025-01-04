@@ -72,21 +72,26 @@ static inline char *chomp_argv(int *argc, char ***argv)
 
 static inline bool match(char *opt, char shortopt, char *longopt)
 {
-    bool check1 = (opt[0] == shortopt && opt[1] == '\0');
-    bool check2 = (longopt != NULL && strcmp(opt + 1, longopt) == 0);
-    return check1 || check2;
+    return (opt[0] == shortopt && opt[1] == '\0')
+        || (longopt != NULL && strcmp(opt + 1, longopt) == 0);
 }
 
 static inline void set_defaults(options *opts)
 {
-    opts->start = 0;
+    opts->result = OPTS_S;
+    opts->last_opt = NULL;
+    opts->last_arg = NULL;
+
     opts->append_count = 0;
     opts->prepend_count = 0;
+
+    opts->start = 0;
     opts->leader = NULL;
     opts->tag = NULL;
     opts->guard = "METANG";
     opts->outfile = NULL;
     opts->infile = NULL;
+
     opts->casing = TAG_SNAKE_CASE;
     opts->bitmask = false;
     opts->overrides = false;
@@ -94,8 +99,6 @@ static inline void set_defaults(options *opts)
     opts->version = false;
     opts->to_stdout = false;
     opts->fr_stdin = false;
-    opts->last_opt = NULL;
-    opts->last_arg = NULL;
 }
 
 options *parseopts(int *argc, char ***argv)
