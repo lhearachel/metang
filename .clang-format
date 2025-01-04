@@ -1,6 +1,8 @@
 ---
 BasedOnStyle: LLVM
 Language: Cpp
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveMacros: Consecutive
 AlignOperands: false
 BraceWrapping:
   AfterCaseLabel: false

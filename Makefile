@@ -16,7 +16,9 @@ DESTDIR ?= $(HOME)/.local
 BINDEST = $(DESTDIR)/bin
 MANDEST = $(DESTDIR)/share/man/man1
 
-CFLAGS += -MMD -Wall -Wextra -Wpedantic -std=c99
+CFLAGS += -MMD -Wall -Wextra -Wpedantic -std=c17
+CFLAGS += -Wno-keyword-macro
+CFLAGS += -Wno-unused-parameter
 CFLAGS += -Iinclude
 
 INC = $(wildcard include/*.h)
