@@ -70,6 +70,11 @@ static inline char *chomp_argv(int *argc, char ***argv)
     return arg;
 }
 
+static inline bool isopt(char *s)
+{
+    return s[0] == '-' && !(s[1] == '-' && s[2] == '\0');
+}
+
 static inline bool match(char *opt, char shortopt, char *longopt)
 {
     return (opt[0] == shortopt && opt[1] == '\0')
@@ -120,12 +125,9 @@ options *parseopts(int *argc, char ***argv, arena *a)
     a->jmpbuf = jmpbuf;
     opts = new (a, options);
     set_defaults(opts);
-    do {
-        char *opt = chomp_argv(argc, argv);
-        if (opt[0] != '-' || (opt[1] == '-' && opt[2] == '\0')) {
-            break;
-        }
 
+    char *opt;
+    while (*argc > 0 && (opt = chomp_argv(argc, argv)) && isopt(opt)) {
         opts->help = match(opt + 1, 'h', "help");
         opts->version = match(opt + 1, 'v', "version");
         if (opts->help || opts->version) {
@@ -155,7 +157,7 @@ options *parseopts(int *argc, char ***argv, arena *a)
             opts->result = OPTS_F_UNRECOGNIZED_OPT;
             goto fail_jump;
         }
-    } while (*argc > 0);
+    }
 
 fail_jump:
     return opts;
