@@ -126,13 +126,9 @@ options *parseopts(int *argc, char ***argv, arena *a)
             break;
         }
 
-        if (match(opt + 1, 'h', "help")) {
-            opts->help = true;
-            break;
-        }
-
-        if (match(opt + 1, 'v', "version")) {
-            opts->version = true;
+        opts->help = match(opt + 1, 'h', "help");
+        opts->version = match(opt + 1, 'v', "version");
+        if (opts->help || opts->version) {
             break;
         }
 
