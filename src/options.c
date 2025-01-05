@@ -13,7 +13,7 @@
 
 #define OPT_FAIL(opts, r) \
     opts->result = r;     \
-    goto fail_jump;
+    return false;
 
 typedef struct {
     char *longopt;
@@ -111,17 +111,15 @@ static inline void initopts(options *opts)
 
 bool parseopts(int *argc, char ***argv, options *opts)
 {
-    bool good = false;
-
     chomp_argv(argc, argv);
     if (*argc == 0) {
-        return good;
+        return false;
     }
 
     initopts(opts);
 
     CATCH(jmpbuf, {
-        return good;
+        return false;
     });
 
     char *opt;
@@ -155,10 +153,13 @@ bool parseopts(int *argc, char ***argv, options *opts)
         opthandlers[i].handler(opts, arg, jmpbuf);
     }
 
-    good = true;
+    opts->to_stdout = opts->outfile == NULL;
+    opts->fr_stdin = strcmp(opt, "--") == 0;
+    if (!opts->fr_stdin) {
+        opts->infile = opt;
+    }
 
-fail_jump:
-    return good;
+    return true;
 }
 
 void optserr(options *opts, char *buf)

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -86,7 +87,5 @@ static int pargv(int *argc, char ***argv, options *opts)
         return PARGV_EXIT_SUCCESS;
     }
 
-    opts->to_stdout = opts->outfile == NULL;
-    opts->fr_stdin = (argc == 0);
     return EXIT_SUCCESS;
 }
