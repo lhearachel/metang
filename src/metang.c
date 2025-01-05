@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
     if (opts->help) {
     help:
-        printf("%s\n%s\n%s\n", tag_line, short_usage, options_section);
+        printf("%s\n\n%s\n\n%s\n", tag_line, short_usage, options_section);
         goto cleanup;
     }
 
@@ -56,6 +56,8 @@ int main(int argc, char **argv)
     opts->to_stdout = opts->outfile == NULL;
     opts->fr_stdin = (argc == 0);
 
+#ifndef NDEBUG
+    printf("--- METANG OPTIONS ---\n");
     printf("append:\n");
     for (usize i = 0; i < opts->append_count; i++) {
         printf("  - %s\n", opts->append[i]);
@@ -75,6 +77,7 @@ int main(int argc, char **argv)
     printf("overrides?    “%s”\n", opts->overrides ? "yes" : "no");
     printf("stdout?       “%s”\n", opts->to_stdout ? "yes" : "no");
     printf("stdin?        “%s”\n", opts->fr_stdin ? "yes" : "no");
+#endif // NDEBUG
 
 cleanup:
     arena_free(&global, A_F_ZERO);

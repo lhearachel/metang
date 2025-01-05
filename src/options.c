@@ -103,12 +103,11 @@ static inline void set_defaults(options *opts)
 
 options *parseopts(int *argc, char ***argv, arena *a)
 {
+    options *opts = NULL;
     chomp_argv(argc, argv);
     if (*argc == 0) {
         return NULL;
     }
-
-    options *opts = NULL;
 
     // If an error occurs during parsing, then we will come back here and
     // immediately return. Individual handlers are responsible for invoking
@@ -127,12 +126,12 @@ options *parseopts(int *argc, char ***argv, arena *a)
             break;
         }
 
-        if (match(opt, 'h', "help")) {
+        if (match(opt + 1, 'h', "help")) {
             opts->help = true;
             break;
         }
 
-        if (match(opt, 'v', "version")) {
+        if (match(opt + 1, 'v', "version")) {
             opts->version = true;
             break;
         }
