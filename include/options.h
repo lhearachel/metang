@@ -17,7 +17,6 @@
 #ifndef METANG_OPTIONS_H
 #define METANG_OPTIONS_H
 
-#include "arena.h"
 #include "meta.h"
 
 #define MAX_ADDITIONAL_VALS 16
@@ -68,7 +67,7 @@ typedef struct {
     };
 } options;
 
-options *parseopts(int *argc, char ***argv, arena *a);
+bool parseopts(int *argc, char ***argv, options *opts);
 void optserr(options *opts, char *buf);
 
 extern const char *version;

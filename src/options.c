@@ -84,7 +84,7 @@ static inline bool match(char *opt, char shortopt, char *longopt)
         || (longopt != NULL && strcmp(opt + 1, longopt) == 0);
 }
 
-static inline void set_defaults(options *opts)
+static inline void initopts(options *opts)
 {
     opts->result = OPTS_S;
     opts->last_opt = NULL;
@@ -109,18 +109,22 @@ static inline void set_defaults(options *opts)
     opts->fr_stdin = false;
 }
 
-options *parseopts(int *argc, char ***argv, arena *a)
+bool parseopts(int *argc, char ***argv, options *opts)
 {
+    bool good = false;
+
     chomp_argv(argc, argv);
     if (*argc == 0) {
-        return NULL;
+        return good;
     }
 
-    options *opts = new (a, options);
-    set_defaults(opts);
+    initopts(opts);
+
+    CATCH(jmpbuf, {
+        return good;
+    });
 
     char *opt;
-    CATCH(a, jmpbuf, goto fail_jump);
     while (*argc > 0 && (opt = chomp_argv(argc, argv)) && isopt(opt)) {
         opts->help = match(opt + 1, 'h', "help");
         opts->version = match(opt + 1, 'v', "version");
@@ -151,8 +155,10 @@ options *parseopts(int *argc, char ***argv, arena *a)
         opthandlers[i].handler(opts, arg, jmpbuf);
     }
 
+    good = true;
+
 fail_jump:
-    return opts;
+    return good;
 }
 
 void optserr(options *opts, char *buf)

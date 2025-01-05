@@ -17,19 +17,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "arena.h"
 #include "options.h"
 
 int main(int argc, char **argv)
 {
-    arena global = arena_init(sizeof(options));
-    options *opts = NULL;
+    options *opts = malloc(sizeof(*opts));
     int exit = EXIT_SUCCESS;
     if (argc == 1) {
         goto help;
     }
 
-    if (!(opts = parseopts(&argc, &argv, &global))) {
+    if (!parseopts(&argc, &argv, opts)) {
         goto cleanup;
     }
 
@@ -79,6 +77,6 @@ int main(int argc, char **argv)
 #endif // NDEBUG
 
 cleanup:
-    arena_free(&global, A_F_ZERO);
+    free(opts);
     return exit;
 }

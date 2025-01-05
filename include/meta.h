@@ -43,12 +43,11 @@ typedef int32_t         bool;
 typedef unsigned char   byte;
 // clang-format on
 
-#define CATCH(a, jb, expr)      \
+#define CATCH(jb, expr)         \
     void *jb[5];                \
     if (__builtin_setjmp(jb)) { \
         expr;                   \
-    }                           \
-    a->jmpbuf = jb;
+    }
 
 #define EXCEPT(jb) __builtin_longjmp(jb, 1)
 
