@@ -19,39 +19,16 @@
 
 #include "options.h"
 
+static int pargv(int *argc, char ***argv, options *opts);
+
 int main(int argc, char **argv)
 {
+    int exit;
     options *opts = malloc(sizeof(*opts));
-    int exit = EXIT_SUCCESS;
-    if (argc == 1) {
-        goto help;
-    }
-
-    if (!parseopts(&argc, &argv, opts)) {
+    if ((exit = pargv(&argc, &argv, opts))) {
+        exit--;
         goto cleanup;
     }
-
-    if (opts->result != OPTS_S) {
-        char err[128];
-        optserr(opts, err);
-        fprintf(stderr, "metang: %s\n\n%s\n\n%s\n", err, short_usage, options_section);
-        exit = EXIT_FAILURE;
-        goto cleanup;
-    }
-
-    if (opts->help) {
-    help:
-        printf("%s\n\n%s\n\n%s\n", tag_line, short_usage, options_section);
-        goto cleanup;
-    }
-
-    if (opts->version) {
-        printf("%s\n", version);
-        goto cleanup;
-    }
-
-    opts->to_stdout = opts->outfile == NULL;
-    opts->fr_stdin = (argc == 0);
 
 #ifndef NDEBUG
     printf("--- METANG OPTIONS ---\n");
@@ -79,4 +56,37 @@ int main(int argc, char **argv)
 cleanup:
     free(opts);
     return exit;
+}
+
+#define PARGV_EXIT_SUCCESS EXIT_SUCCESS + 1
+#define PARGV_EXIT_FAILURE EXIT_FAILURE + 1
+
+static int pargv(int *argc, char ***argv, options *opts)
+{
+    if (*argc == 1) {
+        goto help;
+        return PARGV_EXIT_SUCCESS;
+    }
+
+    if (!parseopts(argc, argv, opts)) {
+        char err[128];
+        optserr(opts, err);
+        fprintf(stderr, "metang: %s\n\n%s\n\n%s\n", err, short_usage, options_section);
+        return PARGV_EXIT_FAILURE;
+    }
+
+    if (opts->help) {
+    help:
+        printf("%s\n\n%s\n\n%s\n", tag_line, short_usage, options_section);
+        return PARGV_EXIT_SUCCESS;
+    }
+
+    if (opts->version) {
+        printf("%s\n", version);
+        return PARGV_EXIT_SUCCESS;
+    }
+
+    opts->to_stdout = opts->outfile == NULL;
+    opts->fr_stdin = (argc == 0);
+    return EXIT_SUCCESS;
 }
