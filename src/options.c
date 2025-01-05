@@ -1,6 +1,5 @@
 #include "options.h"
 
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -193,13 +192,32 @@ static void handle_prepend(options *opts, char *arg, void **jmpbuf)
     OPT_EXCEPT(jmpbuf, opts, OPTS_F_TOO_MANY_PREPENDS);
 }
 
+static inline bool decstol(const char *s, long *l)
+{
+    bool neg = false;
+    if (*s == '-') {
+        neg = true;
+        s++;
+    }
+
+    *l = 0;
+    for (; *s != '\0'; s++) {
+        if (*s >= '0' && *s <= '9') {
+            *l = (*l * 10) + (*s - '0');
+        } else {
+            return false;
+        }
+    }
+
+    if (neg) {
+        *l = *l * -1;
+    }
+    return true;
+}
+
 static void handle_start_from(options *opts, char *arg, void **jmpbuf)
 {
-    // TODO: strtol just silently fails here for some reason...?
-    errno = 0;
-    opts->start = strtol(arg, NULL, 10);
-
-    if (errno) {
+    if (!decstol(arg, &opts->start)) {
         OPT_EXCEPT(jmpbuf, opts, OPTS_F_NOT_AN_INTEGER);
     }
 }
