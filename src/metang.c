@@ -72,7 +72,9 @@ static int pargv(int *argc, char ***argv, options *opts)
     if (!parseopts(argc, argv, opts)) {
         char err[128];
         optserr(opts, err);
-        fprintf(stderr, "metang: %s\n\n%s\n\n%s\n", err, short_usage, options_section);
+        fprintf(stderr,
+                "metang: %s\n\n%s\n\n%s\n",
+                err, short_usage, options_section);
         return PARGV_EXIT_FAILURE;
     }
 
@@ -85,6 +87,13 @@ static int pargv(int *argc, char ***argv, options *opts)
     if (opts->version) {
         printf("%s\n", version);
         return PARGV_EXIT_SUCCESS;
+    }
+
+    if (opts->bitmask && (opts->overrides || opts->start)) {
+        fprintf(stderr,
+                "metang: invalid option state; cannot override values for bitmasks\n%s\n\n%s\n",
+                short_usage, options_section);
+        return PARGV_EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;
