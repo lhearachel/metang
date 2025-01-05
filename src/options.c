@@ -12,6 +12,10 @@
     opts->result = r;           \
     EXCEPT(jb);
 
+#define OPT_FAIL(opts, r) \
+    opts->result = r;     \
+    goto fail_jump;
+
 typedef struct {
     char *longopt;
     char shortopt;
@@ -125,29 +129,27 @@ options *parseopts(int *argc, char ***argv, arena *a)
             break;
         }
 
+        usize i = 0;
         opts->last_opt = opt;
         opts->last_arg = NULL;
-        usize i = 0;
-        for (; i < lengthof(opthandlers); i++) {
-            if (match(opt + 1, opthandlers[i].shortopt, opthandlers[i].longopt)) {
-                char *arg = NULL;
-                if (opthandlers[i].has_arg) {
-                    if (*argc < 1) {
-                        opts->result = OPTS_F_OPT_MISSING_ARG;
-                        goto fail_jump;
-                    }
-                    arg = chomp_argv(argc, argv);
-                    opts->last_arg = arg;
-                }
-                opthandlers[i].handler(opts, arg, jmpbuf);
-                break;
-            }
+        while (i < lengthof(opthandlers) && !match(opt + 1, opthandlers[i].shortopt, opthandlers[i].longopt)) {
+            i++;
         }
 
         if (i == lengthof(opthandlers)) {
-            opts->result = OPTS_F_UNRECOGNIZED_OPT;
-            goto fail_jump;
+            OPT_FAIL(opts, OPTS_F_UNRECOGNIZED_OPT);
         }
+
+        char *arg = NULL;
+        if (opthandlers[i].has_arg) {
+            if (*argc < 1) {
+                OPT_FAIL(opts, OPTS_F_OPT_MISSING_ARG);
+            }
+
+            arg = chomp_argv(argc, argv);
+            opts->last_arg = arg;
+        }
+        opthandlers[i].handler(opts, arg, jmpbuf);
     }
 
 fail_jump:
