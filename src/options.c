@@ -101,14 +101,14 @@ static inline void set_defaults(options *opts)
     opts->fr_stdin = false;
 }
 
-options *parseopts(int *argc, char ***argv)
+options *parseopts(int *argc, char ***argv, arena *a)
 {
     chomp_argv(argc, argv);
     if (*argc == 0) {
         return NULL;
     }
 
-    options *opts = malloc(sizeof(options));
+    options *opts = NULL;
 
     // If an error occurs during parsing, then we will come back here and
     // immediately return. Individual handlers are responsible for invoking
@@ -118,6 +118,8 @@ options *parseopts(int *argc, char ***argv)
         return opts;
     }
 
+    a->jmpbuf = jmpbuf;
+    opts = new (a, options);
     set_defaults(opts);
     do {
         char *opt = chomp_argv(argc, argv);

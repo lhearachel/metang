@@ -17,16 +17,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "arena.h"
 #include "options.h"
 
 int main(int argc, char **argv)
 {
+    arena global = {0};
     options *opts = NULL;
+    int exit = EXIT_SUCCESS;
     if (argc == 1) {
         goto help;
     }
 
-    if (!(opts = parseopts(&argc, &argv))) {
+    arena_init(&global, sizeof(options));
+    if (!(opts = parseopts(&argc, &argv, &global))) {
         goto cleanup;
     }
 
@@ -34,8 +38,8 @@ int main(int argc, char **argv)
         char err[128];
         optserr(opts, err);
         fprintf(stderr, "metang: %s\n\n%s\n\n%s\n", err, short_usage, options_section);
-        free(opts);
-        return EXIT_FAILURE;
+        exit = EXIT_FAILURE;
+        goto cleanup;
     }
 
     if (opts->help) {
@@ -73,6 +77,6 @@ int main(int argc, char **argv)
     printf("stdin?        “%s”\n", opts->fr_stdin ? "yes" : "no");
 
 cleanup:
-    free(opts);
-    return EXIT_SUCCESS;
+    arena_free(&global, A_F_ZERO);
+    return exit;
 }
