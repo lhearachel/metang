@@ -22,11 +22,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-void arena_init(arena *a, usize cap)
+arena arena_init(usize cap)
 {
-    a->mem = malloc(cap);
-    a->cap = a->mem ? cap : 0;
-    a->ofs = 0;
+    arena a = {0};
+    a.mem = malloc(cap);
+    a.cap = a.mem ? cap : 0;
+    a.ofs = 0;
+    return a;
 }
 
 void arena_free(arena *a, int flags)

@@ -38,7 +38,7 @@ typedef struct {
     void **jmpbuf;
 } arena;
 
-void arena_init(arena *a, usize cap);
+arena arena_init(usize cap);
 void arena_free(arena *a, int flags);
 void arena_zero(arena *a, usize beg, usize len);
 void *arena_claim(arena *a, usize size, usize align, usize count, int flags);

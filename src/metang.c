@@ -22,14 +22,13 @@
 
 int main(int argc, char **argv)
 {
-    arena global = {0};
+    arena global = arena_init(sizeof(options));
     options *opts = NULL;
     int exit = EXIT_SUCCESS;
     if (argc == 1) {
         goto help;
     }
 
-    arena_init(&global, sizeof(options));
     if (!(opts = parseopts(&argc, &argv, &global))) {
         goto cleanup;
     }
