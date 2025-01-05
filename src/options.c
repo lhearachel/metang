@@ -8,9 +8,9 @@
 #include "meta.h"
 #include "version.h"
 
-#define OPT_FAIL(opts, r) \
-    opts->result = r;     \
-    FAIL_JUMP;
+#define OPT_EXCEPT(jb, opts, r) \
+    opts->result = r;           \
+    EXCEPT(jb);
 
 typedef struct {
     char *longopt;
@@ -108,25 +108,16 @@ static inline void set_defaults(options *opts)
 
 options *parseopts(int *argc, char ***argv, arena *a)
 {
-    options *opts = NULL;
     chomp_argv(argc, argv);
     if (*argc == 0) {
         return NULL;
     }
 
-    // If an error occurs during parsing, then we will come back here and
-    // immediately return. Individual handlers are responsible for invoking
-    // `FAIL_JUMP(jmpbuf)` as needed.
-    void *jmpbuf[5];
-    if (__builtin_setjmp(jmpbuf)) {
-        return opts;
-    }
-
-    a->jmpbuf = jmpbuf;
-    opts = new (a, options);
+    options *opts = new (a, options);
     set_defaults(opts);
 
     char *opt;
+    CATCH(a, jmpbuf, goto fail_jump);
     while (*argc > 0 && (opt = chomp_argv(argc, argv)) && isopt(opt)) {
         opts->help = match(opt + 1, 'h', "help");
         opts->version = match(opt + 1, 'v', "version");
@@ -186,7 +177,7 @@ static void handle_append(options *opts, char *arg, void **jmpbuf)
         return;
     }
 
-    OPT_FAIL(opts, OPTS_F_TOO_MANY_APPENDS);
+    OPT_EXCEPT(jmpbuf, opts, OPTS_F_TOO_MANY_APPENDS);
 }
 
 static void handle_prepend(options *opts, char *arg, void **jmpbuf)
@@ -197,16 +188,17 @@ static void handle_prepend(options *opts, char *arg, void **jmpbuf)
         return;
     }
 
-    OPT_FAIL(opts, OPTS_F_TOO_MANY_PREPENDS);
+    OPT_EXCEPT(jmpbuf, opts, OPTS_F_TOO_MANY_PREPENDS);
 }
 
 static void handle_start_from(options *opts, char *arg, void **jmpbuf)
 {
+    // TODO: strtol just silently fails here for some reason...?
     errno = 0;
     opts->start = strtol(arg, NULL, 10);
 
     if (errno) {
-        OPT_FAIL(opts, OPTS_F_NOT_AN_INTEGER);
+        OPT_EXCEPT(jmpbuf, opts, OPTS_F_NOT_AN_INTEGER);
     }
 }
 
@@ -231,7 +223,7 @@ static void handle_tag_case(options *opts, char *arg, void **jmpbuf)
     }
 
     if (i == lengthof(tag_casings)) {
-        OPT_FAIL(opts, OPTS_F_UNRECOGNIZED_CASING);
+        OPT_EXCEPT(jmpbuf, opts, OPTS_F_UNRECOGNIZED_CASING);
     }
 }
 

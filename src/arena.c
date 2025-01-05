@@ -53,9 +53,7 @@ void *arena_claim(arena *a, usize size, usize align, usize count, int flags)
             return NULL;
         }
 
-        // Clients can specify a long-jump handler to which they would like to
-        // jump on failures to allocate.
-        __builtin_longjmp(a->jmpbuf, 1);
+        EXCEPT(a->jmpbuf);
     }
 
     unsigned char *p = a->mem + a->ofs - padding;
