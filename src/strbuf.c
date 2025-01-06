@@ -34,28 +34,28 @@ static inline int isspace(int c)
         || c == '\r';
 }
 
-usize strtrim(str s)
+usize strtrim(const str *s)
 {
-    usize i = s.len;
-    while (i > 0 && isspace(s.buf[i - 1])) {
+    usize i = s->len;
+    while (i > 0 && isspace(s->buf[i - 1])) {
         i--;
     }
     return i;
 }
 
-strpair strcut(str s, char c)
+strpair strcut(const str *s, char c)
 {
     strpair pair = {0};
-    pair.head.buf = s.buf;
+    pair.head.buf = s->buf;
 
-    while (pair.head.len < s.len
-           && s.buf[pair.head.len]
-           && s.buf[pair.head.len] != c) {
+    while (pair.head.len < s->len
+           && s->buf[pair.head.len]
+           && s->buf[pair.head.len] != c) {
         pair.head.len++;
     }
 
-    pair.tail.buf = s.buf + pair.head.len + 1;
-    pair.tail.len = s.len - pair.head.len - 1;
+    pair.tail.buf = s->buf + pair.head.len + 1;
+    pair.tail.len = s->len - pair.head.len - 1;
     return pair;
 }
 

@@ -184,9 +184,9 @@ static strlist *readlines(FILE *f)
     strlist *head = NULL;
     strlist **tail = &head;
     while (line.tail.len) {
-        line = strcut(line.tail, '\n'); // cut out a line
-        pair = strcut(line.head, '#');
-        pair.head.len = strtrim(pair.head);
+        line = strcut(&line.tail, '\n');
+        pair = strcut(&line.head, '#');
+        pair.head.len = strtrim(&pair.head);
 
         *tail = new (global, strlist, 1, A_F_EXTEND);
         (*tail)->next = NULL;

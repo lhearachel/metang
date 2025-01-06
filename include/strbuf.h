@@ -45,8 +45,8 @@ struct strlist {
 };
 
 bool streq(const str *s1, const str *s2);
-usize strtrim(str s);
-strpair strcut(str s, char c);
+usize strtrim(const str *s);
+strpair strcut(const str *s, char c);
 strpair strrcut(const str *s, char c);
 
 #endif // METANG_STRBUF_H
