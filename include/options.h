@@ -39,20 +39,20 @@ enum result_code {
 
 typedef struct options {
     enum result_code result;
-    char *last_opt;
-    char *last_arg;
+    str last_opt;
+    str last_arg;
 
-    char *append[MAX_ADDITIONAL_VALS];
-    char *prepend[MAX_ADDITIONAL_VALS];
+    str append[MAX_ADDITIONAL_VALS];
+    str prepend[MAX_ADDITIONAL_VALS];
     u16 append_count;
     u16 prepend_count;
 
     isize start;
-    char *leader;
-    char *tag;
-    char *guard;
-    char *outfile;
-    char *infile;
+    str leader;
+    str tag;
+    str guard;
+    str outfile;
+    str infile;
 
     union {
         struct {
@@ -61,8 +61,6 @@ typedef struct options {
             u32 overrides : 1;
             u32 help      : 1;
             u32 version   : 1;
-            u32 to_stdout : 1;
-            u32 fr_stdin  : 1;
         };
         u32 flags;
     };

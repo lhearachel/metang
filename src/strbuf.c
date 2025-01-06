@@ -19,6 +19,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+bool streq(const str *s1, const str *s2)
+{
+    return s1->len == s2->len && strncmp(s1->buf, s2->buf, s1->len) == 0;
+}
+
 static inline int isspace(int c)
 {
     return c == ' '
@@ -51,5 +56,30 @@ strpair strcut(str s, char c)
 
     pair.tail.buf = s.buf + pair.head.len + 1;
     pair.tail.len = s.len - pair.head.len - 1;
+    return pair;
+}
+
+strpair strrcut(const str *s, char c)
+{
+    strpair pair = {0};
+    pair.head.buf = s->buf;
+    pair.head.len = s->len;
+
+    while (pair.head.len > 0
+           && s->buf[pair.head.len - 1]
+           && s->buf[pair.head.len - 1] != c) {
+        pair.head.len--;
+    }
+
+    if (pair.head.len == 0) {
+        pair.head.len = s->len;
+        pair.tail.buf = s->buf + pair.head.len;
+        pair.tail.len = 0;
+    } else {
+        pair.tail.buf = s->buf + pair.head.len;
+        pair.tail.len = s->len - pair.head.len;
+        pair.head.len--;
+    }
+
     return pair;
 }

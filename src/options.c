@@ -4,44 +4,48 @@
 #include <string.h>
 
 #include "meta.h"
+#include "strbuf.h"
 
 typedef struct {
-    char *longopt;
+    str longopt;
     char shortopt;
     bool has_arg : 24;
-    bool (*handler)(options *opts, char *arg);
+    bool (*handler)(options *opts, str *arg);
 } opthandler;
 
-static bool handle_bitmask(options *opts, char *arg);
-static bool handle_allow_overrides(options *opts, char *arg);
-static bool handle_append(options *opts, char *arg);
-static bool handle_prepend(options *opts, char *arg);
-static bool handle_start_from(options *opts, char *arg);
-static bool handle_output(options *opts, char *arg);
-static bool handle_leader(options *opts, char *arg);
-static bool handle_tag_case(options *opts, char *arg);
-static bool handle_tag_name(options *opts, char *arg);
-static bool handle_preproc_guard(options *opts, char *arg);
+static bool handle_bitmask(options *opts, str *arg);
+static bool handle_allow_overrides(options *opts, str *arg);
+static bool handle_append(options *opts, str *arg);
+static bool handle_prepend(options *opts, str *arg);
+static bool handle_start_from(options *opts, str *arg);
+static bool handle_output(options *opts, str *arg);
+static bool handle_leader(options *opts, str *arg);
+static bool handle_tag_case(options *opts, str *arg);
+static bool handle_tag_name(options *opts, str *arg);
+static bool handle_preproc_guard(options *opts, str *arg);
 
 // clang-format off
+static const str help = strnew("help");
+static const str vers = strnew("version");
+
 static const opthandler opthandlers[] = {
-    { "bitmask",         'B', false, handle_bitmask         },
-    { "allow-overrides", 'D', false, handle_allow_overrides },
-    { "append",          'a', true,  handle_append          },
-    { "prepend",         'p', true,  handle_prepend         },
-    { "start-from",      'n', true,  handle_start_from      },
-    { "output",          'o', true,  handle_output          },
-    { "leader",          'l', true,  handle_leader          },
-    { "tag-case",        'c', true,  handle_tag_case        },
-    { "tag-name",        't', true,  handle_tag_name        },
-    { "preproc-guard",   'G', true,  handle_preproc_guard   },
-    { 0 }, // must ALWAYS be last!
+    { strnew("bitmask"),         'B', false, handle_bitmask         },
+    { strnew("allow-overrides"), 'D', false, handle_allow_overrides },
+    { strnew("append"),          'a', true,  handle_append          },
+    { strnew("prepend"),         'p', true,  handle_prepend         },
+    { strnew("start-from"),      'n', true,  handle_start_from      },
+    { strnew("output"),          'o', true,  handle_output          },
+    { strnew("leader"),          'l', true,  handle_leader          },
+    { strnew("tag-case"),        'c', true,  handle_tag_case        },
+    { strnew("tag-name"),        't', true,  handle_tag_name        },
+    { strnew("preproc-guard"),   'G', true,  handle_preproc_guard   },
+    { strZ,                      ' ', false, NULL                   }, // must ALWAYS be last!
 };
 
-static const struct { char *arg; enum tag_case casing; } tag_casings[] = {
-    { "snake",  TAG_SNAKE_CASE  },
-    { "pascal", TAG_PASCAL_CASE },
-    { 0 }, // must ALWAYS be last!
+static const struct { str arg; enum tag_case casing; } tag_casings[] = {
+    { strnew("snake"),  TAG_SNAKE_CASE  },
+    { strnew("pascal"), TAG_PASCAL_CASE },
+    { strZ,             0               }, // must ALWAYS be last!
 };
 
 static const char *errmsg[] = {
@@ -55,75 +59,76 @@ static const char *errmsg[] = {
 };
 // clang-format on
 
-static inline char *chomp_argv(int *argc, char ***argv)
+static inline str chomp_argv(int *argc, char ***argv)
 {
-    char *arg = **argv;
+    str arg = strnew(**argv, strlen(**argv));
     (*argc)--;
     (*argv)++;
     return arg;
 }
 
-static inline bool isopt(char *s)
+static inline bool isopt(const str *s)
 {
-    return s[0] == '-' && !(s[1] == '-' && s[2] == '\0');
+    return s->buf[0] == '-' && !(s->buf[1] == '-' && s->len == 2);
 }
 
-static inline bool match(char *opt, char shortopt, char *longopt)
+static inline bool match(const str *opt, char shortopt, const str *longopt)
 {
-    return (opt[0] == shortopt && opt[1] == '\0')
-        || (longopt != NULL && strcmp(opt + 1, longopt) == 0);
+    return (opt->len == 1 && opt->buf[0] == shortopt)
+        || streq(opt, longopt);
 }
 
 static inline void initopts(options *opts)
 {
     opts->result = OPTS_S;
-    opts->last_opt = NULL;
-    opts->last_arg = NULL;
+    opts->last_opt = strZ;
+    opts->last_arg = strZ;
 
     opts->append_count = 0;
     opts->prepend_count = 0;
 
     opts->start = 0;
-    opts->leader = NULL;
-    opts->tag = NULL;
-    opts->guard = "METANG";
-    opts->outfile = NULL;
-    opts->infile = NULL;
+    opts->leader = strZ;
+    opts->tag = strZ;
+    opts->guard = strnew("METANG");
+    opts->outfile = strZ;
+    opts->infile = strZ;
 
     opts->casing = TAG_SNAKE_CASE;
     opts->bitmask = false;
     opts->overrides = false;
     opts->help = false;
     opts->version = false;
-    opts->to_stdout = false;
-    opts->fr_stdin = false;
 }
 
 bool parseopts(int *argc, char ***argv, options *opts)
 {
     initopts(opts);
 
-    char *opt = "";
-    while (*argc > 0 && (opt = chomp_argv(argc, argv)) && isopt(opt)) {
-        opts->help = match(opt + 1, 'h', "help");
-        opts->version = match(opt + 1, 'v', "version");
+    str opt = strZ;
+    str cutopt = strZ;
+    while (*argc > 0 && (opt = chomp_argv(argc, argv)).len > 0 && isopt(&opt)) {
+        cutopt = strrcut(&opt, '-').tail;
+        opts->help = match(&cutopt, 'h', &help);
+        opts->version = match(&cutopt, 'v', &vers);
         if (opts->help || opts->version) {
             break;
         }
 
         usize i = 0;
         opts->last_opt = opt;
-        opts->last_arg = NULL;
-        while (i < lengthof(opthandlers) && !match(opt + 1, opthandlers[i].shortopt, opthandlers[i].longopt)) {
+        opts->last_arg = strZ;
+        while (opthandlers[i].shortopt != ' '
+               && !match(&cutopt, opthandlers[i].shortopt, &opthandlers[i].longopt)) {
             i++;
         }
 
-        if (i == lengthof(opthandlers)) {
+        if (opthandlers[i].longopt.len == 0) {
             opts->result = OPTS_F_UNRECOGNIZED_OPT;
             return false;
         }
 
-        char *arg = NULL;
+        str arg = strZ;
         if (opthandlers[i].has_arg) {
             if (*argc < 1) {
                 opts->result = OPTS_F_OPT_MISSING_ARG;
@@ -133,14 +138,15 @@ bool parseopts(int *argc, char ***argv, options *opts)
             arg = chomp_argv(argc, argv);
             opts->last_arg = arg;
         }
-        if (!opthandlers[i].handler(opts, arg)) {
+        if (!opthandlers[i].handler(opts, &arg)) {
             return false;
         }
     }
 
-    opts->to_stdout = opts->outfile == NULL;
-    opts->fr_stdin = *argc == 0 && (opt[0] == '\0' || isopt(opt));
-    if (!opts->fr_stdin) {
+    // If argv was not fully parsed, then we must have hit a terminating `--`.
+    // If argv *was* fully parsed, then the final option must either not exist
+    // (length 0) or be a required positional argument (and thus not an option).
+    if (*argc != 0 || (opt.len != 0 && !isopt(&opt))) {
         opts->infile = opt;
     }
 
@@ -152,22 +158,22 @@ void optserr(options *opts, char *buf)
     sprintf(buf, errmsg[opts->result], opts->last_opt, opts->last_arg);
 }
 
-static bool handle_bitmask(options *opts, char *arg)
+static bool handle_bitmask(options *opts, str *arg)
 {
     opts->bitmask = true;
     return true;
 }
 
-static bool handle_allow_overrides(options *opts, char *arg)
+static bool handle_allow_overrides(options *opts, str *arg)
 {
     opts->overrides = true;
     return true;
 }
 
-static bool handle_append(options *opts, char *arg)
+static bool handle_append(options *opts, str *arg)
 {
     if (opts->append_count < MAX_ADDITIONAL_VALS) {
-        opts->append[opts->append_count] = arg;
+        opts->append[opts->append_count] = strnewp(arg);
         opts->append_count++;
         return true;
     }
@@ -176,10 +182,10 @@ static bool handle_append(options *opts, char *arg)
     return false;
 }
 
-static bool handle_prepend(options *opts, char *arg)
+static bool handle_prepend(options *opts, str *arg)
 {
     if (opts->prepend_count < MAX_ADDITIONAL_VALS) {
-        opts->prepend[opts->prepend_count] = arg;
+        opts->prepend[opts->prepend_count] = strnewp(arg);
         opts->prepend_count++;
         return true;
     }
@@ -211,9 +217,9 @@ static inline bool decstol(const char *s, long *l)
     return true;
 }
 
-static bool handle_start_from(options *opts, char *arg)
+static bool handle_start_from(options *opts, str *arg)
 {
-    if (decstol(arg, &opts->start)) {
+    if (decstol(arg->buf, &opts->start)) {
         return true;
     }
 
@@ -221,22 +227,22 @@ static bool handle_start_from(options *opts, char *arg)
     return false;
 }
 
-static bool handle_output(options *opts, char *arg)
+static bool handle_output(options *opts, str *arg)
 {
-    opts->outfile = arg;
+    opts->outfile = strnewp(arg);
     return true;
 }
 
-static bool handle_leader(options *opts, char *arg)
+static bool handle_leader(options *opts, str *arg)
 {
-    opts->leader = arg;
+    opts->leader = strnewp(arg);
     return true;
 }
 
-static bool handle_tag_case(options *opts, char *arg)
+static bool handle_tag_case(options *opts, str *arg)
 {
-    for (usize i = 0; i < lengthof(tag_casings); i++) {
-        if (strcmp(arg, tag_casings[i].arg) == 0) {
+    for (usize i = 0; tag_casings[i].arg.len > 0; i++) {
+        if (streq(arg, &tag_casings[i].arg)) {
             opts->casing = tag_casings[i].casing;
             return true;
         }
@@ -246,14 +252,14 @@ static bool handle_tag_case(options *opts, char *arg)
     return false;
 }
 
-static bool handle_tag_name(options *opts, char *arg)
+static bool handle_tag_name(options *opts, str *arg)
 {
-    opts->tag = arg;
+    opts->tag = strnewp(arg);
     return true;
 }
 
-static bool handle_preproc_guard(options *opts, char *arg)
+static bool handle_preproc_guard(options *opts, str *arg)
 {
-    opts->guard = arg;
+    opts->guard = strnewp(arg);
     return true;
 }

@@ -22,9 +22,10 @@
 // clang-format off
 #define strnew(...)          strX(__VA_ARGS__, strL, strS, strZ)(__VA_ARGS__)
 #define strX(a, b, c, ...)   c
-#define strL(s, l)           { .buf = s, .len = l }
-#define strS(s)              { .buf = s, .len = lengthof(s) }
-#define strZ                 { .buf = "", .len = 0 }
+#define strL(s, l)           (str){ .buf = s, .len = l }
+#define strS(s)              (str){ .buf = s, .len = lengthof(s) }
+#define strZ                 (str){ .buf = "", .len = 0 }
+#define strnewp(s)           (str){ .buf = s->buf, .len = s->len }
 // clang-format on
 
 typedef struct str {
@@ -43,7 +44,9 @@ struct strlist {
     str elem;
 };
 
+bool streq(const str *s1, const str *s2);
 usize strtrim(str s);
 strpair strcut(str s, char c);
+strpair strrcut(const str *s, char c);
 
 #endif // METANG_STRBUF_H

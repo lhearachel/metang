@@ -54,38 +54,36 @@ int main(int argc, char **argv)
     printf("--- METANG OPTIONS ---\n");
     printf("append:\n");
     for (usize i = 0; i < opts->append_count; i++) {
-        printf("  - %s\n", opts->append[i]);
+        printf("  - %s\n", opts->append[i].buf);
     }
     printf("prepend:\n");
     for (usize i = 0; i < opts->prepend_count; i++) {
-        printf("  - %s\n", opts->prepend[i]);
+        printf("  - %s\n", opts->prepend[i].buf);
     }
     printf("start from:   “%ld”\n", opts->start);
-    printf("leader:       “%s”\n", opts->leader);
-    printf("tag:          “%s”\n", opts->tag);
-    printf("guard:        “%s”\n", opts->guard);
-    printf("outfile:      “%s”\n", opts->outfile);
-    printf("infile:       “%s”\n", opts->infile);
+    printf("leader:       “%s”\n", opts->leader.buf);
+    printf("tag:          “%s”\n", opts->tag.buf);
+    printf("guard:        “%s”\n", opts->guard.buf);
     printf("casing:       “%s”\n", opts->casing == TAG_SNAKE_CASE ? "snake" : "pascal");
     printf("bitmask?      “%s”\n", opts->bitmask ? "yes" : "no");
     printf("overrides?    “%s”\n", opts->overrides ? "yes" : "no");
-    printf("stdout?       “%s”\n", opts->to_stdout ? "yes" : "no");
-    printf("stdin?        “%s”\n", opts->fr_stdin ? "yes" : "no");
+    printf("outfile:      “%s”\n", opts->outfile.len == 0 ? "stdout" : opts->outfile.buf);
+    printf("infile:       “%s”\n", opts->outfile.len == 0 ? "stdin" : opts->infile.buf);
 #endif // NDEBUG
 
-    fin = opts->fr_stdin ? stdin : fopen(opts->infile, "rb");
+    fin = opts->infile.len == 0 ? stdin : fopen(opts->infile.buf, "rb");
     if (fin == NULL) {
         fprintf(stderr,
                 "metang: could not open input file “%s”: %s",
-                opts->infile, strerror(errno));
+                opts->infile.buf, strerror(errno));
         goto cleanup;
     }
 
-    fout = opts->to_stdout ? stdout : fopen(opts->outfile, "wb");
+    fout = opts->outfile.len == 0 ? stdout : fopen(opts->outfile.buf, "wb");
     if (fout == NULL) {
         fprintf(stderr,
                 "metang: could not open output file “%s”: %s",
-                opts->outfile, strerror(errno));
+                opts->outfile.buf, strerror(errno));
         goto cleanup;
     }
 
