@@ -19,11 +19,8 @@ MANDEST = $(DESTDIR)/share/man/man1
 CFLAGS += -MMD -Wall -Wextra -Wpedantic -std=c17
 CFLAGS += -Wno-keyword-macro
 CFLAGS += -Wno-unused-parameter
+CFLAGS += -Wno-deprecated-declarations
 CFLAGS += -Iinclude
-CFLAGS += -fsanitize=address
-
-LDFLAGS += -fsanitize=address
-LDFLAGS += -fsanitize-trap
 
 INC = $(wildcard include/*.h)
 SRC = $(wildcard src/*.c)
@@ -36,16 +33,17 @@ VERSION_H = include/version.h
 
 .PHONY: default all debug release install clean version
 
-default: all
-
-all: $(TARGET)
+default: debug
 
 debug: CFLAGS += -g -O0
-debug: clean all
+debug: CFLAGS += -fsanitize=address
+debug: LDFLAGS += -fsanitize=address
+debug: LDFLAGS += -fsanitize-trap
+debug: clean $(TARGET)
 
 release: CFLAGS += -DNDEBUG -O3
 release: CFLAGS += -DDEQUE_NDEBUG
-release: clean all
+release: clean $(TARGET)
 
 install: release
 	mkdir -p $(BINDEST)
