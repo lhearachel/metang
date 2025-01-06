@@ -19,6 +19,25 @@
 #include <stdlib.h>
 #include <string.h>
 
+static inline int isspace(int c)
+{
+    return c == ' '
+        || c == '\t'
+        || c == '\n'
+        || c == '\v'
+        || c == '\f'
+        || c == '\r';
+}
+
+usize strtrim(str s)
+{
+    usize i = s.len;
+    while (i > 0 && isspace(s.buf[i - 1])) {
+        i--;
+    }
+    return i;
+}
+
 strpair strcut(str s, char c)
 {
     strpair pair = {0};

@@ -20,7 +20,7 @@
 #include "meta.h"
 
 // clang-format off
-#define str(...)             strX(__VA_ARGS__, strL, strS)(__VA_ARGS__)
+#define strnew(...)          strX(__VA_ARGS__, strL, strS)(__VA_ARGS__)
 #define strX(a, b, c, ...)   c
 #define strL(s, l)           { .buf = s, .len = l }
 #define strS(s)              { .buf = s, .len = lengthof(s) }
@@ -47,6 +47,7 @@ struct strlist {
     str elem;
 };
 
+usize strtrim(str s);
 strpair strcut(str s, char c);
 bool bufextend(strbuf *buf, str s);
 

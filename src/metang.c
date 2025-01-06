@@ -150,9 +150,9 @@ static str fload(FILE *f)
     }
 
     usize read;
-    char buf[256];
+    char buf[1 << 15];
     while ((read = fread(buf, 1, 1 << 15, f)) != 0) {
-        str t = str(buf, strlen(buf));
+        str t = strnew(buf, strlen(buf));
         if (!bufextend(&sbuf, t)) {
             fprintf(stderr, "metang: WARNING! allocation failure while reading input\n");
             break;
@@ -165,15 +165,20 @@ static str fload(FILE *f)
 static strlist *readlines(FILE *f)
 {
     strpair pair = {0};
-    pair.tail = fload(f);
+    strpair line = {0};
+    line.tail = fload(f);
 
     strlist *head = NULL;
     strlist **tail = &head;
-    while (pair.tail.len) {
-        pair = strcut(pair.tail, '\n');
+    while (line.tail.len) {
+        line = strcut(line.tail, '\n'); // cut out a line
+        pair = strcut(line.head, '#');
+        pair.head.len = strtrim(pair.head);
+
         *tail = malloc(sizeof(**tail));
         (*tail)->next = NULL;
         (*tail)->elem = pair.head;
+
         tail = &(*tail)->next;
     }
 
