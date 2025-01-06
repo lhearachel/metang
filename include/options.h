@@ -36,7 +36,7 @@ enum result_code {
     OPTS_F_UNRECOGNIZED_CASING,
 };
 
-typedef struct {
+typedef struct options {
     enum result_code result;
     char *last_opt;
     char *last_arg;

@@ -16,17 +16,21 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
+#include "alloc.h"
 #include "options.h"
 #include "strbuf.h"
 
 static int pargv(int *argc, char ***argv, options *opts);
 static str fload(FILE *f);
 static strlist *readlines(FILE *f);
+
+arena *global;
 
 int main(int argc, char **argv)
 {
@@ -36,6 +40,9 @@ int main(int argc, char **argv)
         exit--;
         goto cleanup;
     }
+
+    arena a = arena_new(1 << 16);
+    global = &a;
 
 #ifndef NDEBUG
     printf("--- METANG OPTIONS ---\n");
@@ -68,8 +75,15 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
+    jmp_buf env;
+    if (setjmp(env)) {
+        fprintf(stderr, "metang: memory allocation failure");
+        fclose(fin);
+        goto cleanup;
+    }
+
     strlist *input = readlines(fin);
-    strlist *line, *next;
+    strlist *line;
 
 #ifndef NDEBUG
     printf("--- METANG INPUT ---\n");
@@ -81,16 +95,8 @@ int main(int argc, char **argv)
     }
 #endif // NDEBUG
 
-    free(input->elem.buf);
-
-    line = input;
-    while (line) {
-        next = line->next;
-        free(line);
-        line = next;
-    }
-
 cleanup:
+    free(global->mem);
     free(opts);
     return exit;
 }
@@ -140,26 +146,20 @@ static int pargv(int *argc, char ***argv, options *opts)
 
 static str fload(FILE *f)
 {
-    strbuf sbuf = {0};
-    sbuf.cap = 1 << 16;
-    sbuf.s.buf = malloc(sbuf.cap);
-    if (sbuf.s.buf == NULL) {
-        fprintf(stderr, "metang: allocation failure for reading input\n");
-        fclose(f);
-        return sbuf.s;
-    }
-
     usize read;
     char buf[1 << 15];
+
+    // The arena's internal memory can change during successive claims, so we
+    // must track the expected starting position.
+    usize bufofs = nextofs(global, alignof(char));
+    usize buflen = 0;
     while ((read = fread(buf, 1, 1 << 15, f)) != 0) {
-        str t = strnew(buf, strlen(buf));
-        if (!bufextend(&sbuf, t)) {
-            fprintf(stderr, "metang: WARNING! allocation failure while reading input\n");
-            break;
-        }
+        claim(global, buf, strlen(buf), A_F_EXTEND);
+        buflen += read;
     }
 
-    return sbuf.s;
+    str s = strnew(global->mem + bufofs, buflen);
+    return s;
 }
 
 static strlist *readlines(FILE *f)
@@ -175,7 +175,7 @@ static strlist *readlines(FILE *f)
         pair = strcut(line.head, '#');
         pair.head.len = strtrim(pair.head);
 
-        *tail = malloc(sizeof(**tail));
+        *tail = new (global, strlist, 1, A_F_EXTEND);
         (*tail)->next = NULL;
         (*tail)->elem = pair.head;
 
