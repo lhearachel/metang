@@ -20,10 +20,11 @@
 #include "meta.h"
 
 // clang-format off
-#define strnew(...)          strX(__VA_ARGS__, strL, strS)(__VA_ARGS__)
+#define strnew(...)          strX(__VA_ARGS__, strL, strS, strZ)(__VA_ARGS__)
 #define strX(a, b, c, ...)   c
 #define strL(s, l)           { .buf = s, .len = l }
 #define strS(s)              { .buf = s, .len = lengthof(s) }
+#define strZ                 { .buf = "", .len = 0 }
 // clang-format on
 
 typedef struct str {

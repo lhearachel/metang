@@ -4,7 +4,6 @@
 #include <string.h>
 
 #include "meta.h"
-#include "version.h"
 
 typedef struct {
     char *longopt;
@@ -258,32 +257,3 @@ static bool handle_preproc_guard(options *opts, char *arg)
     opts->guard = arg;
     return true;
 }
-
-// clang-format off
-const char *version = METANG_VERSION;
-
-const char *tag_line = "metang - Generate multi-purpose C headers for enumerators";
-
-const char *short_usage = "Usage: metang [options] [<input_file>]";
-
-const char *options_section = ""
-    "Options:\n"
-    "  -a, --append <entry>         Append <entry> to the input listing.\n"
-    "  -p, --prepend <entry>        Prepend <entry> to the input listing.\n"
-    "  -n, --start-from <number>    Start enumeration from <number>.\n"
-    "  -o, --output <file>          Write output to <file>.\n"
-    "  -l, --leader <leader>        Use <leader> as a prefix for generated symbols.\n"
-    "  -t, --tag-name <name>        Use <name> as the base tag for enums and lookup\n"
-    "                               tables.\n"
-    "  -c, --tag-case <case>        Customize the casing of generated tags for enums\n"
-    "                               and lookup tables. Options: snake, pascal\n"
-    "  -G, --preproc-guard <guard>  Use <guard> as a prefix for conditional\n"
-    "                               preprocessor directives.\n"
-    "  -B, --bitmask                If specified, generate symbols for a bitmask.\n"
-    "                               This option is incompatible with the “-D” and\n"
-    "                               “-n” options.\n"
-    "  -D, --allow-overrides        If specified, allow direct value-assignment.\n"
-    "  -h, --help                   Display this help text and exit.\n"
-    "  -v, --version                Display the program version number and exit."
-    "";
-// clang-format on

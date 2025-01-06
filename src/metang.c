@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include <assert.h>
 #include <errno.h>
 #include <setjmp.h>
 #include <stdio.h>
@@ -30,10 +29,18 @@ static int pargv(int *argc, char ***argv, options *opts);
 static str fload(FILE *f);
 static strlist *readlines(FILE *f);
 
+extern const str version;
+extern const str tag_line;
+extern const str short_usage;
+extern const str options_section;
+
 arena *global;
 
 int main(int argc, char **argv)
 {
+    arena a = arena_new(1 << 16);
+    global = &a;
+
     FILE *fin = NULL, *fout = NULL;
     options *opts = malloc(sizeof(*opts));
 
@@ -42,9 +49,6 @@ int main(int argc, char **argv)
         exit--;
         goto cleanup;
     }
-
-    arena a = arena_new(1 << 16);
-    global = &a;
 
 #ifndef NDEBUG
     printf("--- METANG OPTIONS ---\n");
@@ -130,25 +134,25 @@ static int pargv(int *argc, char ***argv, options *opts)
         optserr(opts, err);
         fprintf(stderr,
                 "metang: %s\n\n%s\n\n%s\n",
-                err, short_usage, options_section);
+                err, short_usage.buf, options_section.buf);
         return PARGV_EXIT_FAILURE;
     }
 
     if (opts->help) {
     help:
-        printf("%s\n\n%s\n\n%s\n", tag_line, short_usage, options_section);
+        printf("%s\n\n%s\n\n%s\n", tag_line.buf, short_usage.buf, options_section.buf);
         return PARGV_EXIT_SUCCESS;
     }
 
     if (opts->version) {
-        printf("%s\n", version);
+        printf("%s\n", version.buf);
         return PARGV_EXIT_SUCCESS;
     }
 
     if (opts->bitmask && (opts->overrides || opts->start)) {
         fprintf(stderr,
                 "metang: invalid option state; cannot override values for bitmasks\n%s\n\n%s\n",
-                short_usage, options_section);
+                short_usage.buf, options_section.buf);
         return PARGV_EXIT_FAILURE;
     }
 

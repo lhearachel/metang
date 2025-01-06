@@ -18,6 +18,7 @@
 #define METANG_OPTIONS_H
 
 #include "meta.h"
+#include "strbuf.h"
 
 #define MAX_ADDITIONAL_VALS 16
 
@@ -69,10 +70,5 @@ typedef struct options {
 
 bool parseopts(int *argc, char ***argv, options *opts);
 void optserr(options *opts, char *buf);
-
-extern const char *version;
-extern const char *tag_line;
-extern const char *short_usage;
-extern const char *options_section;
 
 #endif // METANG_OPTIONS_H
