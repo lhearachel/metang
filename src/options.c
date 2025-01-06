@@ -6,12 +6,17 @@
 #include "meta.h"
 #include "strbuf.h"
 
-typedef struct {
+typedef struct opthandler {
     str longopt;
     char shortopt;
     bool has_arg : 24;
     bool (*handler)(options *opts, str *arg);
 } opthandler;
+
+typedef struct opterrmsg {
+    str fmt;
+    usize argc;
+} opterrmsg;
 
 static bool handle_bitmask(options *opts, str *arg);
 static bool handle_allow_overrides(options *opts, str *arg);
@@ -48,14 +53,14 @@ static const struct { str arg; enum tag_case casing; } tag_casings[] = {
     { strZ,             0               }, // must ALWAYS be last!
 };
 
-static const char *errmsg[] = {
-    [OPTS_S]                     = "",
-    [OPTS_F_UNRECOGNIZED_OPT]    = "Unrecognized option “%s”",
-    [OPTS_F_OPT_MISSING_ARG]     = "Option “%s” missing argument",
-    [OPTS_F_TOO_MANY_APPENDS]    = "Too many “--append” options",
-    [OPTS_F_TOO_MANY_PREPENDS]   = "Too many “--prepend” options",
-    [OPTS_F_NOT_AN_INTEGER]      = "Expected integer argument for option “%s”, but found “%s”",
-    [OPTS_F_UNRECOGNIZED_CASING] = "Expected one of “snake” or “pascal” for option “%s”, but found “%s”",
+static const opterrmsg errmsg[] = {
+    [OPTS_S]                     = { strZ,                                                                          0 },
+    [OPTS_F_UNRECOGNIZED_OPT]    = { strnew("Unrecognized option “%s”"),                                            1 },
+    [OPTS_F_OPT_MISSING_ARG]     = { strnew("Option “%s” missing argument"),                                        1 },
+    [OPTS_F_TOO_MANY_APPENDS]    = { strnew("Too many “--append” options"),                                         0 },
+    [OPTS_F_TOO_MANY_PREPENDS]   = { strnew("Too many “--prepend” options"),                                        0 },
+    [OPTS_F_NOT_AN_INTEGER]      = { strnew("Expected integer argument for option “%s”, but found “%s”"),           2 },
+    [OPTS_F_UNRECOGNIZED_CASING] = { strnew("Expected one of “snake” or “pascal” for option “%s”, but found “%s”"), 2 },
 };
 // clang-format on
 
@@ -138,6 +143,7 @@ bool parseopts(int *argc, char ***argv, options *opts)
             arg = chomp_argv(argc, argv);
             opts->last_arg = arg;
         }
+
         if (!opthandlers[i].handler(opts, &arg)) {
             return false;
         }
@@ -153,9 +159,18 @@ bool parseopts(int *argc, char ***argv, options *opts)
     return true;
 }
 
-void optserr(options *opts, char *buf)
+void optserr(options *opts, str *sbuf)
 {
-    sprintf(buf, errmsg[opts->result], opts->last_opt, opts->last_arg);
+    opterrmsg msg = errmsg[opts->result];
+    usize msglen = msg.fmt.len - (2 * msg.argc) + 1;
+    if (msg.argc == 1) {
+        msglen += opts->last_opt.len;
+    } else if (msg.argc == 2) {
+        msglen += opts->last_opt.len;
+        msglen += opts->last_arg.len;
+    }
+
+    snprintf(sbuf->buf, msglen, msg.fmt.buf, opts->last_opt, opts->last_arg);
 }
 
 static bool handle_bitmask(options *opts, str *arg)

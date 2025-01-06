@@ -67,6 +67,6 @@ typedef struct options {
 } options;
 
 bool parseopts(int *argc, char ***argv, options *opts);
-void optserr(options *opts, char *buf);
+void optserr(options *opts, str *sbuf);
 
 #endif // METANG_OPTIONS_H

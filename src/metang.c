@@ -128,11 +128,14 @@ static int pargv(int *argc, char ***argv, options *opts)
     (*argv)++;
 
     if (!parseopts(argc, argv, opts)) {
-        char err[128];
-        optserr(opts, err);
+        char buf[128];
+        str errbuf = strnew(buf);
+        optserr(opts, &errbuf);
         fprintf(stderr,
-                "metang: %s\n\n%s\n\n%s\n",
-                err, short_usage.buf, options_section.buf);
+                "metang: %.*s\n\n%s\n\n%s\n",
+                (int)errbuf.len, errbuf.buf,
+                short_usage.buf,
+                options_section.buf);
         return PARGV_EXIT_FAILURE;
     }
 
