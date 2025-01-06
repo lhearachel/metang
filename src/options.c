@@ -1,7 +1,6 @@
 #include "options.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "meta.h"
@@ -111,11 +110,6 @@ static inline void initopts(options *opts)
 
 bool parseopts(int *argc, char ***argv, options *opts)
 {
-    chomp_argv(argc, argv);
-    if (*argc == 0) {
-        return false;
-    }
-
     initopts(opts);
 
     CATCH(jmpbuf, {
@@ -154,7 +148,7 @@ bool parseopts(int *argc, char ***argv, options *opts)
     }
 
     opts->to_stdout = opts->outfile == NULL;
-    opts->fr_stdin = strcmp(opt, "--") == 0;
+    opts->fr_stdin = strcmp(opt, "--") == 0 || *argc == 0;
     if (!opts->fr_stdin) {
         opts->infile = opt;
     }

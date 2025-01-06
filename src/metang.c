@@ -15,12 +15,18 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "options.h"
+#include "strbuf.h"
 
 static int pargv(int *argc, char ***argv, options *opts);
+static str fload(FILE *f);
+static strlist *readlines(FILE *f);
 
 int main(int argc, char **argv)
 {
@@ -54,6 +60,36 @@ int main(int argc, char **argv)
     printf("stdin?        “%s”\n", opts->fr_stdin ? "yes" : "no");
 #endif // NDEBUG
 
+    FILE *fin = opts->fr_stdin ? stdin : fopen(opts->infile, "rb");
+    if (fin == NULL) {
+        fprintf(stderr,
+                "metang: could not open input file “%s”: %s",
+                opts->infile, strerror(errno));
+        goto cleanup;
+    }
+
+    strlist *input = readlines(fin);
+    strlist *line, *next;
+
+#ifndef NDEBUG
+    printf("--- METANG INPUT ---\n");
+
+    line = input;
+    while (line) {
+        printf("%.*s\n", (int)line->elem.len, line->elem.buf);
+        line = line->next;
+    }
+#endif // NDEBUG
+
+    free(input->elem.buf);
+
+    line = input;
+    while (line) {
+        next = line->next;
+        free(line);
+        line = next;
+    }
+
 cleanup:
     free(opts);
     return exit;
@@ -64,10 +100,13 @@ cleanup:
 
 static int pargv(int *argc, char ***argv, options *opts)
 {
-    if (*argc == 1) {
+    if (*argc == 1 && isatty(STDIN_FILENO)) {
         goto help;
         return PARGV_EXIT_SUCCESS;
     }
+
+    (*argc)--;
+    (*argv)++;
 
     if (!parseopts(argc, argv, opts)) {
         char err[128];
@@ -97,4 +136,47 @@ static int pargv(int *argc, char ***argv, options *opts)
     }
 
     return EXIT_SUCCESS;
+}
+
+static str fload(FILE *f)
+{
+    strbuf sbuf = {0};
+    sbuf.cap = 1 << 16;
+    sbuf.s.buf = malloc(sbuf.cap);
+    if (sbuf.s.buf == NULL) {
+        fprintf(stderr, "metang: allocation failure for reading input\n");
+        fclose(f);
+        return sbuf.s;
+    }
+
+    usize read;
+    char buf[256];
+    while ((read = fread(buf, 1, 1 << 15, f)) != 0) {
+        str t = str(buf, strlen(buf));
+        if (!bufextend(&sbuf, t)) {
+            fprintf(stderr, "metang: WARNING! allocation failure while reading input\n");
+            break;
+        }
+    }
+
+    return sbuf.s;
+}
+
+static strlist *readlines(FILE *f)
+{
+    strpair pair = {0};
+    pair.tail = fload(f);
+
+    strlist *head = NULL;
+    strlist **tail = &head;
+    while (pair.tail.len) {
+        pair = strcut(pair.tail, '\n');
+        *tail = malloc(sizeof(**tail));
+        (*tail)->next = NULL;
+        (*tail)->elem = pair.head;
+        tail = &(*tail)->next;
+    }
+
+    fclose(f);
+    return head;
 }
