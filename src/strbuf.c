@@ -71,13 +71,9 @@ strpair strrcut(const str *s, char c)
         pair.head.len--;
     }
 
-    if (pair.head.len == 0) {
-        pair.head.len = s->len;
-        pair.tail.buf = s->buf + pair.head.len;
-        pair.tail.len = 0;
-    } else {
-        pair.tail.buf = s->buf + pair.head.len;
-        pair.tail.len = s->len - pair.head.len;
+    pair.tail.buf = s->buf + pair.head.len;
+    pair.tail.len = s->len - pair.head.len;
+    if (pair.head.len != 0) {
         pair.head.len--;
     }
 

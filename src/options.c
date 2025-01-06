@@ -156,6 +156,19 @@ bool parseopts(int *argc, char ***argv, options *opts)
         opts->infile = opt;
     }
 
+    // `tag` and `leader` must be post-processed if they do not yet have values.
+    if (opts->tag.len == 0) {
+        opts->tag = opts->infile.len == 0
+            ? strnew("stdin")
+            : strrcut(&opts->infile, '/').tail;
+    }
+
+    if (opts->leader.len == 0) {
+        opts->leader = opts->outfile.len == 0
+            ? strnew("stdout")
+            : strrcut(&opts->outfile, '/').tail;
+    }
+
     return true;
 }
 
