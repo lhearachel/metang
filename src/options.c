@@ -116,7 +116,7 @@ bool parseopts(int *argc, char ***argv, options *opts)
         return false;
     });
 
-    char *opt;
+    char *opt = "";
     while (*argc > 0 && (opt = chomp_argv(argc, argv)) && isopt(opt)) {
         opts->help = match(opt + 1, 'h', "help");
         opts->version = match(opt + 1, 'v', "version");
@@ -148,7 +148,7 @@ bool parseopts(int *argc, char ***argv, options *opts)
     }
 
     opts->to_stdout = opts->outfile == NULL;
-    opts->fr_stdin = strcmp(opt, "--") == 0 || *argc == 0;
+    opts->fr_stdin = *argc == 0 && (opt[0] == '\0' || isopt(opt));
     if (!opts->fr_stdin) {
         opts->infile = opt;
     }
