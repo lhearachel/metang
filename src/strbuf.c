@@ -53,21 +53,3 @@ strpair strcut(str s, char c)
     pair.tail.len = s.len - pair.head.len - 1;
     return pair;
 }
-
-bool bufextend(strbuf *buf, str s)
-{
-    if (buf->cap < buf->s.len + s.len) {
-        usize tcap = buf->cap * 2;
-        char *tbuf = realloc(buf->s.buf, tcap);
-        if (!tbuf) {
-            return false;
-        }
-
-        buf->s.buf = tbuf;
-        buf->cap = tcap;
-    }
-
-    memcpy(buf->s.buf + buf->s.len, s.buf, s.len);
-    buf->s.len += s.len;
-    return true;
-}

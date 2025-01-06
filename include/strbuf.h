@@ -32,11 +32,6 @@ typedef struct str {
     usize len;
 } str;
 
-typedef struct strbuf {
-    str s;
-    usize cap;
-} strbuf;
-
 typedef struct strpair {
     str head;
     str tail;
@@ -50,6 +45,5 @@ struct strlist {
 
 usize strtrim(str s);
 strpair strcut(str s, char c);
-bool bufextend(strbuf *buf, str s);
 
 #endif // METANG_STRBUF_H
