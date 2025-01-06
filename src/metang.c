@@ -34,7 +34,9 @@ arena *global;
 
 int main(int argc, char **argv)
 {
+    FILE *fin = NULL, *fout = NULL;
     options *opts = malloc(sizeof(*opts));
+
     int exit = pargv(&argc, &argv, opts);
     if (exit) {
         exit--;
@@ -67,7 +69,7 @@ int main(int argc, char **argv)
     printf("stdin?        “%s”\n", opts->fr_stdin ? "yes" : "no");
 #endif // NDEBUG
 
-    FILE *fin = opts->fr_stdin ? stdin : fopen(opts->infile, "rb");
+    fin = opts->fr_stdin ? stdin : fopen(opts->infile, "rb");
     if (fin == NULL) {
         fprintf(stderr,
                 "metang: could not open input file “%s”: %s",
@@ -75,27 +77,36 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-    jmp_buf env;
-    if (setjmp(env)) {
+    fout = opts->to_stdout ? stdout : fopen(opts->outfile, "wb");
+    if (fout == NULL) {
+        fprintf(stderr,
+                "metang: could not open output file “%s”: %s",
+                opts->outfile, strerror(errno));
+        goto cleanup;
+    }
+
+    if (setjmp(global->env)) {
         fprintf(stderr, "metang: memory allocation failure");
-        fclose(fin);
         goto cleanup;
     }
 
     strlist *input = readlines(fin);
-    strlist *line;
 
 #ifndef NDEBUG
     printf("--- METANG INPUT ---\n");
 
-    line = input;
+    strlist *line = input;
     while (line) {
         printf("%.*s\n", (int)line->elem.len, line->elem.buf);
         line = line->next;
     }
+
+    printf("--- METANG OUTPUT ---\n");
 #endif // NDEBUG
 
 cleanup:
+    fin ? fclose(fin) : 0;
+    fout ? fclose(fout) : 0;
     free(global->mem);
     free(opts);
     return exit;
