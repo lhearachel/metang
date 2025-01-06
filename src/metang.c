@@ -30,9 +30,9 @@ static strlist *readlines(FILE *f);
 
 int main(int argc, char **argv)
 {
-    int exit;
     options *opts = malloc(sizeof(*opts));
-    if ((exit = pargv(&argc, &argv, opts))) {
+    int exit = pargv(&argc, &argv, opts);
+    if (exit) {
         exit--;
         goto cleanup;
     }

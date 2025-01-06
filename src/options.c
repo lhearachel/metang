@@ -6,31 +6,23 @@
 #include "meta.h"
 #include "version.h"
 
-#define OPT_EXCEPT(jb, opts, r) \
-    opts->result = r;           \
-    EXCEPT(jb);
-
-#define OPT_FAIL(opts, r) \
-    opts->result = r;     \
-    return false;
-
 typedef struct {
     char *longopt;
     char shortopt;
     bool has_arg : 24;
-    void (*handler)(options *opts, char *arg, void **jmpbuf);
+    bool (*handler)(options *opts, char *arg);
 } opthandler;
 
-static void handle_bitmask(options *opts, char *arg, void **jmpbuf);
-static void handle_allow_overrides(options *opts, char *arg, void **jmpbuf);
-static void handle_append(options *opts, char *arg, void **jmpbuf);
-static void handle_prepend(options *opts, char *arg, void **jmpbuf);
-static void handle_start_from(options *opts, char *arg, void **jmpbuf);
-static void handle_output(options *opts, char *arg, void **jmpbuf);
-static void handle_leader(options *opts, char *arg, void **jmpbuf);
-static void handle_tag_case(options *opts, char *arg, void **jmpbuf);
-static void handle_tag_name(options *opts, char *arg, void **jmpbuf);
-static void handle_preproc_guard(options *opts, char *arg, void **jmpbuf);
+static bool handle_bitmask(options *opts, char *arg);
+static bool handle_allow_overrides(options *opts, char *arg);
+static bool handle_append(options *opts, char *arg);
+static bool handle_prepend(options *opts, char *arg);
+static bool handle_start_from(options *opts, char *arg);
+static bool handle_output(options *opts, char *arg);
+static bool handle_leader(options *opts, char *arg);
+static bool handle_tag_case(options *opts, char *arg);
+static bool handle_tag_name(options *opts, char *arg);
+static bool handle_preproc_guard(options *opts, char *arg);
 
 // clang-format off
 static const opthandler opthandlers[] = {
@@ -112,10 +104,6 @@ bool parseopts(int *argc, char ***argv, options *opts)
 {
     initopts(opts);
 
-    CATCH(jmpbuf, {
-        return false;
-    });
-
     char *opt = "";
     while (*argc > 0 && (opt = chomp_argv(argc, argv)) && isopt(opt)) {
         opts->help = match(opt + 1, 'h', "help");
@@ -132,19 +120,23 @@ bool parseopts(int *argc, char ***argv, options *opts)
         }
 
         if (i == lengthof(opthandlers)) {
-            OPT_FAIL(opts, OPTS_F_UNRECOGNIZED_OPT);
+            opts->result = OPTS_F_UNRECOGNIZED_OPT;
+            return false;
         }
 
         char *arg = NULL;
         if (opthandlers[i].has_arg) {
             if (*argc < 1) {
-                OPT_FAIL(opts, OPTS_F_OPT_MISSING_ARG);
+                opts->result = OPTS_F_OPT_MISSING_ARG;
+                return false;
             }
 
             arg = chomp_argv(argc, argv);
             opts->last_arg = arg;
         }
-        opthandlers[i].handler(opts, arg, jmpbuf);
+        if (!opthandlers[i].handler(opts, arg)) {
+            return false;
+        }
     }
 
     opts->to_stdout = opts->outfile == NULL;
@@ -161,36 +153,40 @@ void optserr(options *opts, char *buf)
     sprintf(buf, errmsg[opts->result], opts->last_opt, opts->last_arg);
 }
 
-static void handle_bitmask(options *opts, char *arg, void **jmpbuf)
+static bool handle_bitmask(options *opts, char *arg)
 {
     opts->bitmask = true;
+    return true;
 }
 
-static void handle_allow_overrides(options *opts, char *arg, void **jmpbuf)
+static bool handle_allow_overrides(options *opts, char *arg)
 {
     opts->overrides = true;
+    return true;
 }
 
-static void handle_append(options *opts, char *arg, void **jmpbuf)
+static bool handle_append(options *opts, char *arg)
 {
     if (opts->append_count < MAX_ADDITIONAL_VALS) {
         opts->append[opts->append_count] = arg;
         opts->append_count++;
-        return;
+        return true;
     }
 
-    OPT_EXCEPT(jmpbuf, opts, OPTS_F_TOO_MANY_APPENDS);
+    opts->result = OPTS_F_TOO_MANY_APPENDS;
+    return false;
 }
 
-static void handle_prepend(options *opts, char *arg, void **jmpbuf)
+static bool handle_prepend(options *opts, char *arg)
 {
     if (opts->prepend_count < MAX_ADDITIONAL_VALS) {
         opts->prepend[opts->prepend_count] = arg;
         opts->prepend_count++;
-        return;
+        return true;
     }
 
-    OPT_EXCEPT(jmpbuf, opts, OPTS_F_TOO_MANY_PREPENDS);
+    opts->result = OPTS_F_TOO_MANY_PREPENDS;
+    return false;
 }
 
 static inline bool decstol(const char *s, long *l)
@@ -216,46 +212,51 @@ static inline bool decstol(const char *s, long *l)
     return true;
 }
 
-static void handle_start_from(options *opts, char *arg, void **jmpbuf)
+static bool handle_start_from(options *opts, char *arg)
 {
-    if (!decstol(arg, &opts->start)) {
-        OPT_EXCEPT(jmpbuf, opts, OPTS_F_NOT_AN_INTEGER);
+    if (decstol(arg, &opts->start)) {
+        return true;
     }
+
+    opts->result = OPTS_F_NOT_AN_INTEGER;
+    return false;
 }
 
-static void handle_output(options *opts, char *arg, void **jmpbuf)
+static bool handle_output(options *opts, char *arg)
 {
     opts->outfile = arg;
+    return true;
 }
 
-static void handle_leader(options *opts, char *arg, void **jmpbuf)
+static bool handle_leader(options *opts, char *arg)
 {
     opts->leader = arg;
+    return true;
 }
 
-static void handle_tag_case(options *opts, char *arg, void **jmpbuf)
+static bool handle_tag_case(options *opts, char *arg)
 {
-    usize i = 0;
-    for (; i < lengthof(tag_casings); i++) {
+    for (usize i = 0; i < lengthof(tag_casings); i++) {
         if (strcmp(arg, tag_casings[i].arg) == 0) {
             opts->casing = tag_casings[i].casing;
-            break;
+            return true;
         }
     }
 
-    if (i == lengthof(tag_casings)) {
-        OPT_EXCEPT(jmpbuf, opts, OPTS_F_UNRECOGNIZED_CASING);
-    }
+    opts->result = OPTS_F_UNRECOGNIZED_CASING;
+    return false;
 }
 
-static void handle_tag_name(options *opts, char *arg, void **jmpbuf)
+static bool handle_tag_name(options *opts, char *arg)
 {
     opts->tag = arg;
+    return true;
 }
 
-static void handle_preproc_guard(options *opts, char *arg, void **jmpbuf)
+static bool handle_preproc_guard(options *opts, char *arg)
 {
     opts->guard = arg;
+    return true;
 }
 
 // clang-format off
