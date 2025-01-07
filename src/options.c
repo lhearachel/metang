@@ -60,7 +60,7 @@ static const opterrmsg errmsg[] = {
     [OPTS_F_TOO_MANY_APPENDS]    = { strnew("Too many “--append” options"),                                         0 },
     [OPTS_F_TOO_MANY_PREPENDS]   = { strnew("Too many “--prepend” options"),                                        0 },
     [OPTS_F_NOT_AN_INTEGER]      = { strnew("Expected integer argument for option “%s”, but found “%s”"),           2 },
-    [OPTS_F_UNRECOGNIZED_CASING] = { strnew("Expected one of “snake” or “pascal” for option “%s”, but found “%s”"), 2 },
+    [OPTS_F_UNRECOGNIZED_CASING] = { strnew("Expected one of “snake” or “pascal”, but found “%s”"),                 2 },
 };
 // clang-format on
 
@@ -178,12 +178,12 @@ void optserr(options *opts, str *sbuf)
     usize msglen = msg.fmt.len - (2 * msg.argc) + 1;
     if (msg.argc == 1) {
         msglen += opts->last_opt.len;
+        snprintf(sbuf->buf, msglen, msg.fmt.buf, opts->last_opt.buf);
     } else if (msg.argc == 2) {
         msglen += opts->last_opt.len;
         msglen += opts->last_arg.len;
+        snprintf(sbuf->buf, msglen, msg.fmt.buf, opts->last_opt.buf, opts->last_arg.buf);
     }
-
-    snprintf(sbuf->buf, msglen, msg.fmt.buf, opts->last_opt, opts->last_arg);
 }
 
 static bool handle_bitmask(options *opts, str *arg)
