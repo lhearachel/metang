@@ -110,7 +110,7 @@ static inline void initopts(options *opts)
     opts->version = false;
 
     opts->lang = strnew("c");
-    opts->genfunc = generators[0].genfunc;
+    opts->genf = 0;
 }
 
 bool parseopts(int *argc, char ***argv, options *opts)
@@ -229,32 +229,9 @@ static bool handle_prepend(options *opts, str *arg)
     return false;
 }
 
-static inline bool decstol(const char *s, long *l)
-{
-    bool neg = false;
-    if (*s == '-') {
-        neg = true;
-        s++;
-    }
-
-    *l = 0;
-    for (; *s != '\0'; s++) {
-        if (*s >= '0' && *s <= '9') {
-            *l = (*l * 10) + (*s - '0');
-        } else {
-            return false;
-        }
-    }
-
-    if (neg) {
-        *l = *l * -1;
-    }
-    return true;
-}
-
 static bool handle_start_from(options *opts, str *arg)
 {
-    if (decstol(arg->buf, &opts->start)) {
+    if (strtolong(arg, &opts->start)) {
         return true;
     }
 
@@ -304,7 +281,7 @@ static bool handle_lang(options *opts, str *arg)
     for (usize i = 0; generators[i].lang.len > 0; i++) {
         if (streq(arg, &generators[i].lang)) {
             opts->lang = strnewp(arg);
-            opts->genfunc = generators[i].genfunc;
+            opts->genf = i;
             return true;
         }
     }

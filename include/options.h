@@ -17,7 +17,6 @@
 #ifndef METANG_OPTIONS_H
 #define METANG_OPTIONS_H
 
-#include "generator.h"
 #include "meta.h"
 #include "strbuf.h"
 
@@ -57,7 +56,7 @@ typedef struct options {
     str infile;
 
     str lang;
-    generator_func genfunc;
+    usize genf;
 
     union {
         struct {

@@ -55,7 +55,9 @@ strpair strcut(const str *s, char c)
     }
 
     pair.tail.buf = s->buf + pair.head.len + 1;
-    pair.tail.len = s->len - pair.head.len - 1;
+    pair.tail.len = (pair.head.len == s->len)
+        ? 0
+        : s->len - pair.head.len - 1;
     return pair;
 }
 
@@ -92,4 +94,28 @@ str strchop(const str *s, char c)
     }
 
     return chop;
+}
+
+bool strtolong(const str *s, long *l)
+{
+    bool neg = false;
+    usize i = 0;
+    if (s->buf[0] == '-') {
+        neg = true;
+        i++;
+    }
+
+    *l = 0;
+    for (; i < s->len; i++) {
+        if (s->buf[i] >= '0' && s->buf[i] <= '9') {
+            *l = (*l * 10) + (s->buf[i] - '0');
+        } else {
+            return false;
+        }
+    }
+
+    if (neg) {
+        *l = *l * -1;
+    }
+    return true;
 }

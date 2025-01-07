@@ -59,4 +59,6 @@ strpair strrcut(const str *s, char c);
 // a `str` starting from the first non-`c` character.
 str strchop(const str *s, char c);
 
+bool strtolong(const str *s, long *l);
+
 #endif // METANG_STRBUF_H

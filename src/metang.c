@@ -22,12 +22,13 @@
 #include <unistd.h>
 
 #include "alloc.h"
+#include "generator.h"
 #include "options.h"
 #include "strbuf.h"
 
 static int pargv(int *argc, char ***argv, options *opts);
 static str fload(FILE *f);
-static strlist *readlines(FILE *f);
+static enumerator *enumerate(FILE *f, isize start);
 
 extern const str version;
 extern const str tag_line;
@@ -93,14 +94,14 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-    strlist *input = readlines(fin);
+    enumerator *input = enumerate(fin, opts->start);
 
 #ifndef NDEBUG
     printf("--- METANG INPUT ---\n");
 
-    strlist *line = input;
+    enumerator *line = input;
     while (line) {
-        printf("%.*s\n", (int)line->elem.len, line->elem.buf);
+        printf("%.*s = %ld\n", (int)line->ident.len, line->ident.buf, line->assignment);
         line = line->next;
     }
 
@@ -179,22 +180,33 @@ static str fload(FILE *f)
     return s;
 }
 
-static strlist *readlines(FILE *f)
+static enumerator *enumerate(FILE *f, isize start)
 {
     strpair pair = {0};
     strpair line = {0};
     line.tail = fload(f);
 
-    strlist *head = NULL;
-    strlist **tail = &head;
+    enumerator *head = NULL;
+    enumerator **tail = &head;
+    isize val = start - 1;
     while (line.tail.len) {
         line = strcut(&line.tail, '\n');
         pair = strcut(&line.head, '#');
+        pair = strcut(&pair.head, '=');
         pair.head.len = strtrim(&pair.head);
+        if (pair.tail.len > 0 && !strtolong(&pair.tail, &val)) {
+            fprintf(stderr,
+                    "metang: Expected numeric value for assignment, but found “%s”\n",
+                    pair.tail.buf);
+            longjmp(global->env, 1);
+        } else {
+            val++;
+        }
 
-        *tail = new (global, strlist, 1, A_F_EXTEND);
+        *tail = new (global, enumerator, 1, A_F_ZERO | A_F_EXTEND);
         (*tail)->next = NULL;
-        (*tail)->elem = pair.head;
+        (*tail)->ident = pair.head;
+        (*tail)->assignment = val;
 
         tail = &(*tail)->next;
     }
