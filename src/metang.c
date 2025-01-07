@@ -28,7 +28,7 @@
 
 static int pargv(int *argc, char ***argv, options *opts);
 static str fload(FILE *f);
-static enumerator *enumerate(FILE *f, isize start);
+static enumerator *enumerate(FILE *f, options *opts);
 
 extern const str version;
 extern const str tag_line;
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-    enumerator *input = enumerate(fin, opts->start);
+    enumerator *input = enumerate(fin, opts);
 
 #ifndef NDEBUG
     printf("--- METANG INPUT ---\n");
@@ -180,7 +180,7 @@ static str fload(FILE *f)
     return s;
 }
 
-static enumerator *enumerate(FILE *f, isize start)
+static enumerator *enumerate(FILE *f, options *opts)
 {
     strpair pair = {0};
     strpair line = {0};
@@ -188,7 +188,17 @@ static enumerator *enumerate(FILE *f, isize start)
 
     enumerator *head = NULL;
     enumerator **tail = &head;
-    isize val = start - 1;
+    isize val = opts->start - 1;
+    for (usize i = 0; i < opts->prepend_count; i++) {
+        val++;
+        *tail = new (global, enumerator, 1, A_F_ZERO | A_F_EXTEND);
+        (*tail)->next = NULL;
+        (*tail)->ident = opts->prepend[i];
+        (*tail)->assignment = val;
+
+        tail = &(*tail)->next;
+    }
+
     while (line.tail.len) {
         line = strcut(&line.tail, '\n');
         pair = strcut(&line.head, '#');
@@ -206,6 +216,16 @@ static enumerator *enumerate(FILE *f, isize start)
         *tail = new (global, enumerator, 1, A_F_ZERO | A_F_EXTEND);
         (*tail)->next = NULL;
         (*tail)->ident = pair.head;
+        (*tail)->assignment = val;
+
+        tail = &(*tail)->next;
+    }
+
+    for (usize i = 0; i < opts->append_count; i++) {
+        val++;
+        *tail = new (global, enumerator, 1, A_F_ZERO | A_F_EXTEND);
+        (*tail)->next = NULL;
+        (*tail)->ident = opts->append[i];
         (*tail)->assignment = val;
 
         tail = &(*tail)->next;
