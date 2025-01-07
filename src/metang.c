@@ -65,6 +65,7 @@ int main(int argc, char **argv)
     printf("tag:          “%s”\n", opts->tag.buf);
     printf("guard:        “%s”\n", opts->guard.buf);
     printf("casing:       “%s”\n", opts->casing == TAG_SNAKE_CASE ? "snake" : "pascal");
+    printf("lang:         “%s”\n", opts->lang.buf);
     printf("bitmask?      “%s”\n", opts->bitmask ? "yes" : "no");
     printf("overrides?    “%s”\n", opts->overrides ? "yes" : "no");
     printf("outfile:      “%s”\n", opts->outfile.len == 0 ? "stdout" : opts->outfile.buf);

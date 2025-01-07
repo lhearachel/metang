@@ -17,6 +17,7 @@
 #ifndef METANG_OPTIONS_H
 #define METANG_OPTIONS_H
 
+#include "generator.h"
 #include "meta.h"
 #include "strbuf.h"
 
@@ -35,6 +36,7 @@ enum result_code {
     OPTS_F_TOO_MANY_PREPENDS,
     OPTS_F_NOT_AN_INTEGER,
     OPTS_F_UNRECOGNIZED_CASING,
+    OPTS_F_UNRECOGNIZED_LANG,
 };
 
 typedef struct options {
@@ -53,6 +55,9 @@ typedef struct options {
     str guard;
     str outfile;
     str infile;
+
+    str lang;
+    generator_func genfunc;
 
     union {
         struct {

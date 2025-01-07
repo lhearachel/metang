@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "generator.h"
 #include "meta.h"
 #include "strbuf.h"
 
@@ -28,6 +29,7 @@ static bool handle_leader(options *opts, str *arg);
 static bool handle_tag_case(options *opts, str *arg);
 static bool handle_tag_name(options *opts, str *arg);
 static bool handle_preproc_guard(options *opts, str *arg);
+static bool handle_lang(options *opts, str *arg);
 
 // clang-format off
 static const str help = strnew("help");
@@ -44,6 +46,7 @@ static const opthandler opthandlers[] = {
     { strnew("tag-case"),        'c', true,  handle_tag_case        },
     { strnew("tag-name"),        't', true,  handle_tag_name        },
     { strnew("preproc-guard"),   'G', true,  handle_preproc_guard   },
+    { strnew("lang"),            'L', true,  handle_lang            },
     { strZ,                      ' ', false, NULL                   }, // must ALWAYS be last!
 };
 
@@ -61,6 +64,7 @@ static const opterrmsg errmsg[] = {
     [OPTS_F_TOO_MANY_PREPENDS]   = { strnew("Too many “--prepend” options"),                                        0 },
     [OPTS_F_NOT_AN_INTEGER]      = { strnew("Expected integer argument for option “%s”, but found “%s”"),           2 },
     [OPTS_F_UNRECOGNIZED_CASING] = { strnew("Expected one of “snake” or “pascal” for option “%s”, but found “%s”"), 2 },
+    [OPTS_F_UNRECOGNIZED_LANG]   = { strnew("Unexpected value for option “%s” argument “%s”"),                      2 },
 };
 // clang-format on
 
@@ -104,6 +108,9 @@ static inline void initopts(options *opts)
     opts->overrides = false;
     opts->help = false;
     opts->version = false;
+
+    opts->lang = strnew("c");
+    opts->genfunc = generators[0].genfunc;
 }
 
 bool parseopts(int *argc, char ***argv, options *opts)
@@ -178,12 +185,12 @@ void optserr(options *opts, str *sbuf)
     usize msglen = msg.fmt.len - (2 * msg.argc) + 1;
     if (msg.argc == 1) {
         msglen += opts->last_opt.len;
-        snprintf(sbuf->buf, msglen, msg.fmt.buf, opts->last_opt.buf);
     } else if (msg.argc == 2) {
         msglen += opts->last_opt.len;
         msglen += opts->last_arg.len;
-        snprintf(sbuf->buf, msglen, msg.fmt.buf, opts->last_opt.buf, opts->last_arg.buf);
     }
+
+    snprintf(sbuf->buf, msglen, msg.fmt.buf, opts->last_opt.buf, opts->last_arg.buf);
 }
 
 static bool handle_bitmask(options *opts, str *arg)
@@ -290,4 +297,18 @@ static bool handle_preproc_guard(options *opts, str *arg)
 {
     opts->guard = strnewp(arg);
     return true;
+}
+
+static bool handle_lang(options *opts, str *arg)
+{
+    for (usize i = 0; generators[i].lang.len > 0; i++) {
+        if (streq(arg, &generators[i].lang)) {
+            opts->lang = strnewp(arg);
+            opts->genfunc = generators[i].genfunc;
+            return true;
+        }
+    }
+
+    opts->result = OPTS_F_UNRECOGNIZED_LANG;
+    return false;
 }
