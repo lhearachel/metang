@@ -79,3 +79,17 @@ strpair strrcut(const str *s, char c)
 
     return pair;
 }
+
+str strchop(const str *s, char c)
+{
+    str chop = {0};
+    chop.buf = s->buf;
+    chop.len = s->len;
+
+    while (*chop.buf == c) {
+        chop.buf++;
+        chop.len--;
+    }
+
+    return chop;
+}

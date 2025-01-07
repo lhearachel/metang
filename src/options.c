@@ -60,7 +60,7 @@ static const opterrmsg errmsg[] = {
     [OPTS_F_TOO_MANY_APPENDS]    = { strnew("Too many “--append” options"),                                         0 },
     [OPTS_F_TOO_MANY_PREPENDS]   = { strnew("Too many “--prepend” options"),                                        0 },
     [OPTS_F_NOT_AN_INTEGER]      = { strnew("Expected integer argument for option “%s”, but found “%s”"),           2 },
-    [OPTS_F_UNRECOGNIZED_CASING] = { strnew("Expected one of “snake” or “pascal”, but found “%s”"),                 2 },
+    [OPTS_F_UNRECOGNIZED_CASING] = { strnew("Expected one of “snake” or “pascal” for option “%s”, but found “%s”"), 2 },
 };
 // clang-format on
 
@@ -113,7 +113,7 @@ bool parseopts(int *argc, char ***argv, options *opts)
     str opt = strZ;
     str cutopt = strZ;
     while (*argc > 0 && (opt = chomp_argv(argc, argv)).len > 0 && isopt(&opt)) {
-        cutopt = strrcut(&opt, '-').tail;
+        cutopt = strchop(&opt, '-');
         opts->help = match(&cutopt, 'h', &help);
         opts->version = match(&cutopt, 'v', &vers);
         if (opts->help || opts->version) {

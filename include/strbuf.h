@@ -45,8 +45,18 @@ struct strlist {
 };
 
 bool streq(const str *s1, const str *s2);
+
+// Compute the length of a string with trailing whitespace removed.
 usize strtrim(const str *s);
+
+// Cut `str` into halves by a delimiter `c`, traversing front-to-back.
 strpair strcut(const str *s, char c);
+
+// Cut `str` into halves by a delimiter `c`, traversing back-to-front.
 strpair strrcut(const str *s, char c);
+
+// Like `strcut`, but chops all leading characters matching `c`, then returns
+// a `str` starting from the first non-`c` character.
+str strchop(const str *s, char c);
 
 #endif // METANG_STRBUF_H
