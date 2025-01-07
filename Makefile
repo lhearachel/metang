@@ -23,7 +23,7 @@ CFLAGS += -Wno-deprecated-declarations
 CFLAGS += -Iinclude
 
 INC = $(wildcard include/*.h)
-SRC = $(wildcard src/*.c)
+SRC = $(wildcard src/*.c) $(wildcard src/*/*.c)
 OBJ = $(SRC:.c=.o)
 DEP = $(SRC:.c=.d)
 
