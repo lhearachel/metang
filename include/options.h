@@ -38,6 +38,14 @@ enum result_code {
     OPTS_F_UNRECOGNIZED_LANG,
 };
 
+enum options_mode {
+    OPTS_M_NONE = 0,
+    OPTS_M_ENUM = (1 << 0),
+    OPTS_M_MASK = (1 << 1),
+
+    OPTS_M_ANY = OPTS_M_ENUM | OPTS_M_MASK,
+};
+
 typedef struct options {
     enum result_code result;
     str last_opt;
@@ -60,11 +68,9 @@ typedef struct options {
 
     union {
         struct {
+            u32 mode      : 16;
             u32 casing    : 3;
-            u32 bitmask   : 1;
             u32 overrides : 1;
-            u32 help      : 1;
-            u32 version   : 1;
         };
         u32 flags;
     };

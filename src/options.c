@@ -10,7 +10,8 @@
 typedef struct opthandler {
     str longopt;
     char shortopt;
-    bool has_arg : 24;
+    bool has_arg : 8;
+    u32 mode     : 16;
     bool (*handler)(options *opts, str *arg);
 } opthandler;
 
@@ -19,7 +20,6 @@ typedef struct opterrmsg {
     usize argc;
 } opterrmsg;
 
-static bool handle_bitmask(options *opts, str *arg);
 static bool handle_allow_overrides(options *opts, str *arg);
 static bool handle_append(options *opts, str *arg);
 static bool handle_prepend(options *opts, str *arg);
@@ -28,26 +28,23 @@ static bool handle_output(options *opts, str *arg);
 static bool handle_leader(options *opts, str *arg);
 static bool handle_tag_case(options *opts, str *arg);
 static bool handle_tag_name(options *opts, str *arg);
-static bool handle_preproc_guard(options *opts, str *arg);
+static bool handle_guard(options *opts, str *arg);
 static bool handle_lang(options *opts, str *arg);
 
 // clang-format off
-static const str help = strnew("help");
-static const str vers = strnew("version");
 
 static const opthandler opthandlers[] = {
-    { strnew("bitmask"),         'B', false, handle_bitmask         },
-    { strnew("allow-overrides"), 'D', false, handle_allow_overrides },
-    { strnew("append"),          'a', true,  handle_append          },
-    { strnew("prepend"),         'p', true,  handle_prepend         },
-    { strnew("start-from"),      'n', true,  handle_start_from      },
-    { strnew("output"),          'o', true,  handle_output          },
-    { strnew("leader"),          'l', true,  handle_leader          },
-    { strnew("tag-case"),        'c', true,  handle_tag_case        },
-    { strnew("tag-name"),        't', true,  handle_tag_name        },
-    { strnew("preproc-guard"),   'G', true,  handle_preproc_guard   },
-    { strnew("lang"),            'L', true,  handle_lang            },
-    { strZ,                      ' ', false, NULL                   }, // must ALWAYS be last!
+    { strnew("allow-overrides"), 'D', false, OPTS_M_ENUM, handle_allow_overrides },
+    { strnew("append"),          'a', true,  OPTS_M_ENUM, handle_append          },
+    { strnew("prepend"),         'p', true,  OPTS_M_ENUM, handle_prepend         },
+    { strnew("start-from"),      'n', true,  OPTS_M_ENUM, handle_start_from      },
+    { strnew("output"),          'o', true,  OPTS_M_ANY,  handle_output          },
+    { strnew("leader"),          'l', true,  OPTS_M_ANY,  handle_leader          },
+    { strnew("tag-case"),        'c', true,  OPTS_M_ANY,  handle_tag_case        },
+    { strnew("tag-name"),        't', true,  OPTS_M_ANY,  handle_tag_name        },
+    { strnew("guard"),           'G', true,  OPTS_M_ANY,  handle_guard           },
+    { strnew("lang"),            'L', true,  OPTS_M_ANY,  handle_lang            },
+    { strZ,                      ' ', false, OPTS_M_NONE, NULL                   }, // must ALWAYS be last!
 };
 
 static const struct { str arg; enum tag_case casing; } tag_casings[] = {
@@ -104,10 +101,7 @@ static inline void initopts(options *opts)
     opts->infile = strZ;
 
     opts->casing = TAG_SNAKE_CASE;
-    opts->bitmask = false;
     opts->overrides = false;
-    opts->help = false;
-    opts->version = false;
 
     opts->lang = strnew("c");
     opts->genf = 0;
@@ -118,20 +112,15 @@ bool parseopts(int *argc, char ***argv, options *opts)
     initopts(opts);
 
     str opt = strZ;
-    str cutopt = strZ;
+    str chopt = strZ;
     while (*argc > 0 && (opt = chomp_argv(argc, argv)).len > 0 && isopt(&opt)) {
-        cutopt = strchop(&opt, '-');
-        opts->help = match(&cutopt, 'h', &help);
-        opts->version = match(&cutopt, 'v', &vers);
-        if (opts->help || opts->version) {
-            break;
-        }
-
         usize i = 0;
         opts->last_opt = opt;
         opts->last_arg = strZ;
+        chopt = strchop(&opt, '-');
         while (opthandlers[i].shortopt != ' '
-               && !match(&cutopt, opthandlers[i].shortopt, &opthandlers[i].longopt)) {
+               && (!(opthandlers[i].mode & opts->mode)
+                   || !match(&chopt, opthandlers[i].shortopt, &opthandlers[i].longopt))) {
             i++;
         }
 
@@ -176,6 +165,13 @@ bool parseopts(int *argc, char ***argv, options *opts)
             : strrcut(&opts->outfile, '/').tail;
     }
 
+    // In `mask` mode, `append` and `prepend` are each populated with a single
+    // magic value.
+    if (opts->mode & OPTS_M_MASK) {
+        handle_prepend(opts, &strnew("NONE"));
+        handle_append(opts, &strnew("ANY"));
+    }
+
     return true;
 }
 
@@ -191,12 +187,6 @@ void optserr(options *opts, str *sbuf)
     }
 
     snprintf(sbuf->buf, msglen, msg.fmt.buf, opts->last_opt.buf, opts->last_arg.buf);
-}
-
-static bool handle_bitmask(options *opts, str *arg)
-{
-    opts->bitmask = true;
-    return true;
 }
 
 static bool handle_allow_overrides(options *opts, str *arg)
@@ -270,7 +260,7 @@ static bool handle_tag_name(options *opts, str *arg)
     return true;
 }
 
-static bool handle_preproc_guard(options *opts, str *arg)
+static bool handle_guard(options *opts, str *arg)
 {
     opts->guard = strnewp(arg);
     return true;

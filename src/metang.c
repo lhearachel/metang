@@ -33,7 +33,10 @@ static enumerator *enumerate(FILE *f, options *opts);
 extern const str version;
 extern const str tag_line;
 extern const str short_usage;
-extern const str options_section;
+extern const str commands_section;
+extern const str global_options_section;
+extern const str enum_options_section;
+extern const str mask_notes_section;
 
 arena *global;
 
@@ -53,22 +56,26 @@ int main(int argc, char **argv)
 
 #ifndef NDEBUG
     printf("--- METANG OPTIONS ---\n");
-    printf("append:\n");
-    for (usize i = 0; i < opts->append_count; i++) {
-        printf("  - %s\n", opts->append[i].buf);
+    printf("mode:         “%s”\n", (opts->mode & OPTS_M_ENUM) ? "enum" : "mask");
+
+    if (opts->mode & OPTS_M_ENUM) {
+        printf("append:\n");
+        for (usize i = 0; i < opts->append_count; i++) {
+            printf("  - %s\n", opts->append[i].buf);
+        }
+        printf("prepend:\n");
+        for (usize i = 0; i < opts->prepend_count; i++) {
+            printf("  - %s\n", opts->prepend[i].buf);
+        }
+        printf("start from:   “%ld”\n", opts->start);
+        printf("overrides?    “%s”\n", opts->overrides ? "yes" : "no");
     }
-    printf("prepend:\n");
-    for (usize i = 0; i < opts->prepend_count; i++) {
-        printf("  - %s\n", opts->prepend[i].buf);
-    }
-    printf("start from:   “%ld”\n", opts->start);
+
     printf("leader:       “%s”\n", opts->leader.buf);
     printf("tag:          “%s”\n", opts->tag.buf);
     printf("guard:        “%s”\n", opts->guard.buf);
     printf("casing:       “%s”\n", opts->casing == TAG_SNAKE_CASE ? "snake" : "pascal");
     printf("lang:         “%s”\n", opts->lang.buf);
-    printf("bitmask?      “%s”\n", opts->bitmask ? "yes" : "no");
-    printf("overrides?    “%s”\n", opts->overrides ? "yes" : "no");
     printf("outfile:      “%s”\n", opts->outfile.len == 0 ? "stdout" : opts->outfile.buf);
     printf("infile:       “%s”\n", opts->outfile.len == 0 ? "stdin" : opts->infile.buf);
 #endif // NDEBUG
@@ -123,7 +130,35 @@ static int pargv(int *argc, char ***argv, options *opts)
 {
     if (*argc == 1 && isatty(STDIN_FILENO)) {
         goto help;
+    }
+
+    (*argc)--;
+    (*argv)++;
+
+    str mode = strnew(**argv, strlen(**argv));
+    if (streq(&mode, &strnew("enum"))) {
+        opts->mode = OPTS_M_ENUM;
+    } else if (streq(&mode, &strnew("mask"))) {
+        opts->mode = OPTS_M_MASK;
+    } else if (streq(&mode, &strnew("help"))) {
+    help:
+        printf("%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n",
+               tag_line.buf,
+               short_usage.buf,
+               commands_section.buf,
+               global_options_section.buf,
+               enum_options_section.buf,
+               mask_notes_section.buf);
         return PARGV_EXIT_SUCCESS;
+    } else if (streq(&mode, &strnew("version"))) {
+        printf("%s\n", version.buf);
+        return PARGV_EXIT_SUCCESS;
+    } else {
+        fprintf(stderr,
+                "metang: Unexpected value for COMMAND: “%s”\n",
+                mode.buf);
+        fprintf(stderr, "%s\n\n%s\n", short_usage.buf, commands_section.buf);
+        return PARGV_EXIT_FAILURE;
     }
 
     (*argc)--;
@@ -134,28 +169,13 @@ static int pargv(int *argc, char ***argv, options *opts)
         str errbuf = strnew(buf);
         optserr(opts, &errbuf);
         fprintf(stderr,
-                "metang: %.*s\n\n%s\n\n%s\n",
+                "metang: %.*s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n",
                 (int)errbuf.len, errbuf.buf,
                 short_usage.buf,
-                options_section.buf);
-        return PARGV_EXIT_FAILURE;
-    }
-
-    if (opts->help) {
-    help:
-        printf("%s\n\n%s\n\n%s\n", tag_line.buf, short_usage.buf, options_section.buf);
-        return PARGV_EXIT_SUCCESS;
-    }
-
-    if (opts->version) {
-        printf("%s\n", version.buf);
-        return PARGV_EXIT_SUCCESS;
-    }
-
-    if (opts->bitmask && (opts->overrides || opts->start)) {
-        fprintf(stderr,
-                "metang: invalid option state; cannot override values for bitmasks\n%s\n\n%s\n",
-                short_usage.buf, options_section.buf);
+                commands_section.buf,
+                global_options_section.buf,
+                enum_options_section.buf,
+                mask_notes_section.buf);
         return PARGV_EXIT_FAILURE;
     }
 

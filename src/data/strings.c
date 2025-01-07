@@ -20,29 +20,56 @@
 // clang-format off
 const str version = strnew(METANG_VERSION);
 
-const str tag_line = strnew("metang - Generate multi-purpose C headers for enumerators");
+const str tag_line = strnew("metang - Generate enumerated constants from plain-text");
 
-const str short_usage = strnew("Usage: metang [options] [<input_file>]");
+const str short_usage = strnew("Usage: metang COMMAND [OPTIONS] [<FILE>]");
 
-const str options_section = strnew(""
-    "Options:\n"
-    "  -a, --append <entry>         Append <entry> to the input listing.\n"
-    "  -p, --prepend <entry>        Prepend <entry> to the input listing.\n"
-    "  -n, --start-from <number>    Start enumeration from <number>.\n"
-    "  -o, --output <file>          Write output to <file>.\n"
-    "  -l, --leader <leader>        Use <leader> as a prefix for generated symbols.\n"
-    "  -t, --tag-name <name>        Use <name> as the base tag for enums and lookup\n"
-    "                               tables.\n"
-    "  -c, --tag-case <case>        Customize the casing of generated tags for enums\n"
-    "                               and lookup tables. Options: snake, pascal\n"
-    "  -G, --preproc-guard <guard>  Use <guard> as a prefix for conditional\n"
-    "                               preprocessor directives.\n"
-    "  -L, --lang <lang>            Specify a target langauge for output generation.\n"
-    "  -B, --bitmask                If specified, generate symbols for a bitmask.\n"
-    "                               This option is incompatible with the “-D” and\n"
-    "                               “-n” options.\n"
-    "  -D, --allow-overrides        If specified, allow direct value-assignment.\n"
-    "  -h, --help                   Display this help text and exit.\n"
-    "  -v, --version                Display the program version number and exit."
+const str commands_section = strnew(""
+    "Commands:\n"
+    "  enum     Generate an integral enumeration.\n"
+    "  mask     Generate a bitmask enumeration.\n"
+    "  help     Display this help text.\n"
+    "  version  Display the version number of this program."
+    "");
+
+const str global_options_section = strnew(""
+    "Global Options:\n"
+    "  -L, --lang <LANG>        Specify a target langauge for output generation.\n"
+    "                           Options: c\n"
+    "                           Default: c\n"
+    "  -o, --output <OFILE>     Write output to <OFILE>.\n"
+    "                           If unspecified, write to standard output.\n"
+    "  -l, --leader <LEADER>    Use <LEADER> as a prefix for generated symbols.\n"
+    "                           If unspecified, <LEADER> will be derived from\n"
+    "                           the input file's basename, minus any extension.\n"
+    "  -t, --tag-name <NAME>    Use <NAME> as the base tag for enums and lookup\n"
+    "                           tables.\n"
+    "                           If unspecified, <NAME> will be derived from the\n"
+    "                           output file's basename, minus any extension.\n"
+    "  -c, --tag-case <CASE>    Customize the casing of generated tags for enums\n"
+    "                           and lookup tables.\n"
+    "                           Options: snake, pascal\n"
+    "                           Default: snake\n"
+    "  -G, --guard <GUARD>      Prefix conditional directives with <GUARD>. For\n"
+    "                           example, in C, this will prefix inclusion guards."
+    "");
+
+const str enum_options_section = strnew(""
+    "When using the “enum” command, the following additional options are supported:\n"
+    "  -a, --append <ENTRY>         Append <ENTRY> to the input listing.\n"
+    "  -p, --prepend <ENTRY>        Prepend <ENTRY> to the input listing.\n"
+    "  -n, --start-from <NUMBER>    Start enumeration from <NUMBER>.\n"
+    "  -D, --allow-overrides        If specified, allow direct value-assignment."
+    "");
+
+const str mask_notes_section = strnew(""
+    "When using the “mask” command, the user should mind the following:\n"
+    "  1. The magic values NONE and ANY are automatically prepended and appended\n"
+    "     to user input, respectively. The NONE value is always assigned the value\n"
+    "     0; the ANY value is always assigned the sum of all previous mask indices.\n"
+    "  2. Overrides on assignment values from user input are not permitted. This is\n"
+    "     to ensure that the generated bitmask is contiguous.\n"
+    "  3. As a consequence of (1) and (2), overrides to the starting value are not\n"
+    "     permitted."
     "");
 // clang-format on
