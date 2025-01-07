@@ -59,13 +59,22 @@ int main(int argc, char **argv)
     printf("mode:         “%s”\n", (opts->mode & OPTS_M_ENUM) ? "enum" : "mask");
 
     if (opts->mode & OPTS_M_ENUM) {
-        printf("append:\n");
-        for (usize i = 0; i < opts->append_count; i++) {
-            printf("  - %s\n", opts->append[i].buf);
+        printf("append:");
+        if (opts->append_count > 0) {
+            printf("\n");
+            for (usize i = 0; i < opts->append_count; i++) {
+                printf("  - %s\n", opts->append[i].buf);
+            }
+        } else {
+            printf("       []\n");
         }
-        printf("prepend:\n");
-        for (usize i = 0; i < opts->prepend_count; i++) {
-            printf("  - %s\n", opts->prepend[i].buf);
+        printf("prepend:");
+        if (opts->prepend_count > 0) {
+            for (usize i = 0; i < opts->prepend_count; i++) {
+                printf("  - %s\n", opts->prepend[i].buf);
+            }
+        } else {
+            printf("      []\n");
         }
         printf("start from:   “%ld”\n", opts->start);
         printf("overrides?    “%s”\n", opts->overrides ? "yes" : "no");

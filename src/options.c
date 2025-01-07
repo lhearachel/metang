@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "generator.h"
 #include "meta.h"
 #include "strbuf.h"
 
@@ -29,10 +28,8 @@ static bool handle_leader(options *opts, str *arg);
 static bool handle_tag_case(options *opts, str *arg);
 static bool handle_tag_name(options *opts, str *arg);
 static bool handle_guard(options *opts, str *arg);
-static bool handle_lang(options *opts, str *arg);
 
 // clang-format off
-
 static const opthandler opthandlers[] = {
     { strnew("allow-overrides"), 'D', false, OPTS_M_ENUM, handle_allow_overrides },
     { strnew("append"),          'a', true,  OPTS_M_ENUM, handle_append          },
@@ -43,7 +40,6 @@ static const opthandler opthandlers[] = {
     { strnew("tag-case"),        'c', true,  OPTS_M_ANY,  handle_tag_case        },
     { strnew("tag-name"),        't', true,  OPTS_M_ANY,  handle_tag_name        },
     { strnew("guard"),           'G', true,  OPTS_M_ANY,  handle_guard           },
-    { strnew("lang"),            'L', true,  OPTS_M_ANY,  handle_lang            },
     { strZ,                      ' ', false, OPTS_M_NONE, NULL                   }, // must ALWAYS be last!
 };
 
@@ -264,18 +260,4 @@ static bool handle_guard(options *opts, str *arg)
 {
     opts->guard = strnewp(arg);
     return true;
-}
-
-static bool handle_lang(options *opts, str *arg)
-{
-    for (usize i = 0; generators[i].lang.len > 0; i++) {
-        if (streq(arg, &generators[i].lang)) {
-            opts->lang = strnewp(arg);
-            opts->genf = i;
-            return true;
-        }
-    }
-
-    opts->result = OPTS_F_UNRECOGNIZED_LANG;
-    return false;
 }
