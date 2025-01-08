@@ -41,6 +41,8 @@ typedef struct arena {
 
 arena arena_new(usize cap);
 
+arena arena_from(char *mem, usize cap);
+
 // Expose the next offset at which internal memory will be allocated.
 usize nextofs(arena *a, usize align);
 
@@ -67,5 +69,12 @@ void *alloc(arena *a, usize size, usize align, usize n, int flags);
 // memory space to fit. If this reallocation fails, then the failure strategy
 // defers to the existence of `A_F_SOFT_FAIL`.
 void *claim(arena *a, char *buf, usize len, int flags);
+
+// Pop a block of memory `p` with size `len` that has been previously claimed.
+// by arena `a`. This operation is ONLY safe when `p` is the most-recently
+// allocated block.
+//
+// The flag `A_F_ZERO` is supported here and will zero the memory upon pop.
+void pop(arena *a, void *p, usize len, int flags);
 
 #endif // METANG_ALLOC_H

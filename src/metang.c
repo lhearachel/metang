@@ -124,6 +124,8 @@ int main(int argc, char **argv)
     printf("--- METANG OUTPUT ---\n");
 #endif // NDEBUG
 
+    generators[opts->genf].genfunc(input, opts, fout);
+
 cleanup:
     fin ? fclose(fin) : 0;
     fout ? fclose(fout) : 0;
@@ -225,6 +227,11 @@ static enumerator *enumerate(FILE *f, options *opts)
         (*tail)->ident = opts->prepend[i];
         (*tail)->assignment = val;
 
+        head->maxlen = (*tail)->ident.len > head->maxlen
+            ? (*tail)->ident.len
+            : head->maxlen;
+        head->count++;
+
         tail = &(*tail)->next;
     }
 
@@ -247,6 +254,11 @@ static enumerator *enumerate(FILE *f, options *opts)
         (*tail)->ident = pair.head;
         (*tail)->assignment = val;
 
+        head->maxlen = (*tail)->ident.len > head->maxlen
+            ? (*tail)->ident.len
+            : head->maxlen;
+        head->count++;
+
         tail = &(*tail)->next;
     }
 
@@ -256,6 +268,11 @@ static enumerator *enumerate(FILE *f, options *opts)
         (*tail)->next = NULL;
         (*tail)->ident = opts->append[i];
         (*tail)->assignment = val;
+
+        head->maxlen = (*tail)->ident.len > head->maxlen
+            ? (*tail)->ident.len
+            : head->maxlen;
+        head->count++;
 
         tail = &(*tail)->next;
     }

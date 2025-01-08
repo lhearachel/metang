@@ -19,9 +19,40 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "alloc.h"
+
 bool streq(const str *s1, const str *s2)
 {
     return s1->len == s2->len && strncmp(s1->buf, s2->buf, s1->len) == 0;
+}
+
+bool strhas(const str *s, char c)
+{
+    for (usize i = 0; i < s->len; i++) {
+        if (s->buf[i] == c) {
+            return true;
+        }
+    }
+
+    return c == '\0';
+}
+
+bool strhasany(const str *s1, const str *s2)
+{
+    for (usize i = 0; i < s1->len; i++) {
+        for (usize j = 0; j < s2->len; j++) {
+            if (s1->buf[i] == s2->buf[j]) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+str strclone(const str *s, arena *a, int flags)
+{
+    return strnew(claim(a, s->buf, s->len + 1, flags), s->len);
 }
 
 static inline int isspace(int c)
@@ -118,4 +149,41 @@ bool strtolong(const str *s, long *l)
         *l = *l * -1;
     }
     return true;
+}
+
+str strsnake(const str *s, char *buf, const str *extrapunc, bool upper)
+{
+    char *p = buf;
+    for (usize i = 0; i < s->len; i++) {
+        char c = s->buf[i];
+        if (c == '-' || c == '_' || isspace(c)) {
+            *p = '_';
+            p++;
+        } else if (extrapunc && strhas(extrapunc, c)) {
+            *p = '_';
+            p++;
+        } else if (c >= '0' && c <= '9') {
+            *p = c;
+            p++;
+        } else if (upper) {
+            if (c >= 'a' && c <= 'z') {
+                *p = c - ('a' - 'A');
+                p++;
+            } else if (c >= 'A' && c <= 'Z') {
+                *p = c;
+                p++;
+            }
+        } else {
+            if (c >= 'a' && c <= 'z') {
+                *p = c;
+                p++;
+            } else if (c >= 'A' && c <= 'Z') {
+                *p = c + ('a' - 'A');
+                p++;
+            }
+        }
+    }
+
+    *p = '\0';
+    return strnew(buf, strlen(buf));
 }

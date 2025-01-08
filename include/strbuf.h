@@ -17,6 +17,7 @@
 #ifndef METANG_STRBUF_H
 #define METANG_STRBUF_H
 
+#include "alloc.h"
 #include "meta.h"
 
 // clang-format off
@@ -25,7 +26,15 @@
 #define strL(s, l)           (str){ .buf = s, .len = l }
 #define strS(s)              (str){ .buf = s, .len = lengthof(s) }
 #define strZ                 (str){ .buf = "", .len = 0 }
-#define strnewp(s)           (str){ .buf = s->buf, .len = s->len }
+#define strnewp(sp)          (str){ .buf = sp->buf, .len = sp->len }
+
+#define strlist_append(tailp, a, s, f)   \
+    {                                    \
+        *tailp = new (a, strlist, 1, f); \
+        (*tailp)->next = NULL;           \
+        (*tailp)->elem = s;              \
+        tailp = &(*tailp)->next;         \
+    }
 // clang-format on
 
 typedef struct str {
@@ -42,9 +51,16 @@ typedef struct strlist strlist;
 struct strlist {
     strlist *next;
     str elem;
+    usize count;
 };
 
 bool streq(const str *s1, const str *s2);
+bool strhas(const str *s, char c);
+bool strhasany(const str *s1, const str *s2);
+
+// Clone the contents of `s` and claim them in the arena `a`, using `flags`
+// to control arena allocation.
+str strclone(const str *s, arena *a, int flags);
 
 // Compute the length of a string with trailing whitespace removed.
 usize strtrim(const str *s);
@@ -59,6 +75,19 @@ strpair strrcut(const str *s, char c);
 // a `str` starting from the first non-`c` character.
 str strchop(const str *s, char c);
 
+// Convert `s` to a long stored in `l`. Return `false` if `s` cannot be
+// converted.
 bool strtolong(const str *s, long *l);
+
+#define S_SNAKE_F_LOWER false
+#define S_SNAKE_F_UPPER true
+
+// Return a copy of `s` converted to snake casing, using `buf` as the target
+// internal buffer.
+//
+// `-`, `_`, whitespace characters, and any character specified in `extrapunch`
+// will be converted to `_`, and any other form of punctuation will be removed
+// from the returned copy.
+str strsnake(const str *s, char *buf, const str *extrapunc, bool upper);
 
 #endif // METANG_STRBUF_H

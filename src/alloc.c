@@ -30,6 +30,15 @@ arena arena_new(usize cap)
     return a;
 }
 
+arena arena_from(char *mem, usize cap)
+{
+    return (arena){
+        .mem = mem,
+        .cap = cap,
+        .ofs = 0,
+    };
+}
+
 usize nextofs(arena *a, usize align)
 {
     // Exploit two's complement to get the padding; to illustrate, suppose
@@ -78,4 +87,13 @@ void *claim(arena *a, char *buf, usize len, int flags)
 {
     void *p = alloc(a, sizeof(char), alignof(char), len, flags);
     return p ? memcpy(p, buf, len) : NULL;
+}
+
+void pop(arena *a, void *p, usize len, int flags)
+{
+    if (flags & A_F_ZERO) {
+        memset(p, 0, len);
+    }
+
+    a->ofs = a->ofs - len;
 }

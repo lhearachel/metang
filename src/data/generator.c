@@ -20,7 +20,7 @@
 
 #include "strbuf.h"
 
-extern bool generate_c(strlist *input, FILE *fout);
+extern bool generate_c(enumerator *input, options *opts, FILE *fout);
 
 // clang-format off
 const generator generators[] = {
