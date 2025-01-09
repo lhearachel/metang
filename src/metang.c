@@ -106,7 +106,6 @@ int main(int argc, char **argv)
     }
 
     if (setjmp(global->env)) {
-        fprintf(stderr, "metang: memory allocation failure");
         goto cleanup;
     }
 
@@ -240,11 +239,17 @@ static enumerator *enumerate(FILE *f, options *opts)
         pair = strcut(&line.head, '#');
         pair = strcut(&pair.head, '=');
         pair.head.len = strtrim(&pair.head);
-        if (pair.tail.len > 0 && !strtolong(&pair.tail, &val)) {
-            fprintf(stderr,
-                    "metang: Expected numeric value for assignment, but found “%s”\n",
-                    pair.tail.buf);
-            longjmp(global->env, 1);
+        if (pair.tail.len > 0) {
+            if (opts->mode == OPTS_M_MASK) {
+                fprintf(stderr,
+                        "metang: Per-value assignments are not permitted for bitmasks\n");
+                longjmp(global->env, 1);
+            } else if (!strtolong(&pair.tail, &val)) {
+                fprintf(stderr,
+                        "metang: Expected numeric value for assignment, but found “%s”\n",
+                        pair.tail.buf);
+                longjmp(global->env, 1);
+            }
         } else {
             val++;
         }
@@ -277,6 +282,5 @@ static enumerator *enumerate(FILE *f, options *opts)
         tail = &(*tail)->next;
     }
 
-    fclose(f);
     return head;
 }

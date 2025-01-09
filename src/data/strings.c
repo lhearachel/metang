@@ -56,7 +56,6 @@ const str enum_options_section = strnew(""
     "  -a, --append <ENTRY>         Append <ENTRY> to the input listing.\n"
     "  -p, --prepend <ENTRY>        Prepend <ENTRY> to the input listing.\n"
     "  -n, --start-from <NUMBER>    Start enumeration from <NUMBER>.\n"
-    "  -D, --allow-overrides        If specified, allow direct value-assignment."
     "");
 
 const str mask_notes_section = strnew(""

@@ -18,6 +18,7 @@
 
 #include <setjmp.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -74,6 +75,8 @@ void *alloc(arena *a, usize size, usize align, usize n, int flags)
             return NULL;
         }
 
+        // TODO: Get this I/O handling out of here
+        fprintf(stderr, "metang: memory allocation failure");
         longjmp(a->env, 1);
     }
 

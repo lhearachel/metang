@@ -19,7 +19,6 @@ typedef struct opterrmsg {
     usize argc;
 } opterrmsg;
 
-static bool handle_allow_overrides(options *opts, str *arg);
 static bool handle_append(options *opts, str *arg);
 static bool handle_prepend(options *opts, str *arg);
 static bool handle_start_from(options *opts, str *arg);
@@ -31,7 +30,6 @@ static bool handle_guard(options *opts, str *arg);
 
 // clang-format off
 static const opthandler opthandlers[] = {
-    { strnew("allow-overrides"), 'D', false, OPTS_M_ENUM, handle_allow_overrides },
     { strnew("append"),          'a', true,  OPTS_M_ENUM, handle_append          },
     { strnew("prepend"),         'p', true,  OPTS_M_ENUM, handle_prepend         },
     { strnew("start-from"),      'n', true,  OPTS_M_ENUM, handle_start_from      },
@@ -183,12 +181,6 @@ void optserr(options *opts, str *sbuf)
     }
 
     snprintf(sbuf->buf, msglen, msg.fmt.buf, opts->last_opt.buf, opts->last_arg.buf);
-}
-
-static bool handle_allow_overrides(options *opts, str *arg)
-{
-    opts->overrides = true;
-    return true;
 }
 
 static bool handle_append(options *opts, str *arg)

@@ -16,7 +16,6 @@
 
 #include "strbuf.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 #include "alloc.h"
@@ -129,9 +128,12 @@ str strchop(const str *s, char c)
 
 bool strtolong(const str *s, long *l)
 {
-    bool neg = false;
     usize i = 0;
-    if (s->buf[0] == '-') {
+    for (; isspace(s->buf[i]); i++)
+        ;
+
+    bool neg = false;
+    if (s->buf[i] == '-') {
         neg = true;
         i++;
     }
