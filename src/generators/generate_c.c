@@ -118,10 +118,13 @@ bool generate_c(enumerator *input, options *opts, FILE *fout)
             opts->tag.buf, opts->tag.buf);
 
     for (usize i = 0; i < input->count; i++) {
+        usize padding = input->maxlen - genned->table[i].len + 1;
         fprintf(fout,
-                "    { %.*s%s, \"%.*s\", },\n",
+                "    { %.*s%s,%*c\"%.*s\",%*c},\n",
                 (int)leader.len, leader.buf, genned->table[i].buf,
-                (int)genned->table[i].len, genned->table[i].buf);
+                (int)padding, ' ',
+                (int)genned->table[i].len, genned->table[i].buf,
+                (int)padding, ' ');
     }
 
     fprintf(fout,
@@ -140,7 +143,14 @@ bool generate_c(enumerator *input, options *opts, FILE *fout)
     return true;
 }
 
-static inline char *stringify_entry(const str *leader, usize symbol_len, usize assign_len, usize maxlen, usize entry_len, isize assignment, const char *fmt)
+static inline char *stringify_entry(
+    const str *leader,
+    usize symbol_len,
+    usize assign_len,
+    usize maxlen,
+    usize entry_len,
+    isize assignment,
+    const char *fmt)
 {
     char *entry = new (local, char, entry_len + 1, A_F_ZERO | A_F_EXTEND);
     snprintf(entry,
