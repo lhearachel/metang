@@ -15,8 +15,8 @@ typedef struct outlist {
 } outlist;
 
 static outlist *stringify(enumerator *input, const str *leader, enum options_mode mode);
-static void stringify_enumeration(enumerator *input, const str *leader, outlist *outputs, usize max_input_len);
-static void stringify_bitmask(enumerator *input, const str *leader, outlist *outputs, usize max_input_len);
+static void stringify_enumeration(enumerator *input, const str *leader, outlist *outputs, usize max_ident_len);
+static void stringify_bitmask(enumerator *input, const str *leader, outlist *outputs, usize max_ident_len);
 
 static str make_prefix(const str *prefix);
 static str make_basename(const str *fname);
@@ -126,7 +126,7 @@ bool generate_c(enumerator *input, options *opts, FILE *fout)
             opts->tag.buf, opts->tag.buf);
 
     for (usize i = 0; i < input->count; i++) {
-        usize padding = input->maxlen - genned->table[i].len + 1;
+        usize padding = input->max_ident_len - genned->table[i].len + 1;
         fprintf(fout,
                 "    { %.*s%s,%*c\"%.*s\",%*c},\n",
                 (int)leader.len, leader.buf, genned->table[i].buf,
@@ -148,7 +148,7 @@ static inline char *stringify_entry(
     const str *leader,
     usize symbol_len,
     usize assign_len,
-    usize maxlen,
+    usize column_len,
     usize entry_len,
     isize assignment,
     const char *fmt)
@@ -157,7 +157,7 @@ static inline char *stringify_entry(
     snprintf(entry,
              entry_len + 1,
              fmt,
-             maxlen,
+             column_len,
              (int)symbol_len, leader->buf,
              (int)assign_len, assignment);
     return entry;
@@ -171,19 +171,19 @@ static outlist *stringify(enumerator *input, const str *leader, enum options_mod
     outputs->table = new (local, str, input->count, A_F_ZERO | A_F_EXTEND);
 
     if (mode == OPTS_M_ENUM) {
-        stringify_enumeration(input, leader, outputs, input->maxlen + leader->len);
+        stringify_enumeration(input, leader, outputs, input->max_ident_len + leader->len);
     } else {
-        stringify_bitmask(input, leader, outputs, input->maxlen + leader->len);
+        stringify_bitmask(input, leader, outputs, input->max_ident_len + leader->len);
     }
 
     return outputs;
 }
 
-static void stringify_enumeration(enumerator *input, const str *leader, outlist *outputs, usize max_input_len)
+static void stringify_enumeration(enumerator *input, const str *leader, outlist *outputs, usize max_ident_len)
 {
-    usize enum_entry_len_base = max_input_len + 9;
-    usize proc_entry_len_base = max_input_len + 10;
-    usize assign_len = 6; // TODO: Parameterize according to widest entry value
+    usize enum_entry_len_base = max_ident_len + 9;
+    usize proc_entry_len_base = max_ident_len + 10;
+    usize assign_len = input->max_assign_len;
     char *bufp = leader->buf + leader->len;
 
     strlist **e_tail = &outputs->enums;
@@ -201,7 +201,7 @@ static void stringify_enumeration(enumerator *input, const str *leader, outlist 
         char *enum_entry = stringify_entry(leader,
                                            symbol_len,
                                            assign_len,
-                                           max_input_len,
+                                           max_ident_len,
                                            enum_entry_len_base + assign_len,
                                            curr->assignment,
                                            e_enum_fmt);
@@ -211,7 +211,7 @@ static void stringify_enumeration(enumerator *input, const str *leader, outlist 
         char *proc_entry = stringify_entry(leader,
                                            symbol_len,
                                            assign_len,
-                                           max_input_len,
+                                           max_ident_len,
                                            proc_entry_len_base + assign_len,
                                            curr->assignment,
                                            p_enum_fmt);
@@ -219,11 +219,11 @@ static void stringify_enumeration(enumerator *input, const str *leader, outlist 
     }
 }
 
-static void stringify_bitmask(enumerator *input, const str *leader, outlist *outputs, usize max_input_len)
+static void stringify_bitmask(enumerator *input, const str *leader, outlist *outputs, usize max_ident_len)
 {
-    usize enum_entry_len_base = max_input_len + 17;
-    usize proc_entry_len_base = max_input_len + 18;
-    usize assign_len = 6; // TODO: Parameterize according to widest entry value
+    usize enum_entry_len_base = max_ident_len + 17;
+    usize proc_entry_len_base = max_ident_len + 18;
+    usize assign_len = input->max_assign_len;
     char *bufp = leader->buf + leader->len;
 
     strlist **e_tail = &outputs->enums;
@@ -255,7 +255,7 @@ static void stringify_bitmask(enumerator *input, const str *leader, outlist *out
         char *enum_entry = stringify_entry(leader,
                                            symbol_len,
                                            assign_len,
-                                           max_input_len,
+                                           max_ident_len,
                                            enum_entry_len_base + assign_len,
                                            assignment - 1,
                                            e_fmt);
@@ -265,7 +265,7 @@ static void stringify_bitmask(enumerator *input, const str *leader, outlist *out
         char *proc_entry = stringify_entry(leader,
                                            symbol_len,
                                            assign_len,
-                                           max_input_len,
+                                           max_ident_len,
                                            proc_entry_len_base + assign_len,
                                            assignment - 1,
                                            p_fmt);

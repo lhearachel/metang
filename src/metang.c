@@ -210,6 +210,23 @@ static str fload(FILE *f)
     return s;
 }
 
+static inline usize max_of(usize a, usize b)
+{
+    return a > b ? a : b;
+}
+
+static inline usize assign_strlen(isize i)
+{
+    int r = 1 + (i < 0);
+    usize n = (i < 0) ? -i : i;
+    while (n > 9) {
+        n /= 10;
+        r++;
+    }
+
+    return r;
+}
+
 static enumerator *enumerate(FILE *f, options *opts)
 {
     strpair pair = {0};
@@ -226,9 +243,8 @@ static enumerator *enumerate(FILE *f, options *opts)
         (*tail)->assignment = val;
         val++;
 
-        head->maxlen = (*tail)->ident.len > head->maxlen
-            ? (*tail)->ident.len
-            : head->maxlen;
+        head->max_ident_len = max_of((*tail)->ident.len, head->max_ident_len);
+        head->max_assign_len = max_of(assign_strlen((*tail)->assignment), head->max_assign_len);
         head->count++;
 
         tail = &(*tail)->next;
@@ -258,9 +274,8 @@ static enumerator *enumerate(FILE *f, options *opts)
         (*tail)->assignment = val;
         val++;
 
-        head->maxlen = (*tail)->ident.len > head->maxlen
-            ? (*tail)->ident.len
-            : head->maxlen;
+        head->max_ident_len = max_of((*tail)->ident.len, head->max_ident_len);
+        head->max_assign_len = max_of(assign_strlen((*tail)->assignment), head->max_assign_len);
         head->count++;
 
         tail = &(*tail)->next;
@@ -273,9 +288,8 @@ static enumerator *enumerate(FILE *f, options *opts)
         (*tail)->assignment = val;
         val++;
 
-        head->maxlen = (*tail)->ident.len > head->maxlen
-            ? (*tail)->ident.len
-            : head->maxlen;
+        head->max_ident_len = max_of((*tail)->ident.len, head->max_ident_len);
+        head->max_assign_len = max_of(assign_strlen((*tail)->assignment), head->max_assign_len);
         head->count++;
 
         tail = &(*tail)->next;

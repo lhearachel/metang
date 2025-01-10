@@ -28,7 +28,8 @@ struct enumerator {
     str ident;
     isize assignment;
     usize count;
-    usize maxlen;
+    usize max_ident_len;
+    usize max_assign_len;
 };
 
 typedef bool (*generator_func)(enumerator *input, options *opts, FILE *fout);
