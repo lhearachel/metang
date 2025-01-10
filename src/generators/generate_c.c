@@ -42,6 +42,10 @@ static const char *header_fmt = ""
     "#ifndef %s%s\n"
     "#define %s%s\n"
     "\n"
+    "#ifdef __cplusplus\n"
+    "extern \"C\" {\n"
+    "#endif\n"
+    "\n"
     "#ifdef %sENUM\n"
     "\n"
     "enum %s {\n"
@@ -53,18 +57,18 @@ static const char *lookup_branch_fmt = ""
     "\n"
     "#ifdef %sLOOKUP\n"
     "\n"
-    "struct entry__%s {\n"
+    "typedef struct entry__%s {\n"
     "    const long value;\n"
     "    const char *def;\n"
-    "};\n"
+    "} entry__%s;\n"
     "\n"
     "#ifndef %sLOOKUP_IMPL\n"
     "\n"
-    "extern const struct entry__%s lookup__%s[];\n"
+    "extern const entry__%s lookup__%s[];\n"
     "\n"
     "#else\n"
     "\n"
-    "const struct entry__%s lookup__%s[] = {\n"
+    "const entry__%s lookup__%s[] = {\n"
     "";
 
 static const char *footer_fmt = ""
@@ -73,6 +77,10 @@ static const char *footer_fmt = ""
     "#endif /* %sLOOKUP_IMPL */\n"
     "\n"
     "#endif /* %sLOOKUP */\n"
+    "\n"
+    "#ifdef __cplusplus\n"
+    "}\n"
+    "#endif\n"
     "\n"
     "#endif /* %s%s */\n"
     "";
@@ -120,6 +128,7 @@ bool generate_c(enumerator *input, options *opts, FILE *fout)
     fprintf(fout, lookup_branch_fmt,
             guardp.buf,
             guardp.buf,
+            opts->tag.buf,
             opts->tag.buf,
             guardp.buf,
             opts->tag.buf, opts->tag.buf,
