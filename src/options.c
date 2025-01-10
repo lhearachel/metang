@@ -24,7 +24,6 @@ static bool handle_prepend(options *opts, str *arg);
 static bool handle_start_from(options *opts, str *arg);
 static bool handle_output(options *opts, str *arg);
 static bool handle_leader(options *opts, str *arg);
-static bool handle_tag_case(options *opts, str *arg);
 static bool handle_tag_name(options *opts, str *arg);
 static bool handle_guard(options *opts, str *arg);
 
@@ -35,16 +34,9 @@ static const opthandler opthandlers[] = {
     { strnew("start-from"),      'n', true,  OPTS_M_ENUM, handle_start_from      },
     { strnew("output"),          'o', true,  OPTS_M_ANY,  handle_output          },
     { strnew("leader"),          'l', true,  OPTS_M_ANY,  handle_leader          },
-    { strnew("tag-case"),        'c', true,  OPTS_M_ANY,  handle_tag_case        },
     { strnew("tag-name"),        't', true,  OPTS_M_ANY,  handle_tag_name        },
     { strnew("guard"),           'G', true,  OPTS_M_ANY,  handle_guard           },
     { strZ,                      ' ', false, OPTS_M_NONE, NULL                   }, // must ALWAYS be last!
-};
-
-static const struct { str arg; enum tag_case casing; } tag_casings[] = {
-    { strnew("snake"),  TAG_SNAKE_CASE  },
-    { strnew("pascal"), TAG_PASCAL_CASE },
-    { strZ,             0               }, // must ALWAYS be last!
 };
 
 static const opterrmsg errmsg[] = {
@@ -54,7 +46,6 @@ static const opterrmsg errmsg[] = {
     [OPTS_F_TOO_MANY_APPENDS]    = { strnew("Too many “--append” options"),                                         0 },
     [OPTS_F_TOO_MANY_PREPENDS]   = { strnew("Too many “--prepend” options"),                                        0 },
     [OPTS_F_NOT_AN_INTEGER]      = { strnew("Expected integer argument for option “%s”, but found “%s”"),           2 },
-    [OPTS_F_UNRECOGNIZED_CASING] = { strnew("Expected one of “snake” or “pascal” for option “%s”, but found “%s”"), 2 },
     [OPTS_F_UNRECOGNIZED_LANG]   = { strnew("Unexpected value for option “%s” argument “%s”"),                      2 },
 };
 // clang-format on
@@ -227,19 +218,6 @@ static bool handle_leader(options *opts, str *arg)
 {
     opts->leader = strnewp(arg);
     return true;
-}
-
-static bool handle_tag_case(options *opts, str *arg)
-{
-    for (usize i = 0; tag_casings[i].arg.len > 0; i++) {
-        if (streq(arg, &tag_casings[i].arg)) {
-            opts->casing = tag_casings[i].casing;
-            return true;
-        }
-    }
-
-    opts->result = OPTS_F_UNRECOGNIZED_CASING;
-    return false;
 }
 
 static bool handle_tag_name(options *opts, str *arg)
