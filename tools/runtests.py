@@ -17,7 +17,7 @@
 """
 A simple test runner for metang.
 
-Usage: runtests.py [names...]
+Usage: runtests.py [--rewrite] command [names...]
 
 Test names are the name of a file under the `tests` folder, minus the `.test`
 extension. If no test names are given as arguments, then all tests will be run.
@@ -50,11 +50,11 @@ ANSI_Y = "\x1b[33m"
 ANSI_C = "\x1b[0m"
 
 
-def run_test(name: str, fix_output: bool = False) -> str | None:
+def run_test(command: str, name: str, fix_output: bool = False) -> str | None:
     """
     Load and run a single test.
     """
-    target = TESTS_DIR / f"{name}.test"
+    target = TESTS_DIR / command / f"{name}.test"
     if not target.exists():
         raise ValueError(f"unrecognized test name: {name}")
 
@@ -78,6 +78,7 @@ def run_test(name: str, fix_output: bool = False) -> str | None:
     result = subprocess.run(
         [
             "./metang",
+            command,
             *args,
         ],
         input="".join(test_stdin),
@@ -126,20 +127,23 @@ def run_test(name: str, fix_output: bool = False) -> str | None:
 
 argv = sys.argv[1:]
 rewrite = False
-if len(argv) > 0 and argv[0] == "--rewrite":
+if argv[0] == "--rewrite":
     rewrite = True
     argv = argv[1:]
 
-if len(argv) > 1:
+command = argv[0]
+argv = argv[1:]
+
+if len(argv) > 2:
     tests = argv[1:]
 else:
-    tests = list(map(lambda p: p.stem, TESTS_DIR.glob("*.test")))
+    tests = list(map(lambda p: p.stem, (TESTS_DIR / command).glob("*.test")))
 
 exit_code = 0
 for test in tests:
-    if result := run_test(test, rewrite):
+    if result := run_test(command, test, rewrite):
         print(f"{test}:\n{result}")
         exit_code = 1
     else:
-        print(f"{ANSI_G}✔{ANSI_C} {ANSI_Y}{test}{ANSI_C}")
+        print(f"{ANSI_G}✔{ANSI_C}  {ANSI_Y}{command} - {test}{ANSI_C}")
 sys.exit(exit_code)

@@ -25,20 +25,14 @@ format: DEP_TARGET=clang-format
 format: .clang-format check-dep-exists
 	clang-format -i --style=file $(SRC) $(INC)
 
-pre-commit: DEP_TARGET=pre-commit
-pre-commit: .pre-commit-config.yaml check-dep-exists
-	pre-commit run
-
 test: tools/runtests.py release
-	$< $(ARGS)
+	@$< help $(ARGS)
+	@$< version $(ARGS)
+	@$< enum $(ARGS)
+	@$< mask $(ARGS)
 
 test-rewrite: tools/runtests.py release
-	$< --rewrite $(ARGS)
-
-valgrind: debug
-	valgrind --leak-check=full \
-		--show-leak-kinds=all \
-		--track-origins=yes \
-		--verbose \
-		--log-file=valgrind.log \
-		./$(TARGET) $(ARGS)
+	$< --rewrite help
+	$< --rewrite version
+	$< --rewrite enum
+	$< --rewrite mask
