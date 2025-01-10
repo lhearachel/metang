@@ -218,13 +218,13 @@ static enumerator *enumerate(FILE *f, options *opts)
 
     enumerator *head = NULL;
     enumerator **tail = &head;
-    isize val = opts->start - 1;
+    isize val = opts->start;
     for (usize i = 0; i < opts->prepend_count; i++) {
-        val++;
         *tail = new (global, enumerator, 1, A_F_ZERO | A_F_EXTEND);
         (*tail)->next = NULL;
         (*tail)->ident = opts->prepend[i];
         (*tail)->assignment = val;
+        val++;
 
         head->maxlen = (*tail)->ident.len > head->maxlen
             ? (*tail)->ident.len
@@ -250,14 +250,13 @@ static enumerator *enumerate(FILE *f, options *opts)
                         pair.tail.buf);
                 longjmp(global->env, 1);
             }
-        } else {
-            val++;
         }
 
         *tail = new (global, enumerator, 1, A_F_ZERO | A_F_EXTEND);
         (*tail)->next = NULL;
         (*tail)->ident = pair.head;
         (*tail)->assignment = val;
+        val++;
 
         head->maxlen = (*tail)->ident.len > head->maxlen
             ? (*tail)->ident.len
@@ -268,11 +267,11 @@ static enumerator *enumerate(FILE *f, options *opts)
     }
 
     for (usize i = 0; i < opts->append_count; i++) {
-        val++;
         *tail = new (global, enumerator, 1, A_F_ZERO | A_F_EXTEND);
         (*tail)->next = NULL;
         (*tail)->ident = opts->append[i];
         (*tail)->assignment = val;
+        val++;
 
         head->maxlen = (*tail)->ident.len > head->maxlen
             ? (*tail)->ident.len

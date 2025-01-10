@@ -14,30 +14,24 @@ typedef struct outlist {
     str *table;
 } outlist;
 
-static outlist *stringify(enumerator *input, const str *leader);
-static int qsort_strcmp(const void *a, const void *b);
+static outlist *stringify(enumerator *input, const str *leader, enum options_mode mode);
+static void stringify_enumeration(enumerator *input, const str *leader, outlist *outputs, usize max_input_len);
+static void stringify_bitmask(enumerator *input, const str *leader, outlist *outputs, usize max_input_len);
+
 static str make_prefix(const str *prefix);
 static str make_basename(const str *fname);
+static int qsort_strcmp(const void *a, const void *b);
 
-arena *local;
+static arena *local;
 
-static str make_prefix(const str *prefix)
-{
-    char *buf = new (local, char, 1 << 8, A_F_ZERO | A_F_EXTEND);
-    str cased = strsnake(prefix, buf, NULL, S_SNAKE_F_UPPER);
-    cased.buf[cased.len] = '_';
-    cased.buf[cased.len + 1] = '\0';
-    cased.len++;
-
-    return cased;
-}
-
-static str make_basename(const str *fname)
-{
-    char *buf = new (local, char, 1 << 8, A_F_ZERO | A_F_EXTEND);
-    str fbase = strrcut(fname, '/').tail;
-    return strsnake(&fbase, buf, &strnew("."), S_SNAKE_F_UPPER);
-}
+static const char *e_enum_fmt = "    %-*.*s = %*ld,\n";
+static const char *p_enum_fmt = "#define %-*.*s %*ld\n";
+static const char *e_mask_fmt = "    %-*.*s =  (1 << %*ld),\n";
+static const char *p_mask_fmt = "#define %-*.*s  (1 << %*ld)\n";
+static const char *e_mask_fmt_0 = "    %-*.*s =        %*ld,\n";
+static const char *e_mask_fmt_l = "    %-*.*s = ((1 << %*ld) - 1),\n";
+static const char *p_mask_fmt_0 = "#define %-*.*s        %*ld\n";
+static const char *p_mask_fmt_l = "#define %-*.*s ((1 << %*ld) - 1)\n";
 
 bool generate_c(enumerator *input, options *opts, FILE *fout)
 {
@@ -56,7 +50,7 @@ bool generate_c(enumerator *input, options *opts, FILE *fout)
     str guardp = make_prefix(&opts->guard);
     str foutbn = make_basename(opts->outfile.len > 0 ? &opts->outfile : &strnew("stdout")); // TODO: Move this elsewhere...?
 
-    outlist *genned = stringify(input, &leader);
+    outlist *genned = stringify(input, &leader, opts->mode);
     qsort(genned->table, input->count, sizeof(str), qsort_strcmp);
 
     fprintf(fout,
@@ -162,19 +156,32 @@ static inline char *stringify_entry(
     return entry;
 }
 
-static outlist *stringify(enumerator *input, const str *leader)
+static outlist *stringify(enumerator *input, const str *leader, enum options_mode mode)
 {
-    usize maxlen = input->maxlen + leader->len;
-    char *bufp = leader->buf + leader->len;
-    enumerator *curr = input;
-
     outlist *outputs = new (local, outlist, 1, A_F_ZERO | A_F_EXTEND);
     outputs->enums = NULL;
     outputs->procs = NULL;
     outputs->table = new (local, str, input->count, A_F_ZERO | A_F_EXTEND);
 
+    if (mode == OPTS_M_ENUM) {
+        stringify_enumeration(input, leader, outputs, input->maxlen + leader->len);
+    } else {
+        stringify_bitmask(input, leader, outputs, input->maxlen + leader->len);
+    }
+
+    return outputs;
+}
+
+static void stringify_enumeration(enumerator *input, const str *leader, outlist *outputs, usize max_input_len)
+{
+    usize enum_entry_len_base = max_input_len + 9;
+    usize proc_entry_len_base = max_input_len + 10;
+    usize assign_len = 6; // TODO: Parameterize according to widest entry value
+    char *bufp = leader->buf + leader->len;
+
     strlist **e_tail = &outputs->enums;
     strlist **p_tail = &outputs->procs;
+    enumerator *curr = input;
 
     for (usize i = 0; curr; curr = curr->next, i++) {
         str cased_elem = strsnake(&curr->ident, bufp, NULL, S_SNAKE_F_UPPER);
@@ -183,32 +190,102 @@ static outlist *stringify(enumerator *input, const str *leader)
         char *claimed_elem = claim(local, cased_elem.buf, cased_elem.len + 1, A_F_ZERO | A_F_EXTEND);
         outputs->table[i] = strnew(claimed_elem, strlen(claimed_elem));
 
-        usize assign_len = 6;
-
         // Format an enum entry: '    ' -> symbol -> ' = ' -> assignment + ',\n'
-        usize enum_entry_len = maxlen + assign_len + 9;
+        usize enum_entry_len = enum_entry_len_base + assign_len;
         char *enum_entry = stringify_entry(leader,
                                            symbol_len,
                                            assign_len,
-                                           maxlen,
+                                           max_input_len,
                                            enum_entry_len,
                                            curr->assignment,
-                                           "    %-*.*s = %*ld,\n");
+                                           e_enum_fmt);
         strlist_append(e_tail, local, strnew(enum_entry, enum_entry_len), A_F_EXTEND);
 
         // Format a preproc entry: '#define ' -> symbol -> ' ' -> assignment + '\n'
-        usize proc_entry_len = maxlen + assign_len + 10;
+        usize proc_entry_len = proc_entry_len_base + assign_len;
         char *proc_entry = stringify_entry(leader,
                                            symbol_len,
                                            assign_len,
-                                           maxlen,
+                                           max_input_len,
                                            proc_entry_len,
                                            curr->assignment,
-                                           "#define %-*.*s %*ld\n");
+                                           p_enum_fmt);
         strlist_append(p_tail, local, strnew(proc_entry, proc_entry_len), A_F_EXTEND);
     }
+}
 
-    return outputs;
+static void stringify_bitmask(enumerator *input, const str *leader, outlist *outputs, usize max_input_len)
+{
+    usize enum_entry_len_base = max_input_len + 17;
+    usize proc_entry_len_base = max_input_len + 18;
+    usize assign_len = 6; // TODO: Parameterize according to widest entry value
+    char *bufp = leader->buf + leader->len;
+
+    strlist **e_tail = &outputs->enums;
+    strlist **p_tail = &outputs->procs;
+    enumerator *curr = input;
+
+    for (usize i = 0; curr; curr = curr->next, i++) {
+        str cased_elem = strsnake(&curr->ident, bufp, NULL, S_SNAKE_F_UPPER);
+        usize symbol_len = leader->len + cased_elem.len;
+
+        char *claimed_elem = claim(local, cased_elem.buf, cased_elem.len + 1, A_F_ZERO | A_F_EXTEND);
+        outputs->table[i] = strnew(claimed_elem, strlen(claimed_elem));
+
+        const char *e_fmt = e_mask_fmt;
+        const char *p_fmt = p_mask_fmt;
+        usize assignment = curr->assignment;
+        if (i == 0) { // first element
+            e_fmt = e_mask_fmt_0;
+            p_fmt = p_mask_fmt_0;
+            assignment = 1;              // gets set to 0 by the subtraction below
+        } else if (curr->next == NULL) { // last element
+            e_fmt = e_mask_fmt_l;
+            p_fmt = p_mask_fmt_l;
+            enum_entry_len_base += 5;
+            proc_entry_len_base += 5;
+        }
+
+        // Format an enum entry: '    ' -> symbol -> ' = ' -> assignment + ',\n'
+        usize enum_entry_len = enum_entry_len_base + assign_len;
+        char *enum_entry = stringify_entry(leader,
+                                           symbol_len,
+                                           assign_len,
+                                           max_input_len,
+                                           enum_entry_len,
+                                           assignment - 1,
+                                           e_fmt);
+        strlist_append(e_tail, local, strnew(enum_entry, enum_entry_len), A_F_EXTEND);
+
+        // Format a preproc entry: '#define ' -> symbol -> ' ' -> assignment + '\n'
+        usize proc_entry_len = proc_entry_len_base + assign_len;
+        char *proc_entry = stringify_entry(leader,
+                                           symbol_len,
+                                           assign_len,
+                                           max_input_len,
+                                           proc_entry_len,
+                                           assignment - 1,
+                                           p_fmt);
+        strlist_append(p_tail, local, strnew(proc_entry, proc_entry_len), A_F_EXTEND);
+    }
+}
+
+static str make_prefix(const str *prefix)
+{
+    char *buf = new (local, char, 1 << 8, A_F_ZERO | A_F_EXTEND);
+    str cased = strsnake(prefix, buf, NULL, S_SNAKE_F_UPPER);
+    cased.buf[cased.len] = '_';
+    cased.buf[cased.len + 1] = '\0';
+    cased.len++;
+
+    return cased;
+}
+
+static str make_basename(const str *fname)
+{
+    char *buf = new (local, char, 1 << 8, A_F_ZERO | A_F_EXTEND);
+    str fbase = strrcut(fname, '/').tail;
+    return strsnake(&fbase, buf, &strnew("."), S_SNAKE_F_UPPER);
 }
 
 static int qsort_strcmp(const void *a, const void *b)
