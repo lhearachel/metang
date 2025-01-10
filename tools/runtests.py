@@ -132,9 +132,8 @@ if argv[0] == "--rewrite":
     argv = argv[1:]
 
 command = argv[0]
-argv = argv[1:]
 
-if len(argv) > 2:
+if len(argv) > 1:
     tests = argv[1:]
 else:
     tests = list(map(lambda p: p.stem, (TESTS_DIR / command).glob("*.test")))

@@ -18,6 +18,7 @@ static outlist *stringify(enumerator *input, const str *leader, enum options_mod
 static void stringify_enumeration(enumerator *input, const str *leader, outlist *outputs, usize max_ident_len);
 static void stringify_bitmask(enumerator *input, const str *leader, outlist *outputs, usize max_ident_len);
 
+static void write_options(options *opts, FILE *fout);
 static str make_prefix(const str *prefix);
 static str make_basename(const str *fname);
 static int qsort_strcmp(const void *a, const void *b);
@@ -37,6 +38,12 @@ static const char *p_mask_fmt_l = "#define %-*.*s ((1 << %*ld) - 1)\n";
 static const char *header_fmt = ""
     "/*\n"
     " * %s\n"
+    " * Base command: %s\n"
+    " * Source file: %s\n"
+    " * Program options:\n"
+    "";
+
+static const char *init_guards_fmt = ""
     " */\n"
     "\n"
     "#ifndef %s%s\n"
@@ -108,6 +115,12 @@ bool generate_c(enumerator *input, options *opts, FILE *fout)
 
     fprintf(fout, header_fmt,
             header_warning.buf,
+            opts->mode & OPTS_M_ENUM ? "enum" : "mask",
+            opts->infile.buf);
+
+    write_options(opts, fout);
+
+    fprintf(fout, init_guards_fmt,
             guardp.buf, foutbn.buf,
             guardp.buf, foutbn.buf,
             guardp.buf,
@@ -279,6 +292,35 @@ static void stringify_bitmask(enumerator *input, const str *leader, outlist *out
                                            assignment - 1,
                                            p_fmt);
         strlist_append(p_tail, local, strnew(proc_entry, strlen(proc_entry)), A_F_EXTEND);
+    }
+}
+
+static void write_options(options *opts, FILE *fout)
+{
+    if (opts->set_leader) {
+        fprintf(fout, " *   --leader %s\n", opts->leader.buf);
+    }
+
+    if (opts->set_tag) {
+        fprintf(fout, " *   --tag-name %s\n", opts->tag.buf);
+    }
+
+    if (opts->set_guard) {
+        fprintf(fout, " *   --guard %s\n", opts->guard.buf);
+    }
+
+    if (!(opts->mode & OPTS_M_MASK)) {
+        for (usize i = 0; i < opts->append_count; i++) {
+            fprintf(fout, " *   --append %s\n", opts->append[i].buf);
+        }
+
+        for (usize i = 0; i < opts->prepend_count; i++) {
+            fprintf(fout, " *   --prepend %s\n", opts->prepend[i].buf);
+        }
+
+        if (opts->set_start) {
+            fprintf(fout, " *   --start-from %ld\n", opts->start);
+        }
     }
 }
 

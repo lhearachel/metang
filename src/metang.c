@@ -77,13 +77,11 @@ int main(int argc, char **argv)
             printf("      []\n");
         }
         printf("start from:   “%ld”\n", opts->start);
-        printf("overrides?    “%s”\n", opts->overrides ? "yes" : "no");
     }
 
     printf("leader:       “%s”\n", opts->leader.buf);
     printf("tag:          “%s”\n", opts->tag.buf);
     printf("guard:        “%s”\n", opts->guard.buf);
-    printf("casing:       “%s”\n", opts->casing == TAG_SNAKE_CASE ? "snake" : "pascal");
     printf("lang:         “%s”\n", opts->lang.buf);
     printf("outfile:      “%s”\n", opts->outfile.len == 0 ? "stdout" : opts->outfile.buf);
     printf("infile:       “%s”\n", opts->outfile.len == 0 ? "stdin" : opts->infile.buf);
@@ -109,6 +107,7 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
+    opts->infile = opts->infile.len == 0 ? strnew("stdin") : opts->infile;
     opts->outfile = opts->outfile.len == 0 ? strnew("stdout") : opts->outfile;
     enumerator *input = enumerate(fin, opts);
 

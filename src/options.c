@@ -85,8 +85,7 @@ static inline void initopts(options *opts)
     opts->outfile = strZ;
     opts->infile = strZ;
 
-    opts->casing = TAG_SNAKE_CASE;
-    opts->overrides = false;
+    opts->flags = false;
 
     opts->lang = strnew("c");
     opts->genf = 0;
@@ -201,6 +200,7 @@ static bool handle_prepend(options *opts, str *arg)
 static bool handle_start_from(options *opts, str *arg)
 {
     if (strtolong(arg, &opts->start)) {
+        opts->set_start = true;
         return true;
     }
 
@@ -216,18 +216,21 @@ static bool handle_output(options *opts, str *arg)
 
 static bool handle_leader(options *opts, str *arg)
 {
+    opts->set_leader = true;
     opts->leader = strnewp(arg);
     return true;
 }
 
 static bool handle_tag_name(options *opts, str *arg)
 {
+    opts->set_tag = true;
     opts->tag = strnewp(arg);
     return true;
 }
 
 static bool handle_guard(options *opts, str *arg)
 {
+    opts->set_guard = true;
     opts->guard = strnewp(arg);
     return true;
 }

@@ -46,6 +46,7 @@ enum options_mode {
 };
 
 typedef struct options {
+    enum options_mode mode;
     enum result_code result;
     str last_opt;
     str last_arg;
@@ -67,9 +68,10 @@ typedef struct options {
 
     union {
         struct {
-            u32 mode      : 16;
-            u32 casing    : 3;
-            u32 overrides : 1;
+            u32 set_leader : 1;
+            u32 set_tag    : 1;
+            u32 set_guard  : 1;
+            u32 set_start  : 1;
         };
         u32 flags;
     };
