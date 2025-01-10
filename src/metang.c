@@ -109,6 +109,7 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
+    opts->outfile = opts->outfile.len == 0 ? strnew("stdout") : opts->outfile;
     enumerator *input = enumerate(fin, opts);
 
 #ifndef NDEBUG

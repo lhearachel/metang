@@ -101,7 +101,7 @@ bool generate_c(enumerator *input, options *opts, FILE *fout)
 
     str leader = make_prefix(&opts->leader);
     str guardp = make_prefix(&opts->guard);
-    str foutbn = make_basename(opts->outfile.len > 0 ? &opts->outfile : &strnew("stdout")); // TODO: Move this elsewhere...?
+    str foutbn = make_basename(&opts->outfile);
 
     outlist *genned = stringify(input, &leader, opts->mode);
     qsort(genned->table, input->count, sizeof(str), qsort_strcmp);
