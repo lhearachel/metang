@@ -1,6 +1,9 @@
 static_sources = files(
-    'deque.c',
-    'generate.c',
+    'data/generator.c',
+    'data/strings.c',
+    'generators/generate_c.c',
+    'alloc.c',
     'metang.c',
-    'strlib.c',
+    'options.c',
+    'strbuf.c',
 )

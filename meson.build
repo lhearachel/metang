@@ -21,8 +21,9 @@ project(
     version: run_command(['./tools/version.sh', 'VERSION'], check: true).stdout().strip(),
     default_options: {
         'buildtype': 'release', # O3
-        'warning_level': '3', # all, extra, pedantic
-        'c_std': 'c99',
+        'b_ndebug': 'if-release',
+        'warning_level': '2', # all, extra
+        'c_std': 'c17',
     },
 )
 
