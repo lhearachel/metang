@@ -24,6 +24,7 @@ static int qsort_strcmp(const void *a, const void *b);
 
 static arena *local;
 
+// clang-format off
 static const char *e_enum_fmt = "    %-*.*s = %*ld,\n";
 static const char *p_enum_fmt = "#define %-*.*s %*ld\n";
 static const char *e_mask_fmt = "    %-*.*s =  (1 << %*ld),\n";
@@ -32,6 +33,50 @@ static const char *e_mask_fmt_0 = "    %-*.*s =        %*ld,\n";
 static const char *e_mask_fmt_l = "    %-*.*s = ((1 << %*ld) - 1),\n";
 static const char *p_mask_fmt_0 = "#define %-*.*s        %*ld\n";
 static const char *p_mask_fmt_l = "#define %-*.*s ((1 << %*ld) - 1)\n";
+
+static const char *header_fmt = ""
+    "/*\n"
+    " * %s\n"
+    " */\n"
+    "\n"
+    "#ifndef %s%s\n"
+    "#define %s%s\n"
+    "\n"
+    "#ifdef %sENUM\n"
+    "\n"
+    "enum %s {\n"
+    "";
+
+static const char *lookup_branch_fmt = ""
+    "\n"
+    "#endif /* %sENUM */\n"
+    "\n"
+    "#ifdef %sLOOKUP\n"
+    "\n"
+    "struct %s_entry {\n"
+    "    const long value;\n"
+    "    const char *def;\n"
+    "};\n"
+    "\n"
+    "#ifndef %sLOOKUP_IMPL\n"
+    "\n"
+    "extern const struct %s_entry %s_lookup[];\n"
+    "\n"
+    "#else\n"
+    "\n"
+    "const struct %s_entry %s_lookup[] = {\n"
+    "";
+
+static const char *footer_fmt = ""
+    "};\n"
+    "\n"
+    "#endif /* %sLOOKUP_IMPL */\n"
+    "\n"
+    "#endif /* %sLOOKUP */\n"
+    "\n"
+    "#endif /* %s%s */\n"
+    "";
+// clang-format on
 
 bool generate_c(enumerator *input, options *opts, FILE *fout)
 {
@@ -53,17 +98,7 @@ bool generate_c(enumerator *input, options *opts, FILE *fout)
     outlist *genned = stringify(input, &leader, opts->mode);
     qsort(genned->table, input->count, sizeof(str), qsort_strcmp);
 
-    fprintf(fout,
-            "/*\n"
-            " * %s\n"
-            " */\n"
-            "\n"
-            "#ifndef %s%s\n"
-            "#define %s%s\n"
-            "\n"
-            "#ifdef %sENUM\n"
-            "\n"
-            "enum %s {\n",
+    fprintf(fout, header_fmt,
             header_warning.buf,
             guardp.buf, foutbn.buf,
             guardp.buf, foutbn.buf,
@@ -75,35 +110,14 @@ bool generate_c(enumerator *input, options *opts, FILE *fout)
         fwrite(e_curr->elem.buf, 1, e_curr->elem.len, fout);
     }
 
-    fprintf(fout,
-            "};\n"
-            "\n"
-            "#else\n"
-            "\n");
+    fprintf(fout, "};\n\n#else\n\n");
 
     strlist *p_curr = genned->procs;
     for (; p_curr; p_curr = p_curr->next) {
         fwrite(p_curr->elem.buf, 1, p_curr->elem.len, fout);
     }
 
-    fprintf(fout,
-            "\n"
-            "#endif /* %sENUM */\n"
-            "\n"
-            "#ifdef %sLOOKUP\n"
-            "\n"
-            "struct %s_entry {\n"
-            "    const long value;\n"
-            "    const char *def;\n"
-            "};\n"
-            "\n"
-            "#ifndef %sLOOKUP_IMPL\n"
-            "\n"
-            "extern const struct %s_entry %s_lookup[];\n"
-            "\n"
-            "#else\n"
-            "\n"
-            "const struct %s_entry %s_lookup[] = {\n",
+    fprintf(fout, lookup_branch_fmt,
             guardp.buf,
             guardp.buf,
             opts->tag.buf,
@@ -121,14 +135,7 @@ bool generate_c(enumerator *input, options *opts, FILE *fout)
                 (int)padding, ' ');
     }
 
-    fprintf(fout,
-            "};\n"
-            "\n"
-            "#endif /* %sLOOKUP_IMPL */\n"
-            "\n"
-            "#endif /* %sLOOKUP */\n"
-            "\n"
-            "#endif /* %s%s */\n",
+    fprintf(fout, footer_fmt,
             guardp.buf,
             guardp.buf,
             guardp.buf, foutbn.buf);
@@ -191,26 +198,24 @@ static void stringify_enumeration(enumerator *input, const str *leader, outlist 
         outputs->table[i] = strnew(claimed_elem, strlen(claimed_elem));
 
         // Format an enum entry: '    ' -> symbol -> ' = ' -> assignment + ',\n'
-        usize enum_entry_len = enum_entry_len_base + assign_len;
         char *enum_entry = stringify_entry(leader,
                                            symbol_len,
                                            assign_len,
                                            max_input_len,
-                                           enum_entry_len,
+                                           enum_entry_len_base + assign_len,
                                            curr->assignment,
                                            e_enum_fmt);
-        strlist_append(e_tail, local, strnew(enum_entry, enum_entry_len), A_F_EXTEND);
+        strlist_append(e_tail, local, strnew(enum_entry, strlen(enum_entry)), A_F_EXTEND);
 
         // Format a preproc entry: '#define ' -> symbol -> ' ' -> assignment + '\n'
-        usize proc_entry_len = proc_entry_len_base + assign_len;
         char *proc_entry = stringify_entry(leader,
                                            symbol_len,
                                            assign_len,
                                            max_input_len,
-                                           proc_entry_len,
+                                           proc_entry_len_base + assign_len,
                                            curr->assignment,
                                            p_enum_fmt);
-        strlist_append(p_tail, local, strnew(proc_entry, proc_entry_len), A_F_EXTEND);
+        strlist_append(p_tail, local, strnew(proc_entry, strlen(proc_entry)), A_F_EXTEND);
     }
 }
 
@@ -247,26 +252,24 @@ static void stringify_bitmask(enumerator *input, const str *leader, outlist *out
         }
 
         // Format an enum entry: '    ' -> symbol -> ' = ' -> assignment + ',\n'
-        usize enum_entry_len = enum_entry_len_base + assign_len;
         char *enum_entry = stringify_entry(leader,
                                            symbol_len,
                                            assign_len,
                                            max_input_len,
-                                           enum_entry_len,
+                                           enum_entry_len_base + assign_len,
                                            assignment - 1,
                                            e_fmt);
-        strlist_append(e_tail, local, strnew(enum_entry, enum_entry_len), A_F_EXTEND);
+        strlist_append(e_tail, local, strnew(enum_entry, strlen(enum_entry)), A_F_EXTEND);
 
         // Format a preproc entry: '#define ' -> symbol -> ' ' -> assignment + '\n'
-        usize proc_entry_len = proc_entry_len_base + assign_len;
         char *proc_entry = stringify_entry(leader,
                                            symbol_len,
                                            assign_len,
                                            max_input_len,
-                                           proc_entry_len,
+                                           proc_entry_len_base + assign_len,
                                            assignment - 1,
                                            p_fmt);
-        strlist_append(p_tail, local, strnew(proc_entry, proc_entry_len), A_F_EXTEND);
+        strlist_append(p_tail, local, strnew(proc_entry, strlen(proc_entry)), A_F_EXTEND);
     }
 }
 
