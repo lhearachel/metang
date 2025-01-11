@@ -23,7 +23,6 @@ project(
         'buildtype': 'release', # O3
         'b_ndebug': 'if-release',
         'warning_level': '2', # all, extra
-        'c_std': 'c17',
     },
 )
 
@@ -36,7 +35,10 @@ subdir('tools')
 
 subdir('include')
 subdir('src')
-subdir('tests')
+
+if not meson.is_subproject()
+    subdir('tests')
+endif
 
 metang_exe = executable(
     'metang',
