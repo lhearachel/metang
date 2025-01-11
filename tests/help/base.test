@@ -11,15 +11,18 @@ Commands:
   version  Display the version number of this program.
 
 Global Options:
+  -L, --lang <LANG>        Generate the enumeration for a target language.
+                           If unspecified, generate for the C language.
+                           Options: c, py
   -o, --output <OFILE>     Write output to <OFILE>.
                            If unspecified, write to standard output.
   -l, --leader <LEADER>    Use <LEADER> as a prefix for generated symbols.
                            If unspecified, <LEADER> will be derived from
-                           the input file's basename, minus any extension.
+                           the output file's basename, minus any extension.
   -t, --tag-name <NAME>    Use <NAME> as the base tag for enums and lookup
                            tables.
                            If unspecified, <NAME> will be derived from the
-                           output file's basename, minus any extension.
+                           input file's basename, minus any extension.
   -G, --guard <GUARD>      Prefix conditional directives with <GUARD>. For
                            example, in C, this will prefix inclusion guards.
 

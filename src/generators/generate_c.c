@@ -8,12 +8,6 @@
 #include "options.h"
 #include "strbuf.h"
 
-typedef struct outlist {
-    strlist *enums;
-    strlist *procs;
-    str *table;
-} outlist;
-
 static outlist *stringify(enumerator *input, const str *leader, enum options_mode mode);
 static void stringify_enumeration(enumerator *input, const str *leader, outlist *outputs, usize max_ident_len);
 static void stringify_bitmask(enumerator *input, const str *leader, outlist *outputs, usize max_ident_len);

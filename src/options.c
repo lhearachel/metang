@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "generator.h"
 #include "meta.h"
 #include "strbuf.h"
 
@@ -26,6 +27,7 @@ static bool handle_output(options *opts, str *arg);
 static bool handle_leader(options *opts, str *arg);
 static bool handle_tag_name(options *opts, str *arg);
 static bool handle_guard(options *opts, str *arg);
+static bool handle_lang(options *opts, str *arg);
 
 // clang-format off
 static const opthandler opthandlers[] = {
@@ -36,6 +38,7 @@ static const opthandler opthandlers[] = {
     { strnew("leader"),          'l', true,  OPTS_M_ANY,  handle_leader          },
     { strnew("tag-name"),        't', true,  OPTS_M_ANY,  handle_tag_name        },
     { strnew("guard"),           'G', true,  OPTS_M_ANY,  handle_guard           },
+    { strnew("lang"),            'L', true,  OPTS_M_ANY,  handle_lang            },
     { strZ,                      ' ', false, OPTS_M_NONE, NULL                   }, // must ALWAYS be last!
 };
 
@@ -43,8 +46,8 @@ static const opterrmsg errmsg[] = {
     [OPTS_S]                     = { strZ,                                                                          0 },
     [OPTS_F_UNRECOGNIZED_OPT]    = { strnew("Unrecognized option “%s”"),                                            1 },
     [OPTS_F_OPT_MISSING_ARG]     = { strnew("Option “%s” missing argument"),                                        1 },
-    [OPTS_F_TOO_MANY_APPENDS]    = { strnew("Too many “--append” options"),                                         0 },
-    [OPTS_F_TOO_MANY_PREPENDS]   = { strnew("Too many “--prepend” options"),                                        0 },
+    [OPTS_F_TOO_MANY_APPENDS]    = { strnew("Too many “--append” options; limit: 16"),                              0 },
+    [OPTS_F_TOO_MANY_PREPENDS]   = { strnew("Too many “--prepend” options; limit: 16"),                             0 },
     [OPTS_F_NOT_AN_INTEGER]      = { strnew("Expected integer argument for option “%s”, but found “%s”"),           2 },
     [OPTS_F_UNRECOGNIZED_LANG]   = { strnew("Unexpected value for option “%s” argument “%s”"),                      2 },
 };
@@ -233,4 +236,18 @@ static bool handle_guard(options *opts, str *arg)
     opts->set_guard = true;
     opts->guard = strnewp(arg);
     return true;
+}
+
+static bool handle_lang(options *opts, str *arg)
+{
+    for (usize i = 0; generators[i].lang.len > 0; i++) {
+        if (streq(&generators[i].lang, arg)) {
+            opts->lang = strnewp(arg);
+            opts->genf = i;
+            return true;
+        }
+    }
+
+    opts->result = OPTS_F_UNRECOGNIZED_LANG;
+    return false;
 }

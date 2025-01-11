@@ -21,10 +21,12 @@
 #include "strbuf.h"
 
 extern bool generate_c(enumerator *input, options *opts, FILE *fout);
+extern bool generate_py(enumerator *input, options *opts, FILE *fout);
 
 // clang-format off
 const generator generators[] = {
     { strnew("c"),          generate_c          }, // default; must ALWAYS be first!
+    { strnew("py"),         generate_py         },
     { strZ,                 NULL                }, // must ALWAYS be last!
 };
 // clang-format on

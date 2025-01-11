@@ -39,6 +39,12 @@ typedef struct generator {
     generator_func genfunc;
 } generator;
 
+typedef struct outlist {
+    strlist *enums;
+    strlist *procs;
+    str *table;
+} outlist;
+
 extern const generator generators[];
 extern const str header_warning;
 extern const str header_source_file;

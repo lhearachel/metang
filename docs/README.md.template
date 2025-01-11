@@ -2,8 +2,8 @@
 
 # `metang`
 
-A metaprogramming utility to generate multi-purpose C headers of enumerated
-constants.
+A metaprogramming utility to generate enumerated constants from plain-text for C
+and Python.
 
 ## Table of Contents
 
@@ -127,6 +127,16 @@ further reading, each of these options has a corresponding example in the
 For more detailed reading on the various options, `metang`'s installation
 procedure will install manual page in section 1. You can view this page by
 invoking `man metang`, as with any other shell-based utility.
+
+### Python
+
+`metang` can also generate constants-files for Python using the `--lang` option
+with argument `py`:
+
+```shell
+> metang --lang py
+{{ ENUM_BASE_PY_OUTPUT }}
+```
 
 ## Contributing
 

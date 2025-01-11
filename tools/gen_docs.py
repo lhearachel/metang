@@ -24,8 +24,9 @@ import sys
 readme_template = sys.argv[1]
 version = sys.argv[2]
 enum_base_test = sys.argv[3]
-metang_exe = f"./{sys.argv[4]}"
-man_md = sys.argv[5]
+enum_base_py_test = sys.argv[4]
+metang_exe = f"./{sys.argv[5]}"
+man_md = sys.argv[6]
 
 with open(version, "r", encoding="utf-8") as version_f:
     version_s = version_f.read()
@@ -46,6 +47,16 @@ with open(enum_base_test, "r", encoding="utf-8") as enum_base_test_f:
         elif target is not None:
             target.append(line.rstrip())
 
+enum_base_py_output_lines = []
+
+with open(enum_base_py_test, "r", encoding="utf-8") as enum_base_py_test_f:
+    target = None
+    for line in enum_base_py_test_f:
+        if line == "# output\n":
+            target = enum_base_py_output_lines
+        elif target is not None:
+            target.append(line.rstrip())
+
 help_result = subprocess.run(
     [metang_exe, "help"], capture_output=True, encoding="utf-8"
 )
@@ -57,6 +68,9 @@ man_result = subprocess.run(
 readme = readme.replace("{{ VERSION }}\n", version_s)
 readme = readme.replace("{{ ENUM_BASE_INPUT }}", "\n".join(enum_base_input_lines))
 readme = readme.replace("{{ ENUM_BASE_OUTPUT }}", "\n".join(enum_base_output_lines))
+readme = readme.replace(
+    "{{ ENUM_BASE_PY_OUTPUT }}", "\n".join(enum_base_py_output_lines)
+)
 readme = readme.replace("{{ HELPTEXT }}", help_result.stdout)
 
 with open("README.md", "w", encoding="utf-8") as readme_out:
