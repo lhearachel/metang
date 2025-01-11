@@ -1,60 +1,69 @@
-.\" Manpage for metang.
-.\" Contact lhearachel@proton.me to correct any errors or typos.
 .TH METANG 1
 .SH NAME
-metang \- generate multi-purpose C headers for enumerators
+.PP
+metang \- generate multi\-purpose C headers for enumerators
 .SH SYNOPSIS
-.B metang
-[options]
-[\fIfile\fR]
+.PP
+\fB\fCmetang\fR \fB\fCCOMMAND\fR [\fB\fCOPTIONS\fR] [\fB\fC<FILE>\fR]
 .SH DESCRIPTION
-.B metang
-generates a customized C header of enumerated constants from a plain text file.
-Each line of the input file is treated as another member of the enumeration.
+.PP
+\fB\fCmetang\fR generates a customized C header of enumerated constants from a plain
+text file. Each line of the input file is treated as another member of the
+enumeration. It can generate enumerations of standard integer sequences, or
+enumerations representative of a bit\-mask.
+.SH COMMANDS
+.TP
+\fB\fCenum\fR
+Generate an integer\-sequence enumeration.
+.TP
+\fB\fCmask\fR
+Generate a bit\-mask enumeration.
+.TP
+\fB\fChelp\fR
+Print help text and exit.
+.TP
+\fB\fCversion\fR
+Print the program version number and exit.
 .SH OPTIONS
+.PP
+The following options are available to all generators:
 .TP
-.BR \-a ", " \-\-append =\fIENTRY\fR
-Append ENTRY after the input content.
-\fB\-\-append\fR can be invoked multiple times; successive invocations will create a list of entries to be appended in full in the order in which they were specified.
-For example, providing \fB\-a\fR \fIENTRY_0\fR \fB\-a\fR \fIENTRY_1\fR as options will result in the input content being generated, followed by \fIENTRY_0\fR as the next element of the enumeration thereafter, followed by \fIENTRY_1\fR.
+\fB\fC\-o\fR, \fB\fC\-\-output\fR \fB\fC<OFILE>\fR
+Write output to \fB\fC<OFILE>\fR\&. If unspecified, then \fB\fCmetang\fR will write all
+generated content to standard output.
 .TP
-.BR \-p ", " \-\-prepend =\fIENTRY\fR
-Prepend ENTRY before the input content.
-\fB\-\-prepend\fR can be invoked multiple times; successive invocations will create a list of entries to be prepended in full in the order in which they were specified.
-For example, providing \fB\-p\fR \fIENTRY_0\fR \fB\-p\fR \fIENTRY_1\fR as options will result in \fIENTRY_0\fR being the first element of the enumeration, followed by \fIENTRY_1\fR, followed by the input.
+\fB\fC\-l\fR, \fB\fC\-\-leader\fR \fB\fC<LEADER>\fR
+Treat \fB\fC<LEADER>\fR as a prefix for generated enumeration symbols. If
+unspecified, \fB\fC<LEADER>\fR will be derived from the output file's basename, minus
+any extension. If the output stream points to standard output and this option
+is not specified, then \fB\fC<LEADER>\fR will be derived as \fB\fCSTDOUT\fR\&. Any value
+for \fB\fC<LEADER>\fR \-\- given or derived \-\- will be converted to \fB\fCUPPER_SNAKE_CASE\fR\&.
 .TP
-.BR \-n ", " \-\-start\-from =\fINUMBER\fR
-Set the initial enumerator value to \fINUMBER\fR.
-Successsive invocations choose the last-specified option's argument as the victor.
+\fB\fC\-t\fR, \fB\fC\-\-tag\-name\fR \fB\fC<NAME>\fR
+Use \fB\fC<NAME>\fR as the base name for the tag applied to the generated \fB\fCenum\fR,
+lookup table member \fB\fCstruct\fR, and lookup table definition. If unspecified,
+\fB\fC<NAME>\fR will be derived from the input file's basename, minus any extension.
+If the input stream feeds from standard input and this option is not
+specified, then \fB\fC<NAME>\fR will be derived as \fB\fCstdin\fR\&. Any value for this option
+is treated literally; no special formatting or casing will be applied.
 .TP
-.BR \-o ", " \-\-output =\fIFILE\fR
-Write the generated content to \fIFILE\fR rather than standard output.
+\fB\fC\-G\fR, \fB\fC\-\-guard\fR \fB\fC<GUARD>\fR
+Use \fB\fC<GUARD>\fR as a prefix for all conditional directives. In C, this prefix is
+applied to all inclusion guards.
+.PP
+The following options are available to integer\-sequence enumerations:
 .TP
-.BR \-l ", " \-\-leader =\fIPREFIX\fR
-Use \fIPREFIX\fR as a prefix for generated symbols and preprocessor definitions.
+\fB\fC\-a\fR, \fB\fC\-\-append\fR \fB\fC<ENTRY>\fR
+Append \fB\fC<ENTRY>\fR to the input listing.
 .TP
-.BR \-t ", " \-\-tag\-name =\fITAG\fR
-Use \fITAG\fR as the base tag for the generated \fBenum\fR and lookup table.
+\fB\fC\-p\fR, \fB\fC\-\-prepend\fR \fB\fC<ENTRY>\fR
+Prepend \fB\fC<ENTRY>\fR to the input listing.
 .TP
-.BR \-c ", " \-\-tag\-case =\fICASE\fR
-Output the tags for the generated \fBenum\fR and lookup table in the given case.
-Recognized options are \fBsnake\fR and \fBpascal\fR.
-If not specified, then the program will behave as if \fB\-c\fR \fBsnake\fR was specified.
-.TP
-.BR \-G ", " \-\-preproc-guard =\fIGUARD\fR
-Use \fIGUARD\fR as a prefix for conditional preprocessor directives.
-If not specified, then the program will behave as if \fB\-G\fB \fBMETANG\fR was specified.
-.TP
-.BR \-B ", " \-\-bitmask
-Generate symbols for a bitmask.
-This option is incopatible with the \fB\-D\fR and \fB\-n\fR options.
-.TP
-.BR \-D ", " \-\-allow\-overrides
-When specified, permit direct assignemnt of enumeration members to literal rvalues.
-Direct assignment for a given input line is denoted with an equals sign (“=”) after the member name, followed by an integer literal.
-.TP
-.BR \-h ", " \-\-help
-Display the program help text and exit.
-.TP
-.BR \-v ", " \-\-version
-Display the program version number and exit.
+\fB\fC\-n\fR, \fB\fC\-\-start\-from\fR \fB\fC<NUMBER>\fR
+Start the integer\-sequence enumeration from \fB\fC<NUMBER>\fR\&.
+.PP
+Additionally, integer\-sequence enumerations may directly assign the value of
+member values in the input listing by appending \fB\fC= <NUMBER>\fR to the member name.
+.SH AUTHOR
+.PP
+Rachel Forshee \[la]lhearachel@proton.me\[ra]

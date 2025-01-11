@@ -39,6 +39,7 @@ test-rewrite: tools/runtests.py release
 
 README_TEMPLATE = docs/README.md.template
 ENUM_BASE_TEST = tests/enum/base.test
+MAN_MD = docs/man.md
 
-docs: tools/gen_docs.py $(TARGET) $(README_TEMPLATE) $(VERSION) $(ENUM_BASE_TEST)
-	$< $(README_TEMPLATE) $(VERSION) $(ENUM_BASE_TEST) $(TARGET)
+docs: tools/gen_docs.py $(TARGET) $(README_TEMPLATE) $(VERSION) $(ENUM_BASE_TEST) $(MAN_MD)
+	$< $(README_TEMPLATE) $(VERSION) $(ENUM_BASE_TEST) $(TARGET) $(MAN_MD)

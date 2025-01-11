@@ -239,11 +239,11 @@ Global Options:
                            If unspecified, write to standard output.
   -l, --leader <LEADER>    Use <LEADER> as a prefix for generated symbols.
                            If unspecified, <LEADER> will be derived from
-                           the input file's basename, minus any extension.
+                           the output file's basename, minus any extension.
   -t, --tag-name <NAME>    Use <NAME> as the base tag for enums and lookup
                            tables.
                            If unspecified, <NAME> will be derived from the
-                           output file's basename, minus any extension.
+                           input file's basename, minus any extension.
   -G, --guard <GUARD>      Prefix conditional directives with <GUARD>. For
                            example, in C, this will prefix inclusion guards.
 
