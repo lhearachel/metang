@@ -6,6 +6,7 @@ tests = [
     {'command': 'enum', 'name': 'base'},
     {'command': 'enum', 'name': 'direct_assignment'},
     {'command': 'enum', 'name': 'guard'},
+    {'command': 'enum', 'name': 'lang_py'},
     {'command': 'enum', 'name': 'leader'},
     {'command': 'enum', 'name': 'prepend'},
     {'command': 'enum', 'name': 'start_from'},
@@ -13,6 +14,7 @@ tests = [
 
     {'command': 'mask', 'name': 'base'},
     {'command': 'mask', 'name': 'guard'},
+    {'command': 'mask', 'name': 'lang_py'},
     {'command': 'mask', 'name': 'leader'},
     {'command': 'mask', 'name': 'tag_name'},
 ]
