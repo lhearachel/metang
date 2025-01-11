@@ -28,6 +28,7 @@ DEP = $(SRC:.c=.d)
 
 MANP = docs/metang.1
 
+VERSION = .version
 VERSION_H = include/version.h
 
 .PHONY: default all debug release install clean version
@@ -55,7 +56,7 @@ uninstall:
 
 version: $(VERSION_H)
 
-$(VERSION_H): VERSION
+$(VERSION_H): $(VERSION)
 	./tools/version.sh $< $@
 
 $(TARGET): $(VERSION_H) $(OBJ)

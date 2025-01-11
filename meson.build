@@ -18,7 +18,7 @@ project(
     license: 'Apache-2.0',
     license_files: 'LICENSE',
     meson_version: '>=1.5.0',
-    version: run_command(['./tools/version.sh', 'VERSION'], check: true).stdout().strip(),
+    version: run_command(['./tools/version.sh', '.version'], check: true).stdout().strip(),
     default_options: {
         'buildtype': 'release', # O3
         'b_ndebug': 'if-release',
@@ -29,7 +29,7 @@ project(
 
 native = get_option('native')
 install = native and meson.is_cross_build() ? false : true
-version = files('VERSION')
+version = files('.version')
 
 # This must come before `tests`!
 subdir('tools')
