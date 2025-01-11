@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-.PHONY: check-dep-exists format pre-commit test test-rewrite valgrind
+.PHONY: check-dep-exists format test test-rewrite docs
 
 check-all: format pre-commit
 
@@ -36,3 +36,9 @@ test-rewrite: tools/runtests.py release
 	$< --rewrite version
 	$< --rewrite enum
 	$< --rewrite mask
+
+README_TEMPLATE = docs/README.md.template
+ENUM_BASE_TEST = tests/enum/base.test
+
+docs: tools/gen_docs.py $(TARGET) $(README_TEMPLATE) $(VERSION) $(ENUM_BASE_TEST)
+	$< $(README_TEMPLATE) $(VERSION) $(ENUM_BASE_TEST) $(TARGET)
