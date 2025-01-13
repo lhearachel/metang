@@ -33,38 +33,38 @@ extern "C" {
 #ifdef METANG_ENUM
 
 enum Alternative_TagName {
-    STDOUT_BULBASAUR  =  0,
-    STDOUT_IVYSAUR    =  1,
-    STDOUT_VENUSAUR   =  2,
-    STDOUT_CHARMANDER =  3,
-    STDOUT_CHARMELEON =  4,
-    STDOUT_CHARIZARD  =  5,
-    STDOUT_SQUIRTLE   =  6,
-    STDOUT_WARTORTLE  =  7,
-    STDOUT_BLASTOISE  =  8,
-    STDOUT_PORYGON2   =  9,
-    STDOUT_PORYGON_Z  = 10,
-    STDOUT_FARFETCHD  = 11,
-    STDOUT_MR_MIME    = 12,
-    STDOUT_MIME_JR    = 13,
+    BULBASAUR  =  0,
+    IVYSAUR    =  1,
+    VENUSAUR   =  2,
+    CHARMANDER =  3,
+    CHARMELEON =  4,
+    CHARIZARD  =  5,
+    SQUIRTLE   =  6,
+    WARTORTLE  =  7,
+    BLASTOISE  =  8,
+    PORYGON2   =  9,
+    PORYGON_Z  = 10,
+    FARFETCHD  = 11,
+    MR_MIME    = 12,
+    MIME_JR    = 13,
 };
 
 #else
 
-#define STDOUT_BULBASAUR   0
-#define STDOUT_IVYSAUR     1
-#define STDOUT_VENUSAUR    2
-#define STDOUT_CHARMANDER  3
-#define STDOUT_CHARMELEON  4
-#define STDOUT_CHARIZARD   5
-#define STDOUT_SQUIRTLE    6
-#define STDOUT_WARTORTLE   7
-#define STDOUT_BLASTOISE   8
-#define STDOUT_PORYGON2    9
-#define STDOUT_PORYGON_Z  10
-#define STDOUT_FARFETCHD  11
-#define STDOUT_MR_MIME    12
-#define STDOUT_MIME_JR    13
+#define BULBASAUR   0
+#define IVYSAUR     1
+#define VENUSAUR    2
+#define CHARMANDER  3
+#define CHARMELEON  4
+#define CHARIZARD   5
+#define SQUIRTLE    6
+#define WARTORTLE   7
+#define BLASTOISE   8
+#define PORYGON2    9
+#define PORYGON_Z  10
+#define FARFETCHD  11
+#define MR_MIME    12
+#define MIME_JR    13
 
 #endif /* METANG_ENUM */
 
@@ -82,20 +82,20 @@ extern const entry__Alternative_TagName lookup__Alternative_TagName[];
 #else
 
 const entry__Alternative_TagName lookup__Alternative_TagName[] = {
-    { STDOUT_BLASTOISE,  "STDOUT_BLASTOISE",  },
-    { STDOUT_BULBASAUR,  "STDOUT_BULBASAUR",  },
-    { STDOUT_CHARIZARD,  "STDOUT_CHARIZARD",  },
-    { STDOUT_CHARMANDER, "STDOUT_CHARMANDER", },
-    { STDOUT_CHARMELEON, "STDOUT_CHARMELEON", },
-    { STDOUT_FARFETCHD,  "STDOUT_FARFETCHD",  },
-    { STDOUT_IVYSAUR,    "STDOUT_IVYSAUR",    },
-    { STDOUT_MIME_JR,    "STDOUT_MIME_JR",    },
-    { STDOUT_MR_MIME,    "STDOUT_MR_MIME",    },
-    { STDOUT_PORYGON2,   "STDOUT_PORYGON2",   },
-    { STDOUT_PORYGON_Z,  "STDOUT_PORYGON_Z",  },
-    { STDOUT_SQUIRTLE,   "STDOUT_SQUIRTLE",   },
-    { STDOUT_VENUSAUR,   "STDOUT_VENUSAUR",   },
-    { STDOUT_WARTORTLE,  "STDOUT_WARTORTLE",  },
+    { BLASTOISE,  "BLASTOISE",  },
+    { BULBASAUR,  "BULBASAUR",  },
+    { CHARIZARD,  "CHARIZARD",  },
+    { CHARMANDER, "CHARMANDER", },
+    { CHARMELEON, "CHARMELEON", },
+    { FARFETCHD,  "FARFETCHD",  },
+    { IVYSAUR,    "IVYSAUR",    },
+    { MIME_JR,    "MIME_JR",    },
+    { MR_MIME,    "MR_MIME",    },
+    { PORYGON2,   "PORYGON2",   },
+    { PORYGON_Z,  "PORYGON_Z",  },
+    { SQUIRTLE,   "SQUIRTLE",   },
+    { VENUSAUR,   "VENUSAUR",   },
+    { WARTORTLE,  "WARTORTLE",  },
 };
 
 #endif /* METANG_LOOKUP_IMPL */

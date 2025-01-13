@@ -139,17 +139,11 @@ bool parseopts(int *argc, char ***argv, options *opts)
         opts->infile = opt;
     }
 
-    // `tag` and `leader` must be post-processed if they do not yet have values.
+    // `tag` must be post-processed if it does not yet have a value.
     if (opts->tag.len == 0) {
         opts->tag = opts->infile.len == 0
             ? strnew("stdin")
             : strrcut(&opts->infile, '/').tail;
-    }
-
-    if (opts->leader.len == 0) {
-        opts->leader = opts->outfile.len == 0
-            ? strnew("stdout")
-            : strrcut(&opts->outfile, '/').tail;
     }
 
     // In `mask` mode, `append` and `prepend` are each populated with a single

@@ -44,10 +44,7 @@ The following options are available to all generators:
   generated content to standard output.
 
 `-l`, `--leader` `<LEADER>`
-  Treat `<LEADER>` as a prefix for generated enumeration symbols. If
-  unspecified, `<LEADER>` will be derived from the output file's basename, minus
-  any extension. If the output stream points to standard output and this option
-  is not specified, then `<LEADER>` will be derived as `STDOUT`. Any value
+  Treat `<LEADER>` as a prefix for generated enumeration symbols. Any value
   for `<LEADER>` -- given or derived -- will be converted to `UPPER_SNAKE_CASE`.
 
 `-t`, `--tag-name` `<NAME>`

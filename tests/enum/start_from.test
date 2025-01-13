@@ -33,38 +33,38 @@ extern "C" {
 #ifdef METANG_ENUM
 
 enum stdin {
-    STDOUT_BULBASAUR  =  95,
-    STDOUT_IVYSAUR    =  96,
-    STDOUT_VENUSAUR   =  97,
-    STDOUT_CHARMANDER =  98,
-    STDOUT_CHARMELEON =  99,
-    STDOUT_CHARIZARD  = 100,
-    STDOUT_SQUIRTLE   = 101,
-    STDOUT_WARTORTLE  = 102,
-    STDOUT_BLASTOISE  = 103,
-    STDOUT_PORYGON2   = 104,
-    STDOUT_PORYGON_Z  = 105,
-    STDOUT_FARFETCHD  = 106,
-    STDOUT_MR_MIME    = 107,
-    STDOUT_MIME_JR    = 108,
+    BULBASAUR  =  95,
+    IVYSAUR    =  96,
+    VENUSAUR   =  97,
+    CHARMANDER =  98,
+    CHARMELEON =  99,
+    CHARIZARD  = 100,
+    SQUIRTLE   = 101,
+    WARTORTLE  = 102,
+    BLASTOISE  = 103,
+    PORYGON2   = 104,
+    PORYGON_Z  = 105,
+    FARFETCHD  = 106,
+    MR_MIME    = 107,
+    MIME_JR    = 108,
 };
 
 #else
 
-#define STDOUT_BULBASAUR   95
-#define STDOUT_IVYSAUR     96
-#define STDOUT_VENUSAUR    97
-#define STDOUT_CHARMANDER  98
-#define STDOUT_CHARMELEON  99
-#define STDOUT_CHARIZARD  100
-#define STDOUT_SQUIRTLE   101
-#define STDOUT_WARTORTLE  102
-#define STDOUT_BLASTOISE  103
-#define STDOUT_PORYGON2   104
-#define STDOUT_PORYGON_Z  105
-#define STDOUT_FARFETCHD  106
-#define STDOUT_MR_MIME    107
-#define STDOUT_MIME_JR    108
+#define BULBASAUR   95
+#define IVYSAUR     96
+#define VENUSAUR    97
+#define CHARMANDER  98
+#define CHARMELEON  99
+#define CHARIZARD  100
+#define SQUIRTLE   101
+#define WARTORTLE  102
+#define BLASTOISE  103
+#define PORYGON2   104
+#define PORYGON_Z  105
+#define FARFETCHD  106
+#define MR_MIME    107
+#define MIME_JR    108
 
 #endif /* METANG_ENUM */
 
@@ -82,20 +82,20 @@ extern const entry__stdin lookup__stdin[];
 #else
 
 const entry__stdin lookup__stdin[] = {
-    { STDOUT_BLASTOISE,  "STDOUT_BLASTOISE",  },
-    { STDOUT_BULBASAUR,  "STDOUT_BULBASAUR",  },
-    { STDOUT_CHARIZARD,  "STDOUT_CHARIZARD",  },
-    { STDOUT_CHARMANDER, "STDOUT_CHARMANDER", },
-    { STDOUT_CHARMELEON, "STDOUT_CHARMELEON", },
-    { STDOUT_FARFETCHD,  "STDOUT_FARFETCHD",  },
-    { STDOUT_IVYSAUR,    "STDOUT_IVYSAUR",    },
-    { STDOUT_MIME_JR,    "STDOUT_MIME_JR",    },
-    { STDOUT_MR_MIME,    "STDOUT_MR_MIME",    },
-    { STDOUT_PORYGON2,   "STDOUT_PORYGON2",   },
-    { STDOUT_PORYGON_Z,  "STDOUT_PORYGON_Z",  },
-    { STDOUT_SQUIRTLE,   "STDOUT_SQUIRTLE",   },
-    { STDOUT_VENUSAUR,   "STDOUT_VENUSAUR",   },
-    { STDOUT_WARTORTLE,  "STDOUT_WARTORTLE",  },
+    { BLASTOISE,  "BLASTOISE",  },
+    { BULBASAUR,  "BULBASAUR",  },
+    { CHARIZARD,  "CHARIZARD",  },
+    { CHARMANDER, "CHARMANDER", },
+    { CHARMELEON, "CHARMELEON", },
+    { FARFETCHD,  "FARFETCHD",  },
+    { IVYSAUR,    "IVYSAUR",    },
+    { MIME_JR,    "MIME_JR",    },
+    { MR_MIME,    "MR_MIME",    },
+    { PORYGON2,   "PORYGON2",   },
+    { PORYGON_Z,  "PORYGON_Z",  },
+    { SQUIRTLE,   "SQUIRTLE",   },
+    { VENUSAUR,   "VENUSAUR",   },
+    { WARTORTLE,  "WARTORTLE",  },
 };
 
 #endif /* METANG_LOOKUP_IMPL */

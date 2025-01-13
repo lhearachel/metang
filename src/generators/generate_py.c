@@ -210,6 +210,11 @@ static void write_options(options *opts, FILE *fout)
 
 static str make_prefix(const str *prefix)
 {
+    if (prefix->len == 0) {
+        char *buf = new (local, char, 1 << 8, A_F_ZERO | A_F_EXTEND);
+        return strnew(buf, 0);
+    }
+
     char *buf = new (local, char, 1 << 8, A_F_ZERO | A_F_EXTEND);
     str cased = strsnake(prefix, buf, NULL, S_SNAKE_F_UPPER);
     cased.buf[cased.len] = '_';
