@@ -144,10 +144,10 @@ bool generate_c(enumerator *input, options *opts, FILE *fout)
     for (usize i = 0; i < input->count; i++) {
         usize padding = input->max_ident_len - genned->table[i].len + 1;
         fprintf(fout,
-                "    { %.*s%s,%*c\"%.*s\",%*c},\n",
+                "    { %.*s%s,%*c\"%.*s%s\",%*c},\n",
                 (int)leader.len, leader.buf, genned->table[i].buf,
                 (int)padding, ' ',
-                (int)genned->table[i].len, genned->table[i].buf,
+                (int)leader.len, leader.buf, genned->table[i].buf,
                 (int)padding, ' ');
     }
 

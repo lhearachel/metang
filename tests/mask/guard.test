@@ -86,22 +86,22 @@ extern const entry__stdin lookup__stdin[];
 #else
 
 const entry__stdin lookup__stdin[] = {
-    { STDOUT_ANY,        "ANY",        },
-    { STDOUT_BLASTOISE,  "BLASTOISE",  },
-    { STDOUT_BULBASAUR,  "BULBASAUR",  },
-    { STDOUT_CHARIZARD,  "CHARIZARD",  },
-    { STDOUT_CHARMANDER, "CHARMANDER", },
-    { STDOUT_CHARMELEON, "CHARMELEON", },
-    { STDOUT_FARFETCHD,  "FARFETCHD",  },
-    { STDOUT_IVYSAUR,    "IVYSAUR",    },
-    { STDOUT_MIME_JR,    "MIME_JR",    },
-    { STDOUT_MR_MIME,    "MR_MIME",    },
-    { STDOUT_NONE,       "NONE",       },
-    { STDOUT_PORYGON2,   "PORYGON2",   },
-    { STDOUT_PORYGON_Z,  "PORYGON_Z",  },
-    { STDOUT_SQUIRTLE,   "SQUIRTLE",   },
-    { STDOUT_VENUSAUR,   "VENUSAUR",   },
-    { STDOUT_WARTORTLE,  "WARTORTLE",  },
+    { STDOUT_ANY,        "STDOUT_ANY",        },
+    { STDOUT_BLASTOISE,  "STDOUT_BLASTOISE",  },
+    { STDOUT_BULBASAUR,  "STDOUT_BULBASAUR",  },
+    { STDOUT_CHARIZARD,  "STDOUT_CHARIZARD",  },
+    { STDOUT_CHARMANDER, "STDOUT_CHARMANDER", },
+    { STDOUT_CHARMELEON, "STDOUT_CHARMELEON", },
+    { STDOUT_FARFETCHD,  "STDOUT_FARFETCHD",  },
+    { STDOUT_IVYSAUR,    "STDOUT_IVYSAUR",    },
+    { STDOUT_MIME_JR,    "STDOUT_MIME_JR",    },
+    { STDOUT_MR_MIME,    "STDOUT_MR_MIME",    },
+    { STDOUT_NONE,       "STDOUT_NONE",       },
+    { STDOUT_PORYGON2,   "STDOUT_PORYGON2",   },
+    { STDOUT_PORYGON_Z,  "STDOUT_PORYGON_Z",  },
+    { STDOUT_SQUIRTLE,   "STDOUT_SQUIRTLE",   },
+    { STDOUT_VENUSAUR,   "STDOUT_VENUSAUR",   },
+    { STDOUT_WARTORTLE,  "STDOUT_WARTORTLE",  },
 };
 
 #endif /* ALTERNATIVE_GUARD_LOOKUP_IMPL */
