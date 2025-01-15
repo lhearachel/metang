@@ -81,10 +81,12 @@ typedef struct entry__Alternative_TagName {
 
 #ifndef METANG_LOOKUP_IMPL
 
+extern const long lengthof__Alternative_TagName;
 extern const entry__Alternative_TagName lookup__Alternative_TagName[];
 
 #else
 
+const long lengthof__Alternative_TagName = 16;
 const entry__Alternative_TagName lookup__Alternative_TagName[] = {
     { ANY,        "ANY",        },
     { BLASTOISE,  "BLASTOISE",  },

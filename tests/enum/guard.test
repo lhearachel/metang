@@ -77,10 +77,12 @@ typedef struct entry__stdin {
 
 #ifndef ALTERNATIVE_GUARD_LOOKUP_IMPL
 
+extern const long lengthof__stdin;
 extern const entry__stdin lookup__stdin[];
 
 #else
 
+const long lengthof__stdin = 14;
 const entry__stdin lookup__stdin[] = {
     { BLASTOISE,  "BLASTOISE",  },
     { BULBASAUR,  "BULBASAUR",  },

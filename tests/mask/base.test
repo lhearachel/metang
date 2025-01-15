@@ -79,10 +79,12 @@ typedef struct entry__stdin {
 
 #ifndef METANG_LOOKUP_IMPL
 
+extern const long lengthof__stdin;
 extern const entry__stdin lookup__stdin[];
 
 #else
 
+const long lengthof__stdin = 16;
 const entry__stdin lookup__stdin[] = {
     { ANY,        "ANY",        },
     { BLASTOISE,  "BLASTOISE",  },

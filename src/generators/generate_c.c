@@ -65,10 +65,12 @@ static const char *lookup_branch_fmt = ""
     "\n"
     "#ifndef %sLOOKUP_IMPL\n"
     "\n"
+    "extern const long lengthof__%s;\n"
     "extern const entry__%s lookup__%s[];\n"
     "\n"
     "#else\n"
     "\n"
+    "const long lengthof__%s = %d;\n"
     "const entry__%s lookup__%s[] = {\n"
     "";
 
@@ -133,13 +135,15 @@ bool generate_c(enumerator *input, options *opts, FILE *fout)
     }
 
     fprintf(fout, lookup_branch_fmt,
-            guardp.buf,
-            guardp.buf,
-            opts->tag.buf,
-            opts->tag.buf,
-            guardp.buf,
-            opts->tag.buf, opts->tag.buf,
-            opts->tag.buf, opts->tag.buf);
+            guardp.buf,                    // "#endif /* %sENUM */\n"
+            guardp.buf,                    // "#ifdef %sLOOKUP\n"
+            opts->tag.buf,                 // "typedef struct entry__%s {\n"
+            opts->tag.buf,                 // "} entry__%s;\n"
+            guardp.buf,                    // "#ifndef %sLOOKUP_IMPL\n"
+            opts->tag.buf,                 // "extern const long lengthof__%s;\n"
+            opts->tag.buf, opts->tag.buf,  // "extern const entry__%s lookup__%s[];\n"
+            opts->tag.buf, input->count,   // "const long lengthof__%s = %d;\n"
+            opts->tag.buf, opts->tag.buf); // "const entry__%s lookup__%s[] = {\n"
 
     for (usize i = 0; i < input->count; i++) {
         usize padding = input->max_ident_len - genned->table[i].len + 1;
