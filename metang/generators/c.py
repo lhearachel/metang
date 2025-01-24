@@ -102,7 +102,7 @@ def generate(enum: list[tuple[str, int]], opts: Options, maxlen: int, digits: in
 
         #ifdef {opts.guard}_LOOKUP
 
-        typdef struct entry__{opts.tag} {{
+        typedef struct entry__{opts.tag} {{
             const long value;
             const char *def;
         }} entry__{opts.tag};
