@@ -71,7 +71,7 @@ def generate(enum: list[tuple[str, int]], opts: Options, maxlen: int, digits: in
         #ifndef {opts.guard}_{fout_name_snake}
         #define {opts.guard}_{fout_name_snake}
 
-        #ifndef __cplusplus
+        #ifdef __cplusplus
         extern "C" {{
         #endif
 
