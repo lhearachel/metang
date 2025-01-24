@@ -52,7 +52,7 @@ from pathlib import Path
 
 import sys
 
-from metang.generators import c
+from metang.generators import c, py
 from metang.lang import Lang
 from metang.mode import Mode
 from metang.options import Options
@@ -156,7 +156,8 @@ if mode & Mode.MASK:
 
 digits = len(str(val - 1))
 
-c.generate(enumeration, opts, maxlen, digits)
-
-# for member in enumeration:
-#     print(f"{member[0]: <{maxlen}} = {member[1]: >{digits}}")
+GENERATORS = {
+    Lang.c: c.generate,
+    Lang.py: py.generate,
+}
+GENERATORS[lang](enumeration, opts, maxlen, digits)
