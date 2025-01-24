@@ -1,3 +1,4 @@
+from pathlib import Path
 from textwrap import dedent
 from typing import TextIO
 
@@ -56,7 +57,7 @@ def _generate_mask_members_d(
 
 def generate(enum: list[tuple[str, int]], opts: Options, maxlen: int, digits: int):
     prefix = "" if not opts.leader else f"{opts.leader}_"
-    fout_name_snake = snake(opts.fout_name).upper()
+    fout_name_snake = snake(Path(opts.fout_name).name).upper()
     lookup = sorted(enum, key=lambda x: x[0])
 
     print(

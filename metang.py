@@ -125,7 +125,7 @@ else:
 lang = args.lang
 leader = snake(args.leader).upper() if args.leader else ""
 tag = args.tag_name if args.tag_name else snake(Path(fin_name).stem).lower()
-guard = snake(args.guard).upper() if args.guard else "METANG"
+guard = args.guard if args.guard else "METANG"
 mode = Mode.ENUM if command == "enum" else Mode.MASK
 
 opts = Options(fin, fin_name, fout, fout_name, lang, leader, tag, guard, mode)
