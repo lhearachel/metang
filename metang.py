@@ -24,7 +24,7 @@ Commands:
   help     Display this help text.
   version  Display the version number of this program.
 
-Global Options:
+Options:
   -L, --lang <LANG>       Generate the enumeration for a target language. If
                           unspecified, generate for the C language.
                           Options: c, py
@@ -36,11 +36,14 @@ Global Options:
                           the input file's basename, minus any extension.
   -g, --guard <GUARD>     Prefix conditional directives with <GUARD>. For
                           example, in C, this will prefix inclusion guards.
+  --no-auto               If generating a mask, do not generate the prefixed
+                          NONE and suffixed ALL identifiers.
 
 When using the “mask” command, the user must mind the following:
   1. The magic values NONE and ANY are automatically prepended and appended
      to user input, respectively. The NONE value is always assigned the value
      0; the ANY value is always assigned the sum of all previous mask indices.
+     This behavior can be suppressed by specifying the --no-auto flag.
   2. Overrides on assignment values from user input are not permitted. This is
      to ensure that the generated bitmask is contiguous.
   3. As a consequence of (1) and (2), overrides to the starting value are not
@@ -104,6 +107,10 @@ argp.add_argument("-o", "--output")
 argp.add_argument("-l", "--leader")
 argp.add_argument("-t", "--tag-name")
 argp.add_argument("-g", "--guard")
+
+if command == "mask":
+    argp.add_argument("--no-auto", action="store_true")
+
 argp.add_argument("INFILE")
 
 args = argp.parse_args(sys.argv[2:])
@@ -127,14 +134,15 @@ leader = snake(args.leader).upper() if args.leader else ""
 tag = args.tag_name if args.tag_name else snake(Path(fin_name).stem).lower()
 guard = args.guard if args.guard else "METANG"
 mode = Mode.ENUM if command == "enum" else Mode.MASK
+no_auto = False if command == "enum" else args.no_auto
 
-opts = Options(fin, fin_name, fout, fout_name, lang, leader, tag, guard, mode)
+opts = Options(fin, fin_name, fout, fout_name, lang, leader, tag, guard, mode, no_auto)
 
 enumeration = []
-if mode & Mode.MASK:
-    enumeration.append((f"{tag}_NONE", -1))
+if mode & Mode.MASK and not no_auto:
+    enumeration.append((f"{snake(tag).upper()}_NONE", -1))
 
-val = 0
+val = -1 if no_auto else 0
 maxlen = 0
 for line in filter(lambda line: not line.startswith("#"), fin):
     no_comm = line.split("#")[0]
@@ -151,8 +159,8 @@ for line in filter(lambda line: not line.startswith("#"), fin):
     enumeration.append((idt, val))
     val += 1
 
-if mode & Mode.MASK:
-    enumeration.append((f"{tag}_ALL", val))
+if mode & Mode.MASK and not no_auto:
+    enumeration.append((f"{snake(tag).upper()}_ALL", val))
 
 digits = len(str(val - 1))
 

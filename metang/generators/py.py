@@ -22,11 +22,15 @@ def _generate_mask_members(
         f"    {prefix}{enum[0][0]: <{maxlen}} =       {0: >{digits}}",
         file=fout,
     )
-    for idt, val in enum[1:]:
+    for idt, val in enum[1:-1]:
         print(
             f"    {prefix}{idt: <{maxlen}} = (1 << {val: >{digits}})",
             file=fout,
         )
+    print(
+        f"    {prefix}{enum[-1][0]: <{maxlen}} = ((1 << {enum[-1][1]: >{digits}}) - 1)",
+        file=fout,
+    )
 
 
 def generate(enum: list[tuple[str, int]], opts: Options, maxlen: int, digits: int):
@@ -40,7 +44,7 @@ def generate(enum: list[tuple[str, int]], opts: Options, maxlen: int, digits: in
 
         import enum
 
-        class {opts.tag}(enum.IntEnum):"""),
+        class {opts.tag}(enum.{"IntEnum" if opts.mode & Mode.ENUM else "IntFlag"}):"""),
         file=opts.fout,
     )
 

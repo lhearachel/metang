@@ -21,14 +21,18 @@ def _generate_mask_members_e(
     enum: list[tuple[str, int]], fout: TextIO, prefix: str, maxlen: int, digits: int
 ):
     print(
-        f"    {prefix}{enum[0][0]: <{maxlen}} =       {0: >{digits}},",
+        f"    {prefix}{enum[0][0]: <{maxlen}} = {0: >{digits}},",
         file=fout,
     )
-    for idt, val in enum[1:]:
+    for idt, val in enum[1:-1]:
         print(
-            f"    {prefix}{idt: <{maxlen}} = (1 << {val: >{digits}}),",
+            f"    {prefix}{idt: <{maxlen}} =  (1 << {val: >{digits}}),",
             file=fout,
         )
+    print(
+        f"    {prefix}{enum[-1][0]: <{maxlen}} = ((1 << {enum[-1][1]: >{digits}}) - 1),",
+        file=fout,
+    )
 
 
 def _generate_enum_members_d(
@@ -45,14 +49,18 @@ def _generate_mask_members_d(
     enum: list[tuple[str, int]], fout: TextIO, prefix: str, maxlen: int, digits: int
 ):
     print(
-        f"#define {prefix}{enum[0][0]: <{maxlen}}       {0: >{digits}}",
+        f"#define {prefix}{enum[0][0]: <{maxlen}}  {0: >{digits}}",
         file=fout,
     )
-    for idt, val in enum[1:]:
+    for idt, val in enum[1:-1]:
         print(
-            f"#define {prefix}{idt: <{maxlen}} (1 << {val: >{digits}})",
+            f"#define {prefix}{idt: <{maxlen}}  (1 << {val: >{digits}})",
             file=fout,
         )
+    print(
+        f"#define {prefix}{enum[-1][0]: <{maxlen}} ((1 << {enum[-1][1]: >{digits}}) - 1)",
+        file=fout,
+    )
 
 
 def generate(enum: list[tuple[str, int]], opts: Options, maxlen: int, digits: int):

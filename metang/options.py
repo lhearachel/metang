@@ -15,3 +15,4 @@ class Options:
     tag: str
     guard: str
     mode: Mode
+    no_auto: bool
