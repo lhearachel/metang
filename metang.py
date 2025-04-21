@@ -151,7 +151,18 @@ for line in filter(lambda line: not line.startswith("#"), fin):
 
     split = no_comm.split("=")
     if len(split) > 1:
-        val = int(split[1])
+        valStr = split[1].strip()
+        try:
+            val = int(valStr)
+        except ValueError:
+            found = False
+            for d in enumeration:
+                if valStr == d[0]:
+                    val = d[1]
+                    found = True
+                    break
+            if found == False:
+                raise Exception("Enum entry `" + valStr + "`not found on previous entries")
     idt = split[0].strip()
     if len(idt) > maxlen:
         maxlen = len(idt)
