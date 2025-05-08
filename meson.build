@@ -21,6 +21,7 @@ executable(
   'metang',
   sources: files(
     'source/main.c',
+    'source/langs/c.c',
     'source/libs/clip.c',
     'source/libs/strings.c',
   ),

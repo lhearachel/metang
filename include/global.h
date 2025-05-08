@@ -2,7 +2,13 @@
 
 #pragma once
 
+#include <stdio.h>
+
+#include "libs/strings.h"
+
 typedef int bool;
+
+#define BLOCK_SIZE 128
 
 #define false 0
 #define true  1
@@ -34,13 +40,28 @@ typedef int bool;
 #define dieH(__msg, __hook) \
     do {                    \
         errM(__msg);        \
-        __hook;             \
+        (void)(__hook);     \
         exit(EXIT_FAILURE); \
     } while (0)
 
 #define dieD(__msg, __hook, ...)  \
     do {                          \
         errF(__msg, __VA_ARGS__); \
-        __hook;                   \
+        (void)(__hook);           \
         exit(EXIT_FAILURE);       \
     } while (0)
+
+typedef struct args {
+    const char *lang;     // --lang   - defaults to "c"
+    const char *guard;    // --guard  - defaults to "METANG"
+    const char *tag;      // --tag    - defaults to basename of the input file
+    const char *outfname; // --output - defaults to stdout
+    const char *infname;  // <file>   - specify "-" to use stdin
+
+    FILE *infile;
+} args;
+
+typedef struct seqelem {
+    string symbol;
+    long   value;
+} seqelem;

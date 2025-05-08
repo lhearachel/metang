@@ -9,46 +9,40 @@
 #include "global.h"
 #include "metang.h" // meson-generated
 
+#include "langs/c.h"
+
 #include "libs/clip.h"
 #include "libs/strings.h"
 #include "libs/vector.h"
 
-typedef struct args {
-    const char *lang;     // --lang   - defaults to "c"
-    const char *guard;    // --guard  - defaults to "METANG"
-    const char *tag;      // --tag    - defaults to basename of the input file
-    const char *outfname; // --output - defaults to stdout
-    const char *infname;  // <file>   - specify "-" to use stdin
+typedef struct gen {
+    const char *lang;
+    void (*prefunc)(FILE *stream, vector *sequence, args *args);
+    void (*genfunc)(FILE *stream, vector *sequence, args *args);
+    void (*postfunc)(FILE *stream, vector *sequence, args *args);
+} gen;
 
-    FILE *infile;
-} args;
+static const gen generators[] = {
+    { .lang = "c", .prefunc = c_pregen, .genfunc = c_gen, .postfunc = c_postgen },
+    { 0 },
+};
 
-typedef struct seqelem {
-    string symbol;
-    long   value;
-} seqelem;
-
-#define BLOCK_SIZE 128
-
-void   usage(FILE *stream);
-args   parseargs(const int argc, const char **argv);
-vector readseq(FILE *infile);
+void       usage(FILE *stream);
+args       parseargs(const int argc, const char **argv);
+const gen *pickgen(const char *lang);
+vector     readseq(FILE *infile);
+FILE      *getfile(const char *fname, FILE *fdefault);
 
 int main(int argc, const char **argv)
 {
-    // 1. Pick the generator for the specified language
-    // 2. Process input lines into a sequence
-    // 3. Pre-process the tag and guard using the generator
-    // 4. Prepare the output stream
-    // 5. Call the generator on the sequence and direct to the output stream
+    args       args      = parseargs(argc, argv);
+    const gen *generator = pickgen(args.lang);
+    vector     sequence  = readseq(args.infile);
+    FILE      *outfile   = getfile(args.outfname, stdout);
 
-    args   args     = parseargs(argc, argv);
-    vector sequence = readseq(args.infile);
-
-    for (int i = 0; i < sequence.len; i++) {
-        seqelem *elem = get(&sequence, seqelem, i);
-        printf("%.*s -> %ld\n", fmtstring(elem->symbol), elem->value);
-    }
+    generator->prefunc(outfile, &sequence, &args);
+    generator->genfunc(outfile, &sequence, &args);
+    generator->postfunc(outfile, &sequence, &args);
 
     for (int i = 0; i < sequence.len; i++) free(get(&sequence, seqelem, i)->symbol.s);
     free(sequence.data);
@@ -111,10 +105,18 @@ args parseargs(const int argc, const char **argv)
     cliperr err  = cliparse(&clip, options, arguments, null);
     if (err != E_clip_none) die(clip.err, usage(stderr));
 
-    args.infile = strcmp(args.infname, "-") != 0 ? fopen(args.infname, "rb") : stdin;
-    if (args.infile == null) die("could not open input file “%s”", usage(stderr), args.infname);
+    if (strcmp(args.infname, "-") == 0) args.infname = null;
+    args.infile = getfile(args.infname, stdin);
 
     return args;
+}
+
+const gen *pickgen(const char *lang)
+{
+    const gen *generator = &generators[0];
+    for (; generator->lang != null && strcmp(generator->lang, lang) != 0; generator++);
+    if (generator->lang == null) die("unrecognized lang “%s”", usage(stderr), lang);
+    return generator;
 }
 
 vector readseq(FILE *infile)
@@ -156,4 +158,18 @@ vector readseq(FILE *infile)
     free(line);
     if (kill) exit(EXIT_FAILURE);
     return sequence;
+}
+
+FILE *getfile(const char *fname, FILE *fdefault)
+{
+    const char *mode = (fdefault == stdout || fdefault == stderr) ? "wb" : "rb";
+    const char *type = (fdefault == stdout || fdefault == stderr) ? "output" : "input";
+    FILE       *f    = fname ? fopen(fname, mode) : fdefault;
+    if (f == null) {
+        errF("could not open %s file “%s”", type, fname);
+        usage(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    return f;
 }
