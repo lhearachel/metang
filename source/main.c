@@ -46,6 +46,8 @@ int main(int argc, const char **argv)
 
     for (int i = 0; i < sequence.len; i++) free(get(&sequence, seqelem, i)->symbol.s);
     free(sequence.data);
+    free(args.guard);
+    free(args.upperbase);
     fclose(args.infile);
     return EXIT_SUCCESS;
 }
@@ -77,19 +79,14 @@ args parseargs(const int argc, const char **argv)
         exit(EXIT_SUCCESS);
     }
 
-    args args = {
-        .lang     = "c",
-        .guard    = "METANG",
-        .tag      = null,
-        .outfname = null,
-        .infname  = null,
-        .infile   = null,
-    };
+    args args    = { 0 };
+    args.lang    = "c";
+    args.inguard = "METANG";
 
     // clang-format off
     const clipopt options[] = {
         { .longopt = "lang",   .shortopt = 'l', .hasarg = H_reqarg, .starget = &args.lang     },
-        { .longopt = "guard",  .shortopt = 'g', .hasarg = H_reqarg, .starget = &args.guard    },
+        { .longopt = "guard",  .shortopt = 'g', .hasarg = H_reqarg, .starget = &args.inguard  },
         { .longopt = "tag",    .shortopt = 't', .hasarg = H_reqarg, .starget = &args.tag      },
         { .longopt = "output", .shortopt = 'o', .hasarg = H_reqarg, .starget = &args.outfname },
         { 0 }

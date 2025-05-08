@@ -53,12 +53,14 @@ typedef int bool;
 
 typedef struct args {
     const char *lang;     // --lang   - defaults to "c"
-    const char *guard;    // --guard  - defaults to "METANG"
+    const char *inguard;  // --guard  - defaults to "METANG"
     const char *tag;      // --tag    - defaults to basename of the input file
     const char *outfname; // --output - defaults to stdout
     const char *infname;  // <file>   - specify "-" to use stdin
 
-    FILE *infile;
+    FILE *infile;    // The actual input stream
+    char *guard;     // Processed copy of the input guard
+    char *upperbase; // Uppercased version of the basename
 } args;
 
 typedef struct seqelem {
