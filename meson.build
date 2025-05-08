@@ -21,6 +21,7 @@ executable(
   'metang',
   sources: files(
     'source/main.c',
+    'source/libs/clip.c'
   ),
   implicit_include_directories: true,
   include_directories: include_directories('include'),
