@@ -1,0 +1,9 @@
+# LSP artifacts
+.cache/
+.vscode/
+
+# Build artifacts
+build/
+
+# Developer conveniences
+compile_commands.json
