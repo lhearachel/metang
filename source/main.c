@@ -145,6 +145,7 @@ sequence readseq(FILE *infile, bool bitmask)
 
         // Handle direct value assignments
         strpair symval = strcut(elem->symbol, '=');
+        symval.tail    = strltrim(symval.tail);
         if (symval.tail.len > 0) {
             if (bitmask) {
                 errF(
@@ -155,13 +156,19 @@ sequence readseq(FILE *infile, bool bitmask)
                 goto sethead;
             }
 
-            char invalid = 0;
-            valit        = strnum(symval.tail, 0, &invalid);
+            if (alpha(symval.tail.s[0]) || symval.tail.s[0] == '_') {
+                errF("invalid back-ref as assignment value: “%.*s”", fmtstring(elem->symbol));
+                kill = true;
+            } else {
+                // Parse the number
+                char invalid = 0;
+                valit        = strnum(symval.tail, 0, &invalid);
 
-            if (invalid != '\0') {
-                errF("invalid assignment value: “%.*s”", fmtstring(elem->symbol));
-                valit = 0;
-                kill  = true;
+                if (invalid != '\0') {
+                    errF("invalid assignment value: “%.*s”", fmtstring(elem->symbol));
+                    valit = 0;
+                    kill  = true;
+                }
             }
 
         sethead:

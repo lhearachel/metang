@@ -10,6 +10,11 @@ int space(int c)
     return (c >= '\t' && c <= '\r') || c == ' ';
 }
 
+int alpha(int c)
+{
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+
 strpair strcut(const string s, unsigned char c)
 {
     strpair pair = {
@@ -84,21 +89,15 @@ long strnum(string s, const int base, char *inval)
     // just base-10 for now
     (void)base;
 
-    // chew through any leading whitespace
-    int i = 0;
-    for (; i < s.len && space(s.s[i]); i++);
-    s.s   += i;
-    s.len -= i;
-
     long sum  = 0;
     int  sign = 1;
-    if (s.s[0] == '-') {
+    if (s.len && s.s[0] == '-') {
         s.s++;
         s.len--;
         sign = -1;
     }
 
-    for (i = 0; i < s.len; i++) {
+    for (int i = 0; i < s.len; i++) {
         int digit = (s.s[i] - '0');
         if (digit < 0 || digit > 9) {
             *inval = (char)s.s[i];

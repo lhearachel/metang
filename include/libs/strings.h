@@ -31,6 +31,9 @@ typedef struct {
 #define fmtstring(__str) (int)(__str).len, (__str).s
 // clang-format on
 
+int space(int c);
+int alpha(int c);
+
 /*
  * Cut a string into head and tail around the first occurrence of any delimiting token. If no such
  * token is found, then the returned head will be the input string, and the returned tail will have
