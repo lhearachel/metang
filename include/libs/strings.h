@@ -70,4 +70,14 @@ int stricmp(const string a, const string b);
  */
 long strnum(string s, const int base, char *inval);
 
+/*
+ * Shorthand routine to make a string object out of a character-buffer.
+ */
+string strmake(const char *s);
+
+/*
+ * Return a duplicate of the input string with all alphabetic characters set to uppercase.
+ */
+string strupper(const string s);
+
 #endif // STRINGS_H

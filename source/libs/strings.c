@@ -2,6 +2,9 @@
 
 #include "libs/strings.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 int space(int c)
 {
     return (c >= '\t' && c <= '\r') || c == ' ';
@@ -107,4 +110,25 @@ long strnum(string s, const int base, char *inval)
     }
 
     return sum * sign;
+}
+
+string strmake(const char *s)
+{
+    return string(s, strlen(s));
+}
+
+string strupper(const string s)
+{
+    char       *upper = malloc(s.len + 1);
+    const char *p     = (char *)s.s;
+    char       *u     = upper;
+
+    for (; *p; p++, u++) {
+        if (*p >= 'a' && *p <= 'z') *u = (char)(*p - ('a' - 'A'));
+        else if (*p < '0' || (*p > '9' && *p < 'A') || *p > 'Z') *u = '_';
+        else *u = *p;
+    }
+
+    *u = '\0';
+    return string(upper, s.len);
 }
