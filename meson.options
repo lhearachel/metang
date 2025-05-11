@@ -1,0 +1,6 @@
+option(
+    'manuals',
+    type: 'boolean',
+    value: false,
+    description: 'Generate manual pages from documentation using Asciidoctor. Ignored by subprojects.',
+)

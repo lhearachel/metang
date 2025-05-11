@@ -70,9 +70,9 @@ void usage(FILE *stream)
     fprintf(stream, "                         e.g. in C, 8 binds to uint8_t, -8 to int8_t, etc.\n");
     fprintf(stream, "\n");
     fprintf(stream, "Languages Supported:\n");
-    fprintf(stream, "  c     C enum with matching preproc definitions and a value-lookup table\n");
-    fprintf(stream, "  cpp   C++ enum with a value-lookup table using std::map\n");
-    fprintf(stream, "  py    Python class derived from enum.IntEnum or enum.IntFlag\n");
+    fprintf(stream, "  c     C enum, #defines, and a binary-searchable member-lookup table.\n");
+    fprintf(stream, "  cpp   C++ enum with a member-lookup table using std::map.\n");
+    fprintf(stream, "  py    Python class derived from enum.IntEnum or enum.IntFlag.\n");
 }
 
 args parseargs(const int argc, const char **argv)
@@ -82,7 +82,7 @@ args parseargs(const int argc, const char **argv)
         exit(EXIT_SUCCESS);
     }
 
-    if (strcmp(argv[1], "--version") == 0) {
+    if (strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--version") == 0) {
         puts(PROGRAM_VERSION);
         exit(EXIT_SUCCESS);
     }

@@ -30,3 +30,7 @@ executable(
   implicit_include_directories: true,
   include_directories: include_directories('include'),
 )
+
+if get_option('manuals')
+  subdir('docs')
+endif
