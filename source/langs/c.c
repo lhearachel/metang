@@ -28,8 +28,8 @@ void c_pregen(FILE *stream, sequence *seq, args *args)
     fprintf(stream, " *   --tag %.*s\n", fmtstring(args->tag));
     fprintf(stream, " */\n");
     fprintf(stream, "\n");
-    fprintf(stream, "#ifndef %.*s_%.*s\n", fmtstring(args->guard), fmtstring(args->infbaseup));
-    fprintf(stream, "#define %.*s_%.*s\n", fmtstring(args->guard), fmtstring(args->infbaseup));
+    fprintf(stream, "#ifndef %.*s_%.*s\n", fmtstring(args->guard), fmtstring(args->outfbaseup));
+    fprintf(stream, "#define %.*s_%.*s\n", fmtstring(args->guard), fmtstring(args->outfbaseup));
     fprintf(stream, "\n");
     fprintf(stream, "#ifdef __cplusplus\n");
     fprintf(stream, "extern \"C\" {\n");
@@ -209,7 +209,12 @@ void c_postgen(FILE *stream, sequence *seq, args *args)
     fprintf(stream, "}\n");
     fprintf(stream, "#endif\n");
     fprintf(stream, "\n");
-    fprintf(stream, "#endif /* %.*s_%.*s */\n", fmtstring(args->guard), fmtstring(args->infbaseup));
+    fprintf(
+        stream,
+        "#endif /* %.*s_%.*s */\n",
+        fmtstring(args->guard),
+        fmtstring(args->outfbaseup)
+    );
 }
 
 static int seqelemcmp(const void *a, const void *b) // NOLINT: bugprone-easily-swappable-parameters

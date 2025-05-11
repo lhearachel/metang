@@ -73,12 +73,12 @@ typedef struct args {
     const char *outfname; // --output  - defaults to stdout
     const char *infname;  // <file>    - specify "-" to use stdin
 
-    FILE    *infile;    // The actual input stream
-    string   tag;       // Processed copy of the input tag
-    string   guard;     // Processed copy of the input guard
-    sizesign sizesign;  // Interpreted size and sign bindings for the enum
-    string   infbase;   // Basename of the input file
-    string   infbaseup; // Uppercased version of the basename
+    FILE    *infile;     // The actual input stream
+    string   tag;        // Processed copy of the input tag
+    string   guard;      // Processed copy of the input guard
+    sizesign sizesign;   // Interpreted size and sign bindings for the enum
+    string   infbase;    // Basename of the input file
+    string   outfbaseup; // Uppercased version of the output file's basename
 } args;
 
 typedef struct seqelem {

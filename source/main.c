@@ -52,7 +52,7 @@ int main(int argc, const char **argv)
     for (int i = 0; i < sequence.elems.len; i++) free(get(&sequence.elems, seqelem, i)->symbol.s);
     free(sequence.elems.data);
     free(args.guard.s);
-    free(args.infbaseup.s);
+    free(args.outfbaseup.s);
     fclose(args.infile);
     return EXIT_SUCCESS;
 }
@@ -119,11 +119,12 @@ args parseargs(const int argc, const char **argv)
     if (strcmp(args.infname, "-") == 0) args.infname = null;
     args.infile = getfile(args.infname, stdin);
 
-    const char *infname = args.infname ? (char *)args.infname : "stdin";
-    args.infbase        = strmake(basename((char *)infname));
-    args.infbaseup      = strupper(args.infbase);
-    args.guard          = strupper(string(args.inguard, strlen(args.inguard)));
-    args.tag            = args.intag ? strmake(args.intag) : strcut(args.infbase, '.').head;
+    const char *infname  = args.infname ? (char *)args.infname : "stdin";
+    const char *outfname = args.outfname ? (char *)args.outfname : "stdout";
+    args.infbase         = strmake(basename((char *)infname));
+    args.outfbaseup      = strupper(strmake(basename((char *)outfname)));
+    args.guard           = strupper(string(args.inguard, strlen(args.inguard)));
+    args.tag             = args.intag ? strmake(args.intag) : strcut(args.infbase, '.').head;
 
     args.sizesign = S_unbound;
     char invalid  = '\0';
