@@ -64,6 +64,8 @@ typedef enum sizesign {
     S_signed_64bit,
 } sizesign;
 
+typedef struct gen gen;
+
 typedef struct args {
     bool        bitmask;  // --bitmask - defaults to "false"
     const char *lang;     // --lang    - defaults to "c"
@@ -73,12 +75,13 @@ typedef struct args {
     const char *outfname; // --output  - defaults to stdout
     const char *infname;  // <file>    - specify "-" to use stdin
 
-    FILE    *infile;     // The actual input stream
-    string   tag;        // Processed copy of the input tag
-    string   guard;      // Processed copy of the input guard
-    sizesign sizesign;   // Interpreted size and sign bindings for the enum
-    string   infbase;    // Basename of the input file
-    string   outfbaseup; // Uppercased version of the output file's basename
+    const gen *generator;  // The generator to use
+    FILE      *infile;     // The actual input stream
+    string     tag;        // Processed copy of the input tag
+    string     guard;      // Processed copy of the input guard
+    sizesign   sizesign;   // Interpreted size and sign bindings for the enum
+    string     infbase;    // Basename of the input file
+    string     outfbaseup; // Uppercased version of the output file's basename
 } args;
 
 typedef struct seqelem {
@@ -90,3 +93,11 @@ typedef struct sequence {
     vector elems; // T = seqelem
     long   maxsymlen;
 } sequence;
+
+struct gen {
+    const char *lang;
+    const char *ext;
+    void (*prefunc)(FILE *stream, sequence *seq, args *args);
+    void (*genfunc)(FILE *stream, sequence *seq, args *args);
+    void (*postfunc)(FILE *stream, sequence *seq, args *args);
+};

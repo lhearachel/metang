@@ -18,38 +18,31 @@
 #include "libs/strings.h"
 #include "libs/vector.h"
 
-typedef struct gen {
-    const char *lang;
-    void (*prefunc)(FILE *stream, sequence *seq, args *args);
-    void (*genfunc)(FILE *stream, sequence *seq, args *args);
-    void (*postfunc)(FILE *stream, sequence *seq, args *args);
-} gen;
-
 // clang-format off
 static const gen generators[] = {
-    { .lang = "c",   .prefunc = c_pregen,   .genfunc = c_gen,   .postfunc = c_postgen   },
-    { .lang = "cpp", .prefunc = cpp_pregen, .genfunc = cpp_gen, .postfunc = cpp_postgen },
-    { .lang = "py",  .prefunc = py_pregen,  .genfunc = py_gen,  .postfunc = py_postgen  },
+    { .lang = "c",   .ext = ".h",   .prefunc = c_pregen,   .genfunc = c_gen,   .postfunc = c_postgen   },
+    { .lang = "cpp", .ext = ".hpp", .prefunc = cpp_pregen, .genfunc = cpp_gen, .postfunc = cpp_postgen },
+    { .lang = "py",  .ext = ".py",  .prefunc = py_pregen,  .genfunc = py_gen,  .postfunc = py_postgen  },
     { 0 },
 };
 // clang-format on
 
 void       usage(FILE *stream);
 args       parseargs(const int argc, const char **argv);
-const gen *pickgen(const char *lang);
+const gen *pickgen_byext(const char *ext);
+const gen *pickgen_bylang(const char *lang);
 sequence   readseq(FILE *infile, bool bitmask);
 FILE      *getfile(const char *fname, FILE *fdefault);
 
 int main(int argc, const char **argv)
 {
-    args       args      = parseargs(argc, argv);
-    const gen *generator = pickgen(args.lang);
-    sequence   sequence  = readseq(args.infile, args.bitmask);
-    FILE      *outfile   = getfile(args.outfname, stdout);
+    args     args     = parseargs(argc, argv);
+    sequence sequence = readseq(args.infile, args.bitmask);
+    FILE    *outfile  = getfile(args.outfname, stdout);
 
-    generator->prefunc(outfile, &sequence, &args);
-    generator->genfunc(outfile, &sequence, &args);
-    generator->postfunc(outfile, &sequence, &args);
+    args.generator->prefunc(outfile, &sequence, &args);
+    args.generator->genfunc(outfile, &sequence, &args);
+    args.generator->postfunc(outfile, &sequence, &args);
 
     for (int i = 0; i < sequence.elems.len; i++) free(get(&sequence.elems, seqelem, i)->symbol.s);
     free(sequence.elems.data);
@@ -95,7 +88,6 @@ args parseargs(const int argc, const char **argv)
     }
 
     args args    = { 0 };
-    args.lang    = "c";
     args.inguard = "METANG";
 
     // clang-format off
@@ -124,10 +116,12 @@ args parseargs(const int argc, const char **argv)
 
     const char *infname  = args.infname ? (char *)args.infname : "stdin";
     const char *outfname = args.outfname ? (char *)args.outfname : "stdout";
+    const char *outext   = strrchr(outfname, '.');
     args.infbase         = strmake(basename((char *)infname));
     args.outfbaseup      = strupper(strmake(basename((char *)outfname)));
     args.guard           = strupper(string(args.inguard, strlen(args.inguard)));
     args.tag             = args.intag ? strmake(args.intag) : strcut(args.infbase, '.').head;
+    args.generator       = args.lang ? pickgen_bylang(args.lang) : pickgen_byext(outext);
 
     args.sizesign = S_unbound;
     char invalid  = '\0';
@@ -149,7 +143,19 @@ args parseargs(const int argc, const char **argv)
     return args;
 }
 
-const gen *pickgen(const char *lang)
+const gen *pickgen_byext(const char *ext)
+{
+    const gen *generator = &generators[0];
+    for (; generator->ext != null && strcmp(generator->ext, ext) != 0; generator++);
+    if (generator->ext == null) {
+        errF("unrecognized output extension lang “%s”; defaulting to C", ext);
+        generator = pickgen_bylang("c");
+    }
+
+    return generator;
+}
+
+const gen *pickgen_bylang(const char *lang)
 {
     const gen *generator = &generators[0];
     for (; generator->lang != null && strcmp(generator->lang, lang) != 0; generator++);
