@@ -7,3 +7,8 @@ build/
 
 # Developer conveniences
 compile_commands.json
+
+# Test inputs and outputs
+testfiles
+testfiles/*
+testout.*
