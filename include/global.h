@@ -52,19 +52,33 @@ typedef long bool;
         exit(EXIT_FAILURE);       \
     } while (0)
 
+typedef enum sizesign {
+    S_unbound,
+    S_unsigned_8bit,
+    S_unsigned_16bit,
+    S_unsigned_32bit,
+    S_unsigned_64bit,
+    S_signed_8bit,
+    S_signed_16bit,
+    S_signed_32bit,
+    S_signed_64bit,
+} sizesign;
+
 typedef struct args {
     bool        bitmask;  // --bitmask - defaults to "false"
     const char *lang;     // --lang    - defaults to "c"
     const char *inguard;  // --guard   - defaults to "METANG"
     const char *intag;    // --tag     - defaults to basename of the input file
+    const char *insized;  // --sized   - defaults to 0 (no bound or sign)
     const char *outfname; // --output  - defaults to stdout
     const char *infname;  // <file>    - specify "-" to use stdin
 
-    FILE  *infile;    // The actual input stream
-    string tag;       // Processed copy of the input tag
-    string guard;     // Processed copy of the input guard
-    string infbase;   // Basename of the input file
-    string infbaseup; // Uppercased version of the basename
+    FILE    *infile;    // The actual input stream
+    string   tag;       // Processed copy of the input tag
+    string   guard;     // Processed copy of the input guard
+    sizesign sizesign;  // Interpreted size and sign bindings for the enum
+    string   infbase;   // Basename of the input file
+    string   infbaseup; // Uppercased version of the basename
 } args;
 
 typedef struct seqelem {

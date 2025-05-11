@@ -66,11 +66,13 @@ void usage(FILE *stream)
     fprintf(stream, "       " PROGRAM_NAME " --version\n");
     fprintf(stream, "\n");
     fprintf(stream, "Options:\n");
+    fprintf(stream, "  -b / --bitmask         Generate an enumerated bitmask.\n");
     fprintf(stream, "  -o / --output <file>   Write generated content to a file.\n");
     fprintf(stream, "  -l / --lang <lang>     Generate enumerables for a specified language.\n");
     fprintf(stream, "  -t / --tag <tag>       Prefix generated enums and structs with <tag>.\n");
     fprintf(stream, "  -g / --guard <guard>   Prefix pre-processor conditionals with <guard>.\n");
-    fprintf(stream, "  -b / --bitmask         Generate an enumerated bitmask.\n");
+    fprintf(stream, "  -s / --sized <size>    Bind the size and sign of the enum, if supported.\n");
+    fprintf(stream, "                         e.g. in C, 8 binds to uint8_t, -8 to int8_t, etc.\n");
     fprintf(stream, "\n");
     fprintf(stream, "Languages Supported:\n");
     fprintf(stream, "  c    C enum with matching preproc definitions and a value lookup table\n");
@@ -97,6 +99,7 @@ args parseargs(const int argc, const char **argv)
     const clipopt options[] = {
         { .longopt = "lang",    .shortopt = 'l', .hasarg = H_reqarg, .starget = &args.lang     },
         { .longopt = "guard",   .shortopt = 'g', .hasarg = H_reqarg, .starget = &args.inguard  },
+        { .longopt = "sized",   .shortopt = 's', .hasarg = H_reqarg, .starget = &args.insized  },
         { .longopt = "tag",     .shortopt = 't', .hasarg = H_reqarg, .starget = &args.intag    },
         { .longopt = "output",  .shortopt = 'o', .hasarg = H_reqarg, .starget = &args.outfname },
         { .longopt = "bitmask", .shortopt = 'b', .hasarg = H_noarg,  .ntarget = &args.bitmask  },
@@ -121,6 +124,23 @@ args parseargs(const int argc, const char **argv)
     args.infbaseup      = strupper(args.infbase);
     args.guard          = strupper(string(args.inguard, strlen(args.inguard)));
     args.tag            = args.intag ? strmake(args.intag) : strcut(args.infbase, '.').head;
+
+    args.sizesign = S_unbound;
+    char invalid  = '\0';
+    long sizesign = args.insized ? strnum(strmake(args.insized), 0, &invalid) : 0;
+    if (invalid != '\0') die("non-numeric size binding: “%s”", usage(stderr), args.insized);
+    switch (sizesign) {
+    case 0:   args.sizesign = S_unbound; break;
+    case -8:  args.sizesign = S_signed_8bit; break;
+    case -16: args.sizesign = S_signed_16bit; break;
+    case -32: args.sizesign = S_signed_32bit; break;
+    case -64: args.sizesign = S_signed_64bit; break;
+    case 8:   args.sizesign = S_unsigned_8bit; break;
+    case 16:  args.sizesign = S_unsigned_16bit; break;
+    case 32:  args.sizesign = S_unsigned_32bit; break;
+    case 64:  args.sizesign = S_unsigned_64bit; break;
+    default:  die("unrecognized size binding: “%s”", usage(stderr), args.insized);
+    }
 
     return args;
 }

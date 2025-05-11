@@ -35,17 +35,84 @@ void c_pregen(FILE *stream, sequence *seq, args *args)
     fprintf(stream, "extern \"C\" {\n");
     fprintf(stream, "#endif\n");
     fprintf(stream, "\n");
+
+    fprintf(stream, "#if !defined(%.*s__STDC__)\n", fmtstring(args->guard));
+    fprintf(stream, "#  if !defined(__STDC__)\n");
+    fprintf(stream, "#    define %.*s__STDC__ 0\n", fmtstring(args->guard));
+    fprintf(stream, "#  else\n");
+    fprintf(stream, "#    define %.*s__STDC__ __STDC__\n", fmtstring(args->guard));
+    fprintf(stream, "#  endif\n");
+    fprintf(stream, "#endif\n");
+    fprintf(stream, "\n");
+
+    fprintf(stream, "#if !defined(%.*s__STDC_VERSION__)\n", fmtstring(args->guard));
+    fprintf(stream, "#  if !defined(__STDC_VERSION__)\n");
+    fprintf(stream, "#    define %.*s__STDC_VERSION__ 0\n", fmtstring(args->guard));
+    fprintf(stream, "#  else\n");
+    fprintf(stream, "#    define %.*s__STDC_VERSION__ __STDC_VERSION__\n", fmtstring(args->guard));
+    fprintf(stream, "#  endif\n");
+    fprintf(stream, "#endif\n");
+    fprintf(stream, "\n");
 }
 
 #define pad(__elem)   (int)(seq->maxsymlen - (__elem)->symbol.len), ""
 #define elem0(__elem) fmtstring((__elem)->symbol), pad(__elem), (__elem)->value
 #define elem(__elem)  fmtstring((__elem)->symbol), pad(__elem), (__elem)->value - args->bitmask
 
+// clang-format off
+static const char *enumtypes[] = {
+    [S_unsigned_8bit]  = "uint8_t",
+    [S_unsigned_16bit] = "uint16_t",
+    [S_unsigned_32bit] = "uint32_t",
+    [S_unsigned_64bit] = "uint64_t",
+    [S_signed_8bit]    = "int8_t",
+    [S_signed_16bit]   = "int16_t",
+    [S_signed_32bit]   = "int32_t",
+    [S_signed_64bit]   = "int64_t",
+};
+// clang-format on
+
 void c_gen(FILE *stream, sequence *seq, args *args)
 {
     fprintf(stream, "#ifdef %.*s_ENUM\n", fmtstring(args->guard));
     fprintf(stream, "\n");
-    fprintf(stream, "enum %.*s {\n", fmtstring(args->tag));
+
+    if (args->sizesign == S_unbound) {
+        fprintf(
+            stream,
+            "#define %.*s_ENUM_TYPE_%.*s\n",
+            fmtstring(args->guard),
+            fmtstring(args->tag)
+        );
+        fprintf(stream, "\n");
+    } else {
+        fprintf(stream, "#if %.*s__STDC_VERSION__ >= 202311L\n", fmtstring(args->guard));
+        fprintf(stream, "#  include <stdint.h>\n");
+        fprintf(
+            stream,
+            "#  define %.*s_ENUM_TYPE_%.*s : %s\n",
+            fmtstring(args->guard),
+            fmtstring(args->tag),
+            enumtypes[args->sizesign]
+        );
+        fprintf(stream, "#else\n");
+        fprintf(
+            stream,
+            "#  define %.*s_ENUM_TYPE_%.*s\n",
+            fmtstring(args->guard),
+            fmtstring(args->tag)
+        );
+        fprintf(stream, "#endif\n");
+        fprintf(stream, "\n");
+    }
+
+    fprintf(
+        stream,
+        "enum %.*s %.*s_ENUM_TYPE_%.*s {\n",
+        fmtstring(args->tag),
+        fmtstring(args->guard),
+        fmtstring(args->tag)
+    );
 
     const char *enum_fmt, *proc_fmt, *last_enum_fmt, *last_proc_fmt;
     if (args->bitmask) {
