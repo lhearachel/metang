@@ -46,8 +46,8 @@ int main(int argc, const char **argv)
 
     for (int i = 0; i < sequence.len; i++) free(get(&sequence, seqelem, i)->symbol.s);
     free(sequence.data);
-    free(args.guard);
-    free(args.upperbase);
+    free(args.guard.s);
+    free(args.infbaseup.s);
     fclose(args.infile);
     return EXIT_SUCCESS;
 }
@@ -87,7 +87,7 @@ args parseargs(const int argc, const char **argv)
     const clipopt options[] = {
         { .longopt = "lang",   .shortopt = 'l', .hasarg = H_reqarg, .starget = &args.lang     },
         { .longopt = "guard",  .shortopt = 'g', .hasarg = H_reqarg, .starget = &args.inguard  },
-        { .longopt = "tag",    .shortopt = 't', .hasarg = H_reqarg, .starget = &args.tag      },
+        { .longopt = "tag",    .shortopt = 't', .hasarg = H_reqarg, .starget = &args.intag    },
         { .longopt = "output", .shortopt = 'o', .hasarg = H_reqarg, .starget = &args.outfname },
         { 0 }
     };
