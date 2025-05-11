@@ -29,6 +29,7 @@ void c_pregen(FILE *stream, vector *sequence, args *args)
     fprintf(stream, " * \n");
     fprintf(stream, " * Source file: %s\n", infname);
     fprintf(stream, " * Reproducible options:\n");
+    if (args->bitmask) fprintf(stream, " *   --bitmask\n");
     fprintf(stream, " *   --lang %s\n", args->lang);
     fprintf(stream, " *   --guard %.*s\n", fmtstring(args->guard));
     fprintf(stream, " *   --tag %.*s\n", fmtstring(args->tag));
@@ -49,9 +50,18 @@ void c_gen(FILE *stream, vector *sequence, args *args)
     fprintf(stream, "\n");
     fprintf(stream, "enum %.*s {\n", fmtstring(args->tag));
 
+    const char *enum_fmt, *proc_fmt;
+    if (args->bitmask) {
+        enum_fmt = "    %.*s = (1 << %ld),\n";
+        proc_fmt = "#define %.*s (1 << %ld)\n";
+    } else {
+        enum_fmt = "    %.*s = %ld,\n";
+        proc_fmt = "#define %.*s %ld\n";
+    }
+
     for (int i = 0; i < sequence->len; i++) {
         seqelem *elem = get(sequence, seqelem, i);
-        fprintf(stream, "    %.*s = %ld,\n", fmtstring(elem->symbol), elem->value);
+        fprintf(stream, enum_fmt, fmtstring(elem->symbol), elem->value);
     }
 
     fprintf(stream, "}; /* enum %.*s */\n", fmtstring(args->tag));
@@ -61,7 +71,7 @@ void c_gen(FILE *stream, vector *sequence, args *args)
 
     for (int i = 0; i < sequence->len; i++) {
         seqelem *elem = get(sequence, seqelem, i);
-        fprintf(stream, "#define %.*s %ld\n", fmtstring(elem->symbol), elem->value);
+        fprintf(stream, proc_fmt, fmtstring(elem->symbol), elem->value);
     }
 
     fprintf(stream, "\n");

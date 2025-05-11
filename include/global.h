@@ -6,7 +6,7 @@
 
 #include "libs/strings.h"
 
-typedef int bool;
+typedef long bool;
 
 #define BLOCK_SIZE 128
 
@@ -52,11 +52,12 @@ typedef int bool;
     } while (0)
 
 typedef struct args {
-    const char *lang;     // --lang   - defaults to "c"
-    const char *inguard;  // --guard  - defaults to "METANG"
-    const char *intag;    // --tag    - defaults to basename of the input file
-    const char *outfname; // --output - defaults to stdout
-    const char *infname;  // <file>   - specify "-" to use stdin
+    bool        bitmask;  // --bitmask - defaults to "false"
+    const char *lang;     // --lang    - defaults to "c"
+    const char *inguard;  // --guard   - defaults to "METANG"
+    const char *intag;    // --tag     - defaults to basename of the input file
+    const char *outfname; // --output  - defaults to stdout
+    const char *infname;  // <file>    - specify "-" to use stdin
 
     FILE  *infile;    // The actual input stream
     string tag;       // Processed copy of the input tag

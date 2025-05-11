@@ -65,6 +65,7 @@ void usage(FILE *stream)
     fprintf(stream, "  -l / --lang <lang>     Generate enumerables for a specified language.\n");
     fprintf(stream, "  -t / --tag <tag>       Prefix generated enums and structs with <tag>.\n");
     fprintf(stream, "  -g / --guard <guard>   Prefix pre-processor conditionals with <guard>.\n");
+    fprintf(stream, "  -b / --bitmask         Generate an enumerated bitmask.\n");
 }
 
 args parseargs(const int argc, const char **argv)
@@ -85,10 +86,11 @@ args parseargs(const int argc, const char **argv)
 
     // clang-format off
     const clipopt options[] = {
-        { .longopt = "lang",   .shortopt = 'l', .hasarg = H_reqarg, .starget = &args.lang     },
-        { .longopt = "guard",  .shortopt = 'g', .hasarg = H_reqarg, .starget = &args.inguard  },
-        { .longopt = "tag",    .shortopt = 't', .hasarg = H_reqarg, .starget = &args.intag    },
-        { .longopt = "output", .shortopt = 'o', .hasarg = H_reqarg, .starget = &args.outfname },
+        { .longopt = "lang",    .shortopt = 'l', .hasarg = H_reqarg, .starget = &args.lang     },
+        { .longopt = "guard",   .shortopt = 'g', .hasarg = H_reqarg, .starget = &args.inguard  },
+        { .longopt = "tag",     .shortopt = 't', .hasarg = H_reqarg, .starget = &args.intag    },
+        { .longopt = "output",  .shortopt = 'o', .hasarg = H_reqarg, .starget = &args.outfname },
+        { .longopt = "bitmask", .shortopt = 'b', .hasarg = H_noarg,  .ntarget = &args.bitmask  },
         { 0 }
     };
 
