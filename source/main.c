@@ -2,6 +2,7 @@
 
 #define _POSIX_C_SOURCE 200809L // NOLINT
 
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -106,6 +107,12 @@ args parseargs(const int argc, const char **argv)
 
     if (strcmp(args.infname, "-") == 0) args.infname = null;
     args.infile = getfile(args.infname, stdin);
+
+    const char *infname = args.infname ? (char *)args.infname : "stdin";
+    args.infbase        = strmake(basename((char *)infname));
+    args.infbaseup      = strupper(args.infbase);
+    args.guard          = strupper(string(args.inguard, strlen(args.inguard)));
+    args.tag            = args.intag ? strmake(args.intag) : strcut(args.infbase, '.').head;
 
     return args;
 }
