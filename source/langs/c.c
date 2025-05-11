@@ -4,12 +4,15 @@
 
 #include <libgen.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "global.h"
 
 #include "libs/strings.h"
 #include "libs/vector.h"
+
+static int seqelemcmp(const void *a, const void *b);
 
 void c_pregen(FILE *stream, vector *sequence, args *args)
 {
@@ -64,6 +67,51 @@ void c_gen(FILE *stream, vector *sequence, args *args)
     fprintf(stream, "\n");
     fprintf(stream, "#endif /* %.*s_ENUM */\n", fmtstring(args->guard));
     fprintf(stream, "\n");
+    fprintf(stream, "#ifdef %.*s_LOOKUP\n", fmtstring(args->guard));
+    fprintf(stream, "\n");
+    fprintf(stream, "typedef struct entry__%.*s {\n", fmtstring(args->tag));
+    fprintf(stream, "    const char *name;\n");
+    fprintf(stream, "    const long value;\n");
+    fprintf(stream, "} entry__%.*s;\n", fmtstring(args->tag));
+    fprintf(stream, "\n");
+    fprintf(stream, "#ifdef %.*s_LOOKUP_IMPL\n", fmtstring(args->guard));
+    fprintf(stream, "\n");
+    fprintf(stream, "const long lengthof__%.*s = %d;\n", fmtstring(args->tag), sequence->len);
+    fprintf(
+        stream,
+        "const entry__%.*s lookup__%.*s[] = {\n",
+        fmtstring(args->tag),
+        fmtstring(args->tag)
+    );
+
+    // We are done with output for the enum at this stage, so we can resort it without consequence.
+    qsort(sequence->data, sequence->len, sizeof(seqelem), seqelemcmp);
+    for (int i = 0; i < sequence->len; i++) {
+        seqelem *elem = get(sequence, seqelem, i);
+        fprintf(
+            stream,
+            "    { \"%.*s\", %.*s },\n",
+            fmtstring(elem->symbol),
+            fmtstring(elem->symbol)
+        );
+    }
+
+    fprintf(stream, "};\n");
+    fprintf(stream, "\n");
+    fprintf(stream, "#else  /* %.*s_LOOKUP_IMPL */\n", fmtstring(args->guard));
+    fprintf(stream, "\n");
+    fprintf(stream, "extern const long lengthof__%.*s;\n", fmtstring(args->tag));
+    fprintf(
+        stream,
+        "extern const entry__%.*s lookup__%.*s[];\n",
+        fmtstring(args->tag),
+        fmtstring(args->tag)
+    );
+    fprintf(stream, "\n");
+    fprintf(stream, "#endif /* %.*s_LOOKUP_IMPL */\n", fmtstring(args->guard));
+    fprintf(stream, "\n");
+    fprintf(stream, "#endif /* %.*s_LOOKUP */\n", fmtstring(args->guard));
+    fprintf(stream, "\n");
 }
 
 void c_postgen(FILE *stream, vector *sequence, args *args)
@@ -75,4 +123,11 @@ void c_postgen(FILE *stream, vector *sequence, args *args)
     fprintf(stream, "#endif\n");
     fprintf(stream, "\n");
     fprintf(stream, "#endif /* %.*s_%.*s */\n", fmtstring(args->guard), fmtstring(args->infbaseup));
+}
+
+static int seqelemcmp(const void *a, const void *b) // NOLINT: bugprone-easily-swappable-parameters
+{
+    const seqelem *elem_a = a;
+    const seqelem *elem_b = b;
+    return strcmp((char *)elem_a->symbol.s, (char *)elem_b->symbol.s);
 }
