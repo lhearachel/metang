@@ -11,6 +11,7 @@
 #include "metang.h" // meson-generated
 
 #include "langs/c.h"
+#include "langs/py.h"
 
 #include "libs/clip.h"
 #include "libs/strings.h"
@@ -23,10 +24,13 @@ typedef struct gen {
     void (*postfunc)(FILE *stream, sequence *seq, args *args);
 } gen;
 
+// clang-format off
 static const gen generators[] = {
-    { .lang = "c", .prefunc = c_pregen, .genfunc = c_gen, .postfunc = c_postgen },
+    { .lang = "c",  .prefunc = c_pregen,  .genfunc = c_gen,  .postfunc = c_postgen  },
+    { .lang = "py", .prefunc = py_pregen, .genfunc = py_gen, .postfunc = py_postgen },
     { 0 },
 };
+// clang-format on
 
 void       usage(FILE *stream);
 args       parseargs(const int argc, const char **argv);
