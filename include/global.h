@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "libs/strings.h"
+#include "libs/vector.h"
 
 typedef long bool;
 
@@ -70,3 +71,8 @@ typedef struct seqelem {
     string symbol;
     long   value;
 } seqelem;
+
+typedef struct sequence {
+    vector elems; // T = seqelem
+    long   maxsymlen;
+} sequence;

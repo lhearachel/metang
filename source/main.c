@@ -18,9 +18,9 @@
 
 typedef struct gen {
     const char *lang;
-    void (*prefunc)(FILE *stream, vector *sequence, args *args);
-    void (*genfunc)(FILE *stream, vector *sequence, args *args);
-    void (*postfunc)(FILE *stream, vector *sequence, args *args);
+    void (*prefunc)(FILE *stream, sequence *seq, args *args);
+    void (*genfunc)(FILE *stream, sequence *seq, args *args);
+    void (*postfunc)(FILE *stream, sequence *seq, args *args);
 } gen;
 
 static const gen generators[] = {
@@ -31,22 +31,22 @@ static const gen generators[] = {
 void       usage(FILE *stream);
 args       parseargs(const int argc, const char **argv);
 const gen *pickgen(const char *lang);
-vector     readseq(FILE *infile, bool bitmask);
+sequence   readseq(FILE *infile, bool bitmask);
 FILE      *getfile(const char *fname, FILE *fdefault);
 
 int main(int argc, const char **argv)
 {
     args       args      = parseargs(argc, argv);
     const gen *generator = pickgen(args.lang);
-    vector     sequence  = readseq(args.infile, args.bitmask);
+    sequence   sequence  = readseq(args.infile, args.bitmask);
     FILE      *outfile   = getfile(args.outfname, stdout);
 
     generator->prefunc(outfile, &sequence, &args);
     generator->genfunc(outfile, &sequence, &args);
     generator->postfunc(outfile, &sequence, &args);
 
-    for (int i = 0; i < sequence.len; i++) free(get(&sequence, seqelem, i)->symbol.s);
-    free(sequence.data);
+    for (int i = 0; i < sequence.elems.len; i++) free(get(&sequence.elems, seqelem, i)->symbol.s);
+    free(sequence.elems.data);
     free(args.guard.s);
     free(args.infbaseup.s);
     fclose(args.infile);
@@ -125,17 +125,18 @@ const gen *pickgen(const char *lang)
     return generator;
 }
 
-vector readseq(FILE *infile, bool bitmask)
+sequence readseq(FILE *infile, bool bitmask)
 {
-    vector  sequence = newvec(seqelem, BLOCK_SIZE);
-    bool    kill     = false;
-    long    valit    = 0;
-    char   *line     = null;
-    size_t  linelen  = 0;
+    vector  elems     = newvec(seqelem, BLOCK_SIZE);
+    bool    kill      = false;
+    long    valit     = 0;
+    long    maxsymlen = 0;
+    char   *line      = null;
+    size_t  linelen   = 0;
     ssize_t nread;
 
     while ((nread = getline(&line, &linelen, infile)) != -1) {
-        seqelem *elem    = push(&sequence, seqelem);
+        seqelem *elem    = push(&elems, seqelem);
         elem->symbol.s   = calloc(nread, 1);
         elem->symbol.len = nread - (line[nread - 1] == '\n'); // Do not copy the trailing newline
 
@@ -169,11 +170,12 @@ vector readseq(FILE *infile, bool bitmask)
 
         elem->symbol = strrtrim(elem->symbol); // Trim trailing whitespace
         elem->value  = valit++;
+        maxsymlen    = maxsymlen >= elem->symbol.len ? maxsymlen : elem->symbol.len;
     }
 
     free(line);
     if (kill) exit(EXIT_FAILURE);
-    return sequence;
+    return (sequence){ .elems = elems, .maxsymlen = maxsymlen };
 }
 
 FILE *getfile(const char *fname, FILE *fdefault)
