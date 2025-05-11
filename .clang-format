@@ -76,7 +76,7 @@ IncludeIsMainSourceRegex: ""
 ContinuationIndentWidth: 4
 IndentCaseBlocks: false
 IndentCaseLabels: false
-IndentGotoLabels: false
+IndentGotoLabels: true
 IndentPPDirectives: None
 IndentWidth: 4
 IndentWrappedFunctionNames: true

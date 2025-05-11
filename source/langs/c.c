@@ -43,29 +43,40 @@ void c_gen(FILE *stream, vector *sequence, args *args)
     fprintf(stream, "\n");
     fprintf(stream, "enum %.*s {\n", fmtstring(args->tag));
 
-    const char *enum_fmt, *proc_fmt;
+    const char *enum_fmt, *proc_fmt, *last_enum_fmt, *last_proc_fmt;
     if (args->bitmask) {
-        enum_fmt = "    %.*s = (1 << %ld),\n";
-        proc_fmt = "#define %.*s (1 << %ld)\n";
+        enum_fmt      = "    %.*s = (1 << %ld),\n";
+        proc_fmt      = "#define %.*s (1 << %ld)\n";
+        last_enum_fmt = "    %.*s = ((1 << %ld) - 1)\n";
+        last_proc_fmt = "#define %.*s ((1 << %ld) - 1)\n";
     } else {
-        enum_fmt = "    %.*s = %ld,\n";
-        proc_fmt = "#define %.*s %ld\n";
+        enum_fmt      = "    %.*s = %ld,\n";
+        proc_fmt      = "#define %.*s %ld\n";
+        last_enum_fmt = "    %.*s = %ld,\n";
+        last_proc_fmt = "#define %.*s %ld\n";
     }
 
-    for (int i = 0; i < sequence->len; i++) {
+    seqelem *first = get(sequence, seqelem, 0);
+    seqelem *last  = get(sequence, seqelem, sequence->len - 1);
+
+    fprintf(stream, "    %.*s = %ld,\n", fmtstring(first->symbol), first->value);
+    for (int i = 1; i < sequence->len - 1; i++) {
         seqelem *elem = get(sequence, seqelem, i);
-        fprintf(stream, enum_fmt, fmtstring(elem->symbol), elem->value);
+        fprintf(stream, enum_fmt, fmtstring(elem->symbol), elem->value - args->bitmask);
     }
+    fprintf(stream, last_enum_fmt, fmtstring(last->symbol), last->value - args->bitmask);
 
     fprintf(stream, "}; /* enum %.*s */\n", fmtstring(args->tag));
     fprintf(stream, "\n");
     fprintf(stream, "#else  /* %.*s_ENUM */\n", fmtstring(args->guard));
     fprintf(stream, "\n");
 
-    for (int i = 0; i < sequence->len; i++) {
+    fprintf(stream, "#define %.*s %ld\n", fmtstring(first->symbol), first->value);
+    for (int i = 1; i < sequence->len - 1; i++) {
         seqelem *elem = get(sequence, seqelem, i);
-        fprintf(stream, proc_fmt, fmtstring(elem->symbol), elem->value);
+        fprintf(stream, proc_fmt, fmtstring(elem->symbol), elem->value - args->bitmask);
     }
+    fprintf(stream, last_proc_fmt, fmtstring(last->symbol), last->value - args->bitmask);
 
     fprintf(stream, "\n");
     fprintf(stream, "#endif /* %.*s_ENUM */\n", fmtstring(args->guard));

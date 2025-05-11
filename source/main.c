@@ -31,14 +31,14 @@ static const gen generators[] = {
 void       usage(FILE *stream);
 args       parseargs(const int argc, const char **argv);
 const gen *pickgen(const char *lang);
-vector     readseq(FILE *infile);
+vector     readseq(FILE *infile, bool bitmask);
 FILE      *getfile(const char *fname, FILE *fdefault);
 
 int main(int argc, const char **argv)
 {
     args       args      = parseargs(argc, argv);
     const gen *generator = pickgen(args.lang);
-    vector     sequence  = readseq(args.infile);
+    vector     sequence  = readseq(args.infile, args.bitmask);
     FILE      *outfile   = getfile(args.outfname, stdout);
 
     generator->prefunc(outfile, &sequence, &args);
@@ -125,7 +125,7 @@ const gen *pickgen(const char *lang)
     return generator;
 }
 
-vector readseq(FILE *infile)
+vector readseq(FILE *infile, bool bitmask)
 {
     vector  sequence = newvec(seqelem, BLOCK_SIZE);
     bool    kill     = false;
@@ -145,6 +145,15 @@ vector readseq(FILE *infile)
         // Handle direct value assignments
         strpair symval = strcut(elem->symbol, '=');
         if (symval.tail.len > 0) {
+            if (bitmask) {
+                errF(
+                    "value assignment not allowed in bitmask mode: “%.*s”",
+                    fmtstring(elem->symbol)
+                );
+                kill = true;
+                goto sethead;
+            }
+
             char invalid = 0;
             valit        = strnum(symval.tail, 0, &invalid);
 
@@ -154,6 +163,7 @@ vector readseq(FILE *infile)
                 kill  = true;
             }
 
+        sethead:
             elem->symbol = symval.head;
         }
 
