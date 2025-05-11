@@ -145,7 +145,7 @@ sequence readseq(FILE *infile, bool bitmask)
 
         // Handle direct value assignments
         strpair symval = strcut(elem->symbol, '=');
-        symval.tail    = strltrim(symval.tail);
+        symval.tail    = strrtrim(strltrim(symval.tail));
         if (symval.tail.len > 0) {
             if (bitmask) {
                 errF(
@@ -157,8 +157,21 @@ sequence readseq(FILE *infile, bool bitmask)
             }
 
             if (alpha(symval.tail.s[0]) || symval.tail.s[0] == '_') {
-                errF("invalid back-ref as assignment value: “%.*s”", fmtstring(elem->symbol));
-                kill = true;
+                // TODO: Replace naive linear search with a map lookup
+                int i = 0;
+                for (; i < elems.len; i++) {
+                    seqelem *elem = get(&elems, seqelem, i);
+                    if (strequ(elem->symbol, symval.tail)) {
+                        valit = elem->value;
+                        break;
+                    }
+                }
+
+                if (i == elems.len) {
+                    errF("unknown back-ref assignment: “%.*s”", fmtstring(elem->symbol));
+                    valit = 0;
+                    kill  = true;
+                }
             } else {
                 // Parse the number
                 char invalid = 0;
