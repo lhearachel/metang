@@ -71,6 +71,10 @@ void usage(FILE *stream)
     fprintf(stream, "  -t / --tag <tag>       Prefix generated enums and structs with <tag>.\n");
     fprintf(stream, "  -g / --guard <guard>   Prefix pre-processor conditionals with <guard>.\n");
     fprintf(stream, "  -b / --bitmask         Generate an enumerated bitmask.\n");
+    fprintf(stream, "\n");
+    fprintf(stream, "Languages Supported:\n");
+    fprintf(stream, "  c    C enum with matching preproc definitions and a value lookup table\n");
+    fprintf(stream, "  py   Python class derived from enum.IntEnum or enum.IntFlag\n");
 }
 
 args parseargs(const int argc, const char **argv)
