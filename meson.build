@@ -22,6 +22,7 @@ executable(
   sources: files(
     'source/main.c',
     'source/langs/c.c',
+    'source/langs/cpp.c',
     'source/langs/py.c',
     'source/libs/clip.c',
     'source/libs/strings.c',

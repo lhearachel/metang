@@ -11,6 +11,7 @@
 #include "metang.h" // meson-generated
 
 #include "langs/c.h"
+#include "langs/cpp.h"
 #include "langs/py.h"
 
 #include "libs/clip.h"
@@ -26,8 +27,9 @@ typedef struct gen {
 
 // clang-format off
 static const gen generators[] = {
-    { .lang = "c",  .prefunc = c_pregen,  .genfunc = c_gen,  .postfunc = c_postgen  },
-    { .lang = "py", .prefunc = py_pregen, .genfunc = py_gen, .postfunc = py_postgen },
+    { .lang = "c",   .prefunc = c_pregen,   .genfunc = c_gen,   .postfunc = c_postgen   },
+    { .lang = "cpp", .prefunc = cpp_pregen, .genfunc = cpp_gen, .postfunc = cpp_postgen },
+    { .lang = "py",  .prefunc = py_pregen,  .genfunc = py_gen,  .postfunc = py_postgen  },
     { 0 },
 };
 // clang-format on
@@ -75,8 +77,9 @@ void usage(FILE *stream)
     fprintf(stream, "                         e.g. in C, 8 binds to uint8_t, -8 to int8_t, etc.\n");
     fprintf(stream, "\n");
     fprintf(stream, "Languages Supported:\n");
-    fprintf(stream, "  c    C enum with matching preproc definitions and a value lookup table\n");
-    fprintf(stream, "  py   Python class derived from enum.IntEnum or enum.IntFlag\n");
+    fprintf(stream, "  c     C enum with matching preproc definitions and a value-lookup table\n");
+    fprintf(stream, "  cpp   C++ enum with a value-lookup table using std::map\n");
+    fprintf(stream, "  py    Python class derived from enum.IntEnum or enum.IntFlag\n");
 }
 
 args parseargs(const int argc, const char **argv)
