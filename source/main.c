@@ -182,7 +182,8 @@ sequence readseq(FILE *infile, bool bitmask)
         elem->symbol.len = nread - (line[nread - 1] == '\n'); // Do not copy the trailing newline
 
         memcpy(elem->symbol.s, line, elem->symbol.len);
-        elem->symbol = strcut(elem->symbol, '#').head; // Trim any in-line comment
+        elem->symbol = strrtrim(strltrim(strcut(elem->symbol, '#').head)); // Trim out line comments
+        if (elem->symbol.len <= 0) continue;
 
         // Handle direct value assignments
         strpair symval = strcut(elem->symbol, '=');
