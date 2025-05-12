@@ -187,7 +187,14 @@ sequence readseq(FILE *infile, bool bitmask)
 
         // Handle direct value assignments
         strpair symval = strcut(elem->symbol, '=');
-        symval.tail    = strrtrim(strltrim(symval.tail));
+        symval.head    = strrtrim(symval.head);
+        if (symval.head.len <= 0) {
+            errF("no symbol given for direct assignment: “%.*s”", fmtstring(elem->symbol));
+            kill = true;
+            continue;
+        }
+
+        symval.tail = strltrim(symval.tail);
         if (symval.tail.len > 0) {
             if (bitmask) {
                 errF(
