@@ -54,30 +54,58 @@ void cpp_gen(FILE *stream, sequence *seq, args *args)
     fprintf(stream, "#  include <cstdint>\n");
     fprintf(
         stream,
-        "#  define %.*s_ENUM_QUAL_%.*s struct\n",
+        "#  ifndef %.*s_ENUM_QUAL_%.*s\n",
         fmtstring(args->guard),
         fmtstring(args->tag)
     );
     fprintf(
         stream,
-        "#  define %.*s_ENUM_BASE_%.*s %s\n",
+        "#    define %.*s_ENUM_QUAL_%.*s struct\n",
+        fmtstring(args->guard),
+        fmtstring(args->tag)
+    );
+    fprintf(stream, "#  endif\n");
+    fprintf(
+        stream,
+        "#  ifndef %.*s_ENUM_BASE_%.*s\n",
+        fmtstring(args->guard),
+        fmtstring(args->tag)
+    );
+    fprintf(
+        stream,
+        "#    define %.*s_ENUM_BASE_%.*s %s\n",
         fmtstring(args->guard),
         fmtstring(args->tag),
         enumtypes[args->sizesign]
     );
+    fprintf(stream, "#  endif\n");
     fprintf(stream, "#else\n");
     fprintf(
         stream,
-        "#  define %.*s_ENUM_QUAL_%.*s\n",
+        "#  ifndef %.*s_ENUM_QUAL_%.*s\n",
         fmtstring(args->guard),
         fmtstring(args->tag)
     );
     fprintf(
         stream,
-        "#  define %.*s_ENUM_BASE_%.*s\n",
+        "#    define %.*s_ENUM_QUAL_%.*s\n",
         fmtstring(args->guard),
         fmtstring(args->tag)
     );
+    fprintf(stream, "#  endif\n");
+    fprintf(
+        stream,
+        "#  ifndef %.*s_ENUM_BASE_%.*s\n",
+        fmtstring(args->guard),
+        fmtstring(args->tag)
+    );
+    fprintf(
+        stream,
+        "#    define %.*s_ENUM_BASE_%.*s\n",
+        fmtstring(args->guard),
+        fmtstring(args->tag)
+    );
+    fprintf(stream, "#  endif\n");
     fprintf(stream, "#endif\n");
     fprintf(stream, "\n");
 

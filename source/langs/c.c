@@ -61,14 +61,15 @@ void c_pregen(FILE *stream, sequence *seq, args *args)
 
 // clang-format off
 static const char *enumtypes[] = {
-    [S_unsigned_8bit]  = "uint8_t",
-    [S_unsigned_16bit] = "uint16_t",
-    [S_unsigned_32bit] = "uint32_t",
-    [S_unsigned_64bit] = "uint64_t",
-    [S_signed_8bit]    = "int8_t",
-    [S_signed_16bit]   = "int16_t",
-    [S_signed_32bit]   = "int32_t",
-    [S_signed_64bit]   = "int64_t",
+    [S_unbound]        = "",
+    [S_unsigned_8bit]  = ": uint8_t",
+    [S_unsigned_16bit] = ": uint16_t",
+    [S_unsigned_32bit] = ": uint32_t",
+    [S_unsigned_64bit] = ": uint64_t",
+    [S_signed_8bit]    = ": int8_t",
+    [S_signed_16bit]   = ": int16_t",
+    [S_signed_32bit]   = ": int32_t",
+    [S_signed_64bit]   = ": int64_t",
 };
 // clang-format on
 
@@ -80,28 +81,49 @@ void c_gen(FILE *stream, sequence *seq, args *args)
     if (args->sizesign == S_unbound) {
         fprintf(
             stream,
-            "#define %.*s_ENUM_TYPE_%.*s\n",
+            "#ifndef %.*s_ENUM_TYPE_%.*s\n",
             fmtstring(args->guard),
             fmtstring(args->tag)
         );
-        fprintf(stream, "\n");
-    } else {
-        fprintf(stream, "#if %.*s__STDC_VERSION__ >= 202311L\n", fmtstring(args->guard));
-        fprintf(stream, "#  include <stdint.h>\n");
-        fprintf(
-            stream,
-            "#  define %.*s_ENUM_TYPE_%.*s : %s\n",
-            fmtstring(args->guard),
-            fmtstring(args->tag),
-            enumtypes[args->sizesign]
-        );
-        fprintf(stream, "#else\n");
         fprintf(
             stream,
             "#  define %.*s_ENUM_TYPE_%.*s\n",
             fmtstring(args->guard),
             fmtstring(args->tag)
         );
+        fprintf(stream, "#endif\n");
+        fprintf(stream, "\n");
+    } else {
+        fprintf(stream, "#if %.*s__STDC_VERSION__ >= 202311L\n", fmtstring(args->guard));
+        fprintf(stream, "#  include <stdint.h>\n");
+        fprintf(
+            stream,
+            "#    ifndef %.*s_ENUM_TYPE_%.*s\n",
+            fmtstring(args->guard),
+            fmtstring(args->tag)
+        );
+        fprintf(
+            stream,
+            "#    define %.*s_ENUM_TYPE_%.*s %s\n",
+            fmtstring(args->guard),
+            fmtstring(args->tag),
+            enumtypes[args->sizesign]
+        );
+        fprintf(stream, "#  endif\n");
+        fprintf(stream, "#else\n");
+        fprintf(
+            stream,
+            "#    ifndef %.*s_ENUM_TYPE_%.*s\n",
+            fmtstring(args->guard),
+            fmtstring(args->tag)
+        );
+        fprintf(
+            stream,
+            "#    define %.*s_ENUM_TYPE_%.*s\n",
+            fmtstring(args->guard),
+            fmtstring(args->tag)
+        );
+        fprintf(stream, "#  endif\n");
         fprintf(stream, "#endif\n");
         fprintf(stream, "\n");
     }
