@@ -29,6 +29,10 @@ typedef struct vector {
         : ((__T *)(__v)->data) + (__v)->len++  \
 )
 
+#define pop(__v, __T) (                                      \
+    (__v)->len > 0 ? ((__T *)(__v)->data) + (__v)->len-- : 0 \
+)
+
 #define get(__v, __T, __i) (&((__T *)(__v)->data)[__i])
 // clang-format on
 

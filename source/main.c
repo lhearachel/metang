@@ -183,13 +183,19 @@ sequence readseq(FILE *infile, bool bitmask)
 
         memcpy(elem->symbol.s, line, elem->symbol.len);
         elem->symbol = strrtrim(strltrim(strcut(elem->symbol, '#').head)); // Trim out line comments
-        if (elem->symbol.len <= 0) continue;
+        if (elem->symbol.len <= 0) {
+            free(elem->symbol.s);
+            pop(&elems, seqelem);
+            continue;
+        }
 
         // Handle direct value assignments
         strpair symval = strcut(elem->symbol, '=');
         symval.head    = strrtrim(symval.head);
         if (symval.head.len <= 0) {
             errF("no symbol given for direct assignment: “%.*s”", fmtstring(elem->symbol));
+            free(elem->symbol.s);
+            pop(&elems, seqelem);
             kill = true;
             continue;
         }
