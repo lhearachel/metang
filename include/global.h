@@ -7,13 +7,9 @@
 #include "libs/strings.h"
 #include "libs/vector.h"
 
-typedef long bool;
-
 #define BLOCK_SIZE 128
 
-#define false 0
-#define true  1
-#define null  0
+#define null 0
 
 #define unused(__x) (void)(__x)
 
@@ -67,7 +63,7 @@ typedef enum sizesign {
 typedef struct gen gen;
 
 typedef struct args {
-    bool        bitmask;  // --bitmask - defaults to "false"
+    long        bitmask;  // --bitmask - defaults to "false"
     const char *lang;     // --lang    - defaults to "c"
     const char *inguard;  // --guard   - defaults to "METANG"
     const char *intag;    // --tag     - defaults to basename of the input file
