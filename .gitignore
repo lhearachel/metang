@@ -3,7 +3,7 @@
 .vscode/
 
 # Build artifacts
-build/
+build-*/
 
 # Developer conveniences
 compile_commands.json

@@ -6,8 +6,11 @@ project(
   license_files: 'LICENSE',
   meson_version: '>=1.5.0',
   default_options: {
+    'buildtype': 'debug',
     'warning_level': '3',
     'werror': true,
+    'b_sanitize': 'address',
+    'b_ndebug': 'if-release',
     'c_std': 'c99',
   }
 )
@@ -29,6 +32,7 @@ executable(
   ),
   implicit_include_directories: true,
   include_directories: include_directories('include'),
+  install: true,
 )
 
 if get_option('manuals')
