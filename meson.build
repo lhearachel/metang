@@ -20,7 +20,10 @@ metang_conf.set_quoted('PROGRAM_NAME', meson.project_name())
 metang_conf.set_quoted('PROGRAM_VERSION', meson.project_version())
 configure_file(output: 'metang.h', configuration: metang_conf)
 
-executable(
+native = get_option('native')
+install = native and meson.is_cross_build() ? false : true
+
+metang_exe = executable(
   'metang',
   sources: files(
     'source/main.c',
@@ -32,9 +35,14 @@ executable(
   ),
   implicit_include_directories: true,
   include_directories: include_directories('include'),
-  install: true,
+  install: install,
+  native: native,
 )
 
-if get_option('manuals')
-  subdir('docs')
+if not meson.is_subproject()
+  if get_option('manuals')
+    subdir('docs')
+  endif
+else
+  meson.override_find_program('metang', metang_exe)
 endif

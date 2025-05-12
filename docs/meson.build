@@ -19,7 +19,7 @@ foreach man_1_adoc : man_1_adoc_files
       '-o', '@OUTPUT@',
       '@INPUT@',
     ],
-    install: true,
+    install: install,
     install_dir: ['share/man/man1'],
     install_tag: ['man'],
   )

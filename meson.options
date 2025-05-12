@@ -4,3 +4,10 @@ option(
     value: false,
     description: 'Generate manual pages from documentation using Asciidoctor. Ignored by subprojects.',
 )
+
+option(
+    'native',
+    type: 'boolean',
+    value: true,
+    description: 'Force native compilation, even in a cross-compilation setup',
+)

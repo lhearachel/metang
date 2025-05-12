@@ -66,6 +66,21 @@ manual pages to `~/.local/share/man/man1/metang.1`:
 > just install
 ```
 
+### Integrate with a Meson Project
+
+If you make use of Meson for your project's build, you can incorporate `metang`
+as a subproject with a `subprojects/metang.wrap` file similar to the following:
+
+```ini
+[wrap-git]
+url = https://github.com/lhearachel/metang.git
+revision = <branch, tag, or commit hash here>
+depth = 1
+
+[provide]
+program_names = metang
+```
+
 ## Usage
 
 An summary of program options is available via `metang`'s built-in help-text:
