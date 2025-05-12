@@ -9,7 +9,6 @@ project(
     'buildtype': 'debug',
     'warning_level': '3',
     'werror': true,
-    'b_sanitize': 'address',
     'b_ndebug': 'if-release',
     'c_std': 'c99',
   }

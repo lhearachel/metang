@@ -55,7 +55,7 @@ If you only want to build the project:
 
 Specify any additional options to Meson as desired. The default build
 configuration will produce an executable with debug symbols, no optimizations,
-and assertions enabled, and it will attempt to link against Address Sanitizer.
+and assertions enabled.
 
 If you have installed [`casey/just`][gh-casey-just], you may also make use of
 the `Justfile` included with the repository, which will configure a
