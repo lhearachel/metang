@@ -145,6 +145,8 @@ args parseargs(const int argc, const char **argv)
 
 const gen *pickgen_byext(const char *ext)
 {
+    ext = ext ? ext : ".h";
+
     const gen *generator = &generators[0];
     for (; generator->ext != null && strcmp(generator->ext, ext) != 0; generator++);
     if (generator->ext == null) {
