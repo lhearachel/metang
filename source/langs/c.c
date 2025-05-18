@@ -174,7 +174,12 @@ void c_gen(FILE *stream, sequence *seq, args *args)
     fprintf(stream, "\n");
     fprintf(stream, "#endif /* %.*s_ENUM */\n", fmtstring(args->guard));
     fprintf(stream, "\n");
-    fprintf(stream, "#ifdef %.*s_LOOKUP\n", fmtstring(args->guard));
+    fprintf(
+        stream,
+        "#if defined(%.*s_LOOKUP) || defined(%.*s_LOOKUP_IMPL)\n",
+        fmtstring(args->guard),
+        fmtstring(args->guard)
+    );
     fprintf(stream, "\n");
     fprintf(stream, "typedef struct entry__%.*s {\n", fmtstring(args->tag));
     fprintf(stream, "    const char *name;\n");
@@ -219,7 +224,12 @@ void c_gen(FILE *stream, sequence *seq, args *args)
     fprintf(stream, "\n");
     fprintf(stream, "#endif /* %.*s_LOOKUP_IMPL */\n", fmtstring(args->guard));
     fprintf(stream, "\n");
-    fprintf(stream, "#endif /* %.*s_LOOKUP */\n", fmtstring(args->guard));
+    fprintf(
+        stream,
+        "#endif /* defined(%.*s_LOOKUP) || defined(%.*s_LOOKUP_IMPL) */\n",
+        fmtstring(args->guard),
+        fmtstring(args->guard)
+    );
     fprintf(stream, "\n");
 }
 

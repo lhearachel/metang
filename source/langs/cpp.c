@@ -146,7 +146,12 @@ void cpp_postgen(FILE *stream, sequence *seq, args *args)
 {
     unused(seq);
 
-    fprintf(stream, "#ifdef %.*s_LOOKUP\n", fmtstring(args->guard));
+    fprintf(
+        stream,
+        "#if defined(%.*s_LOOKUP) || defined(%.*s_LOOKUP_IMPL)\n",
+        fmtstring(args->guard),
+        fmtstring(args->guard)
+    );
     fprintf(stream, "\n");
     fprintf(stream, "#include <map>\n");
     fprintf(stream, "#include <string>\n");
@@ -179,12 +184,17 @@ void cpp_postgen(FILE *stream, sequence *seq, args *args)
     fprintf(stream, "\n");
     fprintf(
         stream,
-        "extern const std::map<std::string, %.*s> lookup_%.*s;\n",
+        "extern const std::map<std::string_view, %.*s> lookup_%.*s;\n",
         fmtstring(args->tag),
         fmtstring(args->tag)
     );
     fprintf(stream, "\n");
     fprintf(stream, "#endif // %.*s_LOOKUP_IMPL\n", fmtstring(args->guard));
     fprintf(stream, "\n");
-    fprintf(stream, "#endif // %.*s_LOOKUP\n", fmtstring(args->guard));
+    fprintf(
+        stream,
+        "#endif // defined(%.*s_LOOKUP) || defined(%.*s_LOOKUP_IMPL)\n",
+        fmtstring(args->guard),
+        fmtstring(args->guard)
+    );
 }
