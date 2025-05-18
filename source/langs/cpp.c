@@ -154,13 +154,13 @@ void cpp_postgen(FILE *stream, sequence *seq, args *args)
     );
     fprintf(stream, "\n");
     fprintf(stream, "#include <map>\n");
-    fprintf(stream, "#include <string>\n");
+    fprintf(stream, "#include <string_view>\n");
     fprintf(stream, "\n");
     fprintf(stream, "#ifdef %.*s_LOOKUP_IMPL\n", fmtstring(args->guard));
     fprintf(stream, "\n");
     fprintf(
         stream,
-        "const std::map<std::string, %.*s> lookup_%.*s = {\n",
+        "const std::map<std::string_view, %.*s> lookup_%.*s = {\n",
         fmtstring(args->tag),
         fmtstring(args->tag)
     );
