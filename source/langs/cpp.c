@@ -35,14 +35,14 @@ void cpp_pregen(FILE *stream, sequence *seq, args *args)
 // clang-format off
 static const char *enumtypes[] = {
     [S_unbound]        = "",
-    [S_unsigned_8bit]  = ": std::uint8_t",
-    [S_unsigned_16bit] = ": std::uint16_t",
-    [S_unsigned_32bit] = ": std::uint32_t",
-    [S_unsigned_64bit] = ": std::uint64_t",
-    [S_signed_8bit]    = ": std::int8_t",
-    [S_signed_16bit]   = ": std::int16_t",
-    [S_signed_32bit]   = ": std::int32_t",
-    [S_signed_64bit]   = ": std::int64_t",
+    [S_unsigned_8bit]  = " : std::uint8_t",
+    [S_unsigned_16bit] = " : std::uint16_t",
+    [S_unsigned_32bit] = " : std::uint32_t",
+    [S_unsigned_64bit] = " : std::uint64_t",
+    [S_signed_8bit]    = " : std::int8_t",
+    [S_signed_16bit]   = " : std::int16_t",
+    [S_signed_32bit]   = " : std::int32_t",
+    [S_signed_64bit]   = " : std::int64_t",
 };
 // clang-format on
 
@@ -73,7 +73,7 @@ void cpp_gen(FILE *stream, sequence *seq, args *args)
     );
     fprintf(
         stream,
-        "#    define %.*s_ENUM_BASE_%.*s %s\n",
+        "#    define %.*s_ENUM_BASE_%.*s%s\n",
         fmtstring(args->guard),
         fmtstring(args->tag),
         enumtypes[args->sizesign]
@@ -109,16 +109,6 @@ void cpp_gen(FILE *stream, sequence *seq, args *args)
     fprintf(stream, "#endif\n");
     fprintf(stream, "\n");
 
-    fprintf(
-        stream,
-        "enum %.*s_ENUM_QUAL_%.*s %.*s %.*s_ENUM_BASE_%.*s {\n",
-        fmtstring(args->guard),
-        fmtstring(args->tag),
-        fmtstring(args->tag),
-        fmtstring(args->guard),
-        fmtstring(args->tag)
-    );
-
     const char *fmt, *last_fmt;
     if (args->bitmask) {
         fmt      = "    %.*s %*s= (1 << %ld),\n";
@@ -130,6 +120,30 @@ void cpp_gen(FILE *stream, sequence *seq, args *args)
 
     seqelem *first = get(&seq->elems, seqelem, 0);
     seqelem *last  = get(&seq->elems, seqelem, seq->elems.len - 1);
+
+    fprintf(
+        stream,
+        "#define %.*s_ENUM_ENTRIES_%.*s \\\n",
+        fmtstring(args->guard),
+        fmtstring(args->tag)
+    );
+
+    for (int i = 0; i < seq->elems.len - 1; i++) {
+        seqelem *elem = get(&seq->elems, seqelem, i);
+        fprintf(stream, "    X(%.*s) \\\n", fmtstring(elem->symbol));
+    }
+    fprintf(stream, "    XF(%.*s)\n", fmtstring(last->symbol));
+    fprintf(stream, "\n");
+
+    fprintf(
+        stream,
+        "enum %.*s_ENUM_QUAL_%.*s %.*s %.*s_ENUM_BASE_%.*s {\n",
+        fmtstring(args->guard),
+        fmtstring(args->tag),
+        fmtstring(args->tag),
+        fmtstring(args->guard),
+        fmtstring(args->tag)
+    );
 
     fprintf(stream, "    %.*s %*s= %ld,\n", elem0(first));
     for (int i = 1; i < seq->elems.len - 1; i++) {
