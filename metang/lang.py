@@ -4,6 +4,7 @@ from enum import Enum, auto
 class Lang(Enum):
     c = auto()
     py = auto()
+    json = auto()
 
     def __str__(self):
         return self.name

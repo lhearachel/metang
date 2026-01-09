@@ -50,12 +50,11 @@ When using the “mask” command, the user must mind the following:
      permitted.
 """
 
+import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
-import sys
-
-from metang.generators import c, py
+from metang.generators import c, json, py
 from metang.lang import Lang
 from metang.mode import Mode
 from metang.options import Options
@@ -162,7 +161,9 @@ for line in filter(lambda line: not line.startswith("#"), fin):
                     found = True
                     break
             if found == False:
-                raise Exception("Enum entry `" + valStr + "`not found on previous entries")
+                raise Exception(
+                    "Enum entry `" + valStr + "`not found on previous entries"
+                )
     idt = split[0].strip()
     if len(idt) > maxlen:
         maxlen = len(idt)
@@ -178,5 +179,6 @@ digits = len(str(val - 1))
 GENERATORS = {
     Lang.c: c.generate,
     Lang.py: py.generate,
+    Lang.json: json.generate,
 }
 GENERATORS[lang](enumeration, opts, maxlen, digits)
